@@ -1,0 +1,23 @@
+# Version format corresponds to format changes: Major.Minor.Revision
+#  * Revision should be updated when new data is added that doesn't
+#    break older versions that may read the data.
+#  * Minor should be updated when updating names of constants.
+#  * Major should be updated when the format and names are completely
+#    changed and requires a rewrite on the code end.
+#
+# This is read as an entity, so it must be skipped and only used for
+# syncing code and data formats.
+Version: 1.0.0
+
+# Parameters - When changing anything but the values, read above.
+program:
+    scarab:
+        folder: scarab
+        script: scarab
+        profiling: False
+
+    test:
+        folder: unittests
+        script: testsuite
+        profiling: False
+

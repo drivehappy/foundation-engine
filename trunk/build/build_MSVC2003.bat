@@ -1,0 +1,1 @@
+premake.exe --target vs2003
