@@ -1,0 +1,29 @@
+material ETTerrainMaterial
+{
+  technique
+  {
+    pass
+    {
+      lighting off
+      
+      vertex_program_ref ET/Programs/VSLodMorph2
+      {
+      }
+      
+      fragment_program_ref ET/Programs/PSColour
+      {
+      }
+
+      texture_unit
+      {
+        texture jungle_1.png
+      }
+      
+      texture_unit
+      {
+        texture ETColourMap
+      }
+      
+    }
+  }
+}
