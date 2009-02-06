@@ -1,0 +1,22 @@
+void main( 
+  float4 iPos: POSITION, 
+  float2 iUV0: TEXCOORD0, 
+  float delta: BLENDWEIGHT,
+  out float4 oPos: POSITION, 
+  out float2 oUV0: TEXCOORD0, 
+  out float2 oUV1: TEXCOORD1, 
+  uniform float splatRepeatX, 
+  uniform float splatRepeatZ, 
+  uniform float morphFactor, 
+  uniform float4x4 worldViewProj
+)
+{
+  iPos.y += (delta.x * morphFactor);
+  oPos = mul(worldViewProj, iPos);
+  oUV0 = iUV0;
+  iUV0.x *= splatRepeatX;
+  iUV0.y *= splatRepeatZ;
+  oUV1 = iUV0;
+}
+
+

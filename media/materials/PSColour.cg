@@ -1,0 +1,13 @@
+void main
+(
+  float2 iTexCoord0 : TEXCOORD0, 
+  out float4 oColor : COLOR, 
+  uniform sampler2D colourMap,
+  uniform sampler2D lightMap
+) 
+{
+  float4 col = tex2D(colourMap, iTexCoord0);
+  float4 light = tex2D(lightMap, iTexCoord0);
+  oColor = col*light;
+}
+

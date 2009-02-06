@@ -1,0 +1,15 @@
+material Scarab/EntityTestMaterial
+{
+    technique
+    {
+        pass
+        {
+            ambient 1.0 1.0 1.0
+
+            texture_unit
+            {
+                texture city_5.jpg
+            }
+        }
+    }
+}

@@ -1,0 +1,53 @@
+fragment_program ET/Programs/PSSplat cg
+{
+  source PSSplat.cg
+  entry_point main
+  profiles ps_1_1 arbfp1
+}
+
+fragment_program ET/Programs/Fragment/SM20 cg
+{
+  source PSSplat2.cg
+  entry_point main
+  profiles ps_2_0 arbfp1
+}
+
+fragment_program ET/Programs/PSLighting cg
+{
+  source PSLighting.cg
+  entry_point main
+  profiles ps_1_1 arbfp1
+}
+
+fragment_program ET/Programs/PSColour cg
+{
+  source PSColour.cg
+  entry_point main
+  profiles ps_2_0 arbfp1
+}
+
+vertex_program ET/Programs/Vertex/SM20 cg
+{
+  source VSLodMorph.cg
+  entry_point main
+  profiles vs_1_1 arbvp1
+  
+  default_params
+  {
+    param_named_auto morphFactor custom 77
+    param_named_auto worldViewProj worldviewproj_matrix
+  }
+}
+
+vertex_program ET/Programs/VSLodMorph2 cg
+{
+  source VSLodMorph2.cg
+  entry_point terrain_vp
+  profiles vs_1_1 arbvp1
+  
+  default_params
+  {
+    param_named_auto morphFactor custom 77
+    param_named_auto worldViewProj worldviewproj_matrix
+  }
+}
