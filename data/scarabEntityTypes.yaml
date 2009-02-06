@@ -1,0 +1,22 @@
+# --
+
+EntityTypes:
+  Scout:
+    HitPoints:  100
+    Speed:      5
+    Armor:      4
+    Power:      12
+    Size:       1
+    Cost_Gold:  30
+    Cost_Wood:  5
+
+    # Graphic Options
+    Mesh:       cube.mesh
+    Scale:      [0.1, 0.1, 0.1]
+    Rotation:   [0, 0, 0, 1]
+    Position:   [0, 20.0, 0]
+    Material:   Scarab/EntityTestMaterial
+
+    # Collision Options
+    CollisionShape: Box
+    CollisionSize:  [1, 1, 1]
