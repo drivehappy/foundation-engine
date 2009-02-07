@@ -140,14 +140,14 @@ void* BoatEngine::doTaskUpdate(void *_pArgs)
     gmtl::Vec3f nAngularForce;
     float nAngularDragCoefficient = m_nRotFriction; //(1.0f - m_nRotFriction);
     float nAngularAcceleration;
-    float nA1, nA2, nA3, nA4;
+    //float nA1, nA2, nA3, nA4;
     float nAngularVelocityNew;
     float nAngularVelocityAverage;
     gmtl::Quatf nRotationNew = gmtl::Quatf(0,0,0,1);
     gmtl::Vec3f nLeft, nRadialPosition, nTorque;
     
-    float nInlineVelocity;
-    float nTorque2;
+    //float nInlineVelocity;
+    //float nTorque2;
 
     //
     //f_printf("DEBUG\n");

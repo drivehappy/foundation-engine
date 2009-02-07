@@ -13,3 +13,19 @@ material Scarab/EntityTestMaterial
         }
     }
 }
+
+material Scarab/EntityTestMaterial2
+{
+    technique
+    {
+        pass
+        {
+            ambient 1.0 1.0 1.0
+
+            texture_unit
+            {
+                texture city_4.jpg
+            }
+        }
+    }
+}

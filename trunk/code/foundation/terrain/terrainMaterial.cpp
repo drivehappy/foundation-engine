@@ -21,7 +21,7 @@ TerrainMaterial::TerrainMaterial(const Ogre::String& name, Ogre::SceneNode* root
     mSplattingMaterial = new ET::SplattingMaterial(name, "General", Ogre::PF_BYTE_RGB);
     //mSplattingMaterial->setUseVertexMorphing(true);
     mSplattingMaterial->setBaseMaterial(mBaseMaterial);
-    mSplattingMaterial->setTextureRepeat(1, 1);
+    mSplattingMaterial->setTextureRepeat(20, 20);
 }
 
 TerrainMaterial::~TerrainMaterial()

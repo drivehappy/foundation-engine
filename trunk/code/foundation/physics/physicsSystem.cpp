@@ -202,8 +202,6 @@ void RigidBody::applyAlignedAngularForce(const gmtl::Vec3f _nForce)
 PhysicsManager::PhysicsManager()
 {
     pTaskUpdate = new Task(this, PhysicsManager::doTaskUpdate_Wrapper);
-    //pTaskUpdate->_this = this;
-    //pTaskUpdate->_functionPointer = PhysicsManager::doTaskUpdate_Wrapper;
 
     // Init collision
     //btVector3 worldAabbMin(-10000,-10000,-10000);
@@ -238,8 +236,10 @@ void* PhysicsManager::doTaskUpdate(void *_args)
     // Work on collisions
     if (collisionWorld) {
         collisionWorld->updateAabbs();
+        collisionWorld->getBroadphase()->calculateOverlappingPairs(dispatcher);
+        dispatcher->dispatchAllCollisionPairs(broadphase->getOverlappingPairCache(), collisionWorld->getDispatchInfo(), dispatcher);
         collisionWorld->performDiscreteCollisionDetection();
-
+        
         int numManifolds = collisionWorld->getDispatcher()->getNumManifolds();
 
         for (int i=0; i<numManifolds; i++) {

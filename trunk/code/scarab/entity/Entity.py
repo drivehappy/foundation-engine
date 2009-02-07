@@ -13,9 +13,18 @@ class Entity(Foundation.Entity):
         self.Task = Foundation.Task(self, "doTask")
         self.Entity = FoundationEntity
         self.EntityGraphic = None
-        self.m_uType = None
         self.EntityCollision = None
         self.EntityPhysics = EntityPhysics()
+
+        self.m_uType = None
+
+        # Unit Creation
+        self.m_uCreationAbilityList = []
+        self.m_uCreationQueueList = []
+        self.m_uCreationTimer = Foundation.Timer()
+        self.m_uCreationType = []
+        self.m_nCreationTime = 0
+        self.m_bCreating = False
 
     def createGraphic(self, _sSceneManagerName):
         entityGraphics = Foundation.EntityGraphic(_sSceneManagerName, str(self.getId()) + "_GRAPHIC")
@@ -43,7 +52,7 @@ class Entity(Foundation.Entity):
 
     def createCollision(self, _uShape, _nSize):
         self.EntityCollision = EntityCollision(_uShape, _nSize)
-        
+        pass
 
     def getId(self):
         sID = "ENTITYID_" + str(self.__bases__.getId())
@@ -61,15 +70,91 @@ class Entity(Foundation.Entity):
 
     def setType(self, _uType):
         self.m_uType = _uType
+        self.EntityPhysics.setVelocity(self.m_uType["Speed"])
+        self.setCreationAbilities(self.m_uType["Creations"])
 
     def setPosition(self, _nPosition):
         self.m_nPosition = _nPosition
+        self.EntityCollision.setPosition(_nPosition)
         self.EntityPhysics.setPosition(_nPosition)
         self.EntityGraphic.setPosition(_nPosition)
 
+    # ------------------------------------------
+    # Creation Abilities
+    def setCreationAbilities(self, _uUnitList):
+        self.m_uCreationAbilityList = _uUnitList
+    def appendCreationAbilities(self, _uUnitList):
+        self.m_uCreationAbilityList.append(_uUnitList)
+    def getCreationAbilities(self):
+        return self.m_uCreationAbilityList
+
+    # ------------------------------------------
+    # Unit Creation
+    def createUnit(self, _uUnit):
+        if (self.m_uCreationQueueList.size() == 0):
+            self.m_uCreationType = _uUnit
+            self.m_uCreationTimer.reset()
+            self.m_bCreating = True
+            self.m_nCreationTime = _uUnit["BuildTime"]
+
+        self.m_uCreationQueueList.append(_uUnit)
+
+    # Cancel the unit that matches in the back of the list
+    def cancelUnitQueueInBack(self, _sUnit):
+        # Run through our queue in reverse
+        for nIndex, sUnit in enumerate(self.m_uCreationQueueList.reverse()):
+            if _sUnit == sUnit:
+                self.m_uCreationQueueList.remove(nIndex)
+
+        # If we cancelled our 1 unit in creation progress...
+        if (self.m_uCreationQueueList.size() == 0):
+            self.m_uCreationType = []
+            self.m_bCreating = False
+            self.m_nCreationTime = 0
+
+    # Cancel the unit that matches in the front of the list, including unit in progress
+    def cancelUnitQueueInFront(self, _sUnit):
+        # Run through our queue in reverse
+        bRemovedCreationUnit = False
+        for nIndex, sUnit in enumerate(self.m_uCreationQueueList):
+            if _sUnit == sUnit:
+                self.m_uCreationQueueList.remove(nIndex)
+                if nIndex == 0:
+                    # We removed the unit we're currently producing
+                    bRemovedCreationUnit = True
+
+        # If we cancelled our 1 unit in creation progress...
+        if bRemovedCreationUnit and (self.m_uCreationQueueList.size() == 0):
+            self.m_uCreationType = ""
+            self.m_bCreating = False
+            self.m_nCreationTime = 0
+        elif bRemovedCreationUnit and (self.m_uCreationQueueList.size() > 0):
+            # Set our creation type and shift the queue forward one
+            self.m_uCreationType = self.m_uCreationQueueList[0]
+            self.m_uCreationQueueList.remove(0)
+            self.m_uCreationTimer.reset()
+            self.m_bCreating = True
+            self.m_nCreationTime = self.m_uType["BuildTime"]
+
+    # Check if we have a unit creation in progress
+    #  called by the EntityManager so it can easily handle unit creation
+    def updateUnitCreation(self, _nDeltaTime):
+        if (self.m_bCreating):
+            if (self.m_uCreationTimer.getTime() >= self.m_nCreationTime):
+                # Our unit in creation progress is done, pop it out and adjust the queue
+                uUnitType = self.m_uCreationQueueList[0]
+                self.cancelUnitQueueInFront()
+
+                # Inform the EntityManager to create the unit
+                return uUnitType
+
+    # ------------------------------------------
+    #
+    def moveTo(self, _nPosition):
+        self.EntityPhysics.moveTo(_nPosition)
+
     def doTask(self, _nDeltaTime):
         self.EntityPhysics.doTask(_nDeltaTime)
-        pass
-        
 
+        self.setPosition(self.EntityPhysics.getPosition())
 

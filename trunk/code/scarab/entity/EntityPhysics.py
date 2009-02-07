@@ -45,7 +45,8 @@ class EntityPhysics:
     # Simple Behaviors
     def moveTo(self, _nTarget):
         self.m_nTarget = _nTarget
-        self.m_nDirection = (self.m_nTarget - self.m_nPosition).normalize()
+        self.m_nDirection = self.m_nTarget - self.m_nPosition
+        self.m_nDirection.normalize()
         self.m_bMoving = True
 
     def stop(self):
@@ -56,11 +57,14 @@ class EntityPhysics:
     def doTask(self, _nDeltaTime):
         if self.m_bMoving:
             # Simple radius check if we're close, set us on the target, if not proceed
-            if (self.m_nPosiiton - self.m_nTarget).length() > 1.0:
+            if (self.m_nPosition - self.m_nTarget).length() < 1.0:
                 self.m_nPosition = self.m_nTarget
                 self.stop()
             else:
-                self.m_nPosition += self.m_nVelocity * (self.m_nDirection * _nDeltaTime)
+                nDeltaPos = self.m_nVelocity * _nDeltaTime
+                #nDeltaPosDirection = Foundation.Vector3(self.m_nDirection[0] * nDeltaPos, self.m_nDirection[1] * nDeltaPos, self.m_nDirection[2] * nDeltaPos)
+                nDeltaPosDirection = self.m_nDirection * nDeltaPos
+                self.m_nPosition += nDeltaPosDirection
 
 
             
