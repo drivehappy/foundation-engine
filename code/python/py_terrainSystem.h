@@ -4,6 +4,7 @@
 #include "terrain/terrainSystem.h"
 
 #include "py_graphicManager.h"
+#include "py_gmtl.h"
 
 
 namespace Foundation
@@ -14,6 +15,8 @@ namespace Foundation
         {
         public:
             void create(const char *_sSceneManagerName);
+
+            gmtlVector3_PythonWrapper getRayIntersection(const char *sSceneManagerName, const char *sCameraName, gmtlVector2_PythonWrapper _nWorldRect, gmtlVector2_PythonWrapper _nScreenWidth);
         };
 	};
 };

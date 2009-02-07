@@ -14,10 +14,15 @@ class EntityManager(object):
         self.Task = Foundation.Task(self, "doTask")
         self.EntityTypes = None
         self.__readEntityTypesFromYaml(_sEntityTypeFilename)
+        self.m_uEntityList = []
 
     def doTask(self, _nDeltaTime):
-        #print "EntityManager doTask: ", _nDeltaTime
-        pass
+        for uEntity in self.m_uEntityList:
+            uEntity.doTask(_nDeltaTime)
+
+            uUnitType = uEntity.updateUnitCreation(_nDeltaTime)
+            if (uUnitType != None):
+                addEntity("RANDOM_NAME_HERE_FIXME", uUnitType)
 
     def addEntity(self, _sName, _sType):
         if not self.hasEntityType(_sType):
@@ -26,7 +31,15 @@ class EntityManager(object):
         else:
             entDerived = Entity.Entity(self.m_uManager.addEntity(_sName))
             entDerived.setType(self.EntityTypes[_sType])
+
+            self.m_uEntityList.append(entDerived)
+
             return entDerived
+
+    # This is used by the API for ingame unit creation
+    def createEntity(self, _uConstructingEntity, _uType):
+        if (_uConstructingEntity != None):
+            _uConstructingEntity.createUnit(_uType)
 
     def getEntityTypes(self):
         return self.EntityTypes

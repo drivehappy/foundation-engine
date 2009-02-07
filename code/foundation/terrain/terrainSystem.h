@@ -22,12 +22,16 @@ namespace Foundation
 {
 	namespace Terrain
 	{
+        static Ogre::uint32 TERRAIN_MASK = 0x2;
+
         class TerrainManager
         {
         public:
             static TerrainManager& getSingleton();
 
             void create(Ogre::SceneManager *_pSceneMgr);
+
+            gmtl::Vec3f getRayIntersection(const char *sSceneManagerName, const char *sCameraName, gmtl::Vec2f _nWorldRect, gmtl::Vec2f _nScreenWidth);
 
         protected:
             TerrainManager();
@@ -36,7 +40,7 @@ namespace Foundation
             ~TerrainManager();
 
         private:
-            
+            Ogre::SceneManager* m_pSceneMgr;
         };
 	};
 };

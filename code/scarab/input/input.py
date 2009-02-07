@@ -127,32 +127,6 @@ def consumeEvent(InputManager, GUIManager):
                 mouseState.Button1 = False
 
         mouseStatePrev.assign(mouseState)
-        
-    '''
-    # Work on Keyboard Events
-    KeyboardEvent = InputManager.getKeyboardEvent()
-    if KeyboardEvent:
-        # Set the state to the last state, then update according to events
-        keyboardState = KeyboardState()
-        if keyboardStatePrev:
-            keyboardState.assign(keyboardStatePrev)
-        else:
-            keyboardState.setDefault()
-
-        bGUIConsumeEvent = False
-        if GUIManager:
-            bGUIConsumeEvent = GUIManager.injectKeyboardEvent(KeyboardEvent)
-
-        keyboardState.Keys[KeyboardEvent.KeyboardValue] = (KeyboardEvent.KeyboardEventID == Foundation.Events.KEYBOARD_KEY_PRESSED)
-
-        keyboardStatePrev.assign(keyboardState)
-    else:
-        # If we don't have a keyboard event, but we have a keydown, send it
-        if keyboardStatePrev:
-            if keyboardStatePrev.isKeyDown():
-                keyboardState = KeyboardState()
-                keyboardState.assign(keyboardStatePrev)
-    '''
 
     # Work on Keyboard Events
     # Set the state to the last state, then update according to events

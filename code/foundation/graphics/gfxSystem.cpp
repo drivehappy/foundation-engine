@@ -47,7 +47,7 @@ GraphicManager::GraphicManager()
     //m_pTask->_this = this;
     //m_pTask->_functionPointer = GraphicManager::doTaskRender_Wrapper;
 
-    Channel_Join("Graphic_Callback", GraphicManager::doChannelReceive_Wrapper);
+    Channel_Join("GRAPHICS_SELECTION", GraphicManager::doChannelReceive_Wrapper);
 }
 
 GraphicManager::~GraphicManager()
@@ -110,7 +110,7 @@ bool GraphicManager::initialize(const char *_sWindowTitle)
 
 void GraphicManager::destroy()
 {
-    GraphicManager::getSingleton().Channel_Leave("Graphic_Callback", GraphicManager::doChannelReceive_Wrapper);
+    GraphicManager::getSingleton().Channel_Leave("GRAPHICS_SELECTION", GraphicManager::doChannelReceive_Wrapper);
 
     if (m_pRoot) {
         if (m_pVolQuery)
@@ -381,7 +381,7 @@ Camera* GraphicManager::addCamera(const char *_sSceneManagerName, const char *_s
     m_pRoot->getAutoCreatedWindow()->removeViewport(_nZOrder);
     m_pRoot->getAutoCreatedWindow()->addViewport(pCamera, _nZOrder, _nViewportLeft, _nViewportTop, _nViewportWidth, _nViewportHeight);
 
-    pCamera->setFarClipDistance(100000.0f);
+    pCamera->setFarClipDistance(10000.0f);
     pCamera->setNearClipDistance(0.01f);
 
     // Add the camera to our list
@@ -524,10 +524,11 @@ void GraphicManager::addMesh(const char *_sSceneManagerName, const char *_sID, c
             } else {
                 pEntity = pSceneManager->createEntity(_sID, _sMeshFilename);
             }
-            pEntity->setCastShadows(true);
+            //pEntity->setCastShadows(true);
             pEntity->setQueryFlags(_nQueryFlags);
             pNode = pSceneManager->getRootSceneNode()->createChildSceneNode();
             pNode->attachObject(pEntity);
+            pNode->showBoundingBox(true);
         } else {
             f_printf("[GraphicManager] Error: Could not find SceneManager: %s\n", _sSceneManagerName);
         }
@@ -1066,14 +1067,15 @@ void GraphicManager::doPicking(const char *sSceneManagerName, const char *sCamer
     // Check if the selection box is too small
     if ((nRight - nLeft) * (nBottom - nTop) <= 0.0001) {
         // Single selection, work on it
-        uMouseRay = pCamera->getCameraToViewportRay(_nWorldRect[0] / _nScreenWidth[0], _nWorldRect[1] / _nScreenWidth[1]);
+        uMouseRay = pCamera->getCameraToViewportRay(nLeft, nTop);
         uRaySceneQuery = pSceneManager->createRayQuery(uMouseRay);
         uRaySceneQuery->setRay(uMouseRay);
         uRaySceneQuery->setSortByDistance(true);
-        uRaySceneQuery->setQueryTypeMask(_nQueryMask);
+        uRaySceneQuery->setQueryMask(_nQueryMask);
+        uRaySceneQuery->setQueryTypeMask(Ogre::SceneManager::ENTITY_TYPE_MASK);
         
         Ogre::RaySceneQueryResult &result = uRaySceneQuery->execute();
-        Ogre::RaySceneQueryResult::iterator itr = result.begin();
+        Ogre::RaySceneQueryResult::iterator itr;
         
         m_uSelectedObjectList.clear();
         for (itr = result.begin(); itr != result.end(); itr++) {
@@ -1089,27 +1091,14 @@ void GraphicManager::doPicking(const char *sSceneManagerName, const char *sCamer
         }
     } else {
         // Box selection, work on it
-        // Create rays to use for our 5 planes
-        Ogre::Ray nTopLeft = pCamera->getCameraToViewportRay(nLeft, nTop);
-        Ogre::Ray nTopRight = pCamera->getCameraToViewportRay(nRight, nTop);
-        Ogre::Ray nBottomLeft = pCamera->getCameraToViewportRay(nLeft, nBottom);
-        Ogre::Ray nBottomRight = pCamera->getCameraToViewportRay(nRight, nBottom);
-    
-        // Create the planes based on the above rays
-        Ogre::PlaneBoundedVolume vol;
-        vol.planes.push_back(Ogre::Plane(nTopLeft.getPoint(3), nTopRight.getPoint(3), nBottomRight.getPoint(3)));             // front plane
-        vol.planes.push_back(Ogre::Plane(nTopLeft.getOrigin(), nTopLeft.getPoint(100), nTopRight.getPoint(100)));             // top plane
-        vol.planes.push_back(Ogre::Plane(nTopLeft.getOrigin(), nBottomLeft.getPoint(100), nTopLeft.getPoint(100)));           // left plane
-        vol.planes.push_back(Ogre::Plane(nBottomLeft.getOrigin(), nBottomRight.getPoint(100), nBottomLeft.getPoint(100)));    // bottom plane
-        vol.planes.push_back(Ogre::Plane(nTopRight.getOrigin(), nTopRight.getPoint(100), nBottomRight.getPoint(100)));        // right plane
-    
-        // Create the volume based on the above planes
+        Ogre::PlaneBoundedVolume vol = pCamera->getCameraToViewportBoxVolume(nLeft, nTop, nRight, nBottom, true);
         Ogre::PlaneBoundedVolumeList volList;
         volList.push_back(vol);
     
         m_pVolQuery->setVolumes(volList);
-        m_pVolQuery->setQueryTypeMask(_nQueryMask);
-        Ogre::SceneQueryResult uResult = m_pVolQuery->execute();
+        m_pVolQuery->setQueryMask(_nQueryMask);
+        m_pVolQuery->setQueryTypeMask(Ogre::SceneManager::ENTITY_TYPE_MASK);
+        Ogre::SceneQueryResult &uResult = m_pVolQuery->execute();
     
         m_uSelectedObjectList.clear();
         Ogre::SceneQueryResultMovableList::iterator itr;
@@ -1153,7 +1142,7 @@ void GraphicManager::callbackPick(SelectionObject *_pObject, gmtl::Point3f _nWor
     GraphicManager::getSingleton().Channel_MessageData((char*)&_nWorldLocation[0], 4);
     GraphicManager::getSingleton().Channel_MessageData((char*)&_nWorldLocation[1], 4);
     GraphicManager::getSingleton().Channel_MessageData((char*)&_nWorldLocation[2], 4);
-    GraphicManager::getSingleton().Channel_Send("Graphic_Callback");
+    GraphicManager::getSingleton().Channel_Send("GRAPHICS_SELECTION");
 }
 
 void* GraphicManager::doChannelReceive(unsigned long _nChannelID, unsigned short _nHeader, void *_pData, unsigned int _nSize)

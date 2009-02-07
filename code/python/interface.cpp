@@ -21,6 +21,7 @@ BOOST_PYTHON_MODULE(FoundationPython)
     // Terrain
     class_<Terrain::TerrainManager_PythonWrapper, boost::noncopyable>("TerrainManager")
         .def("create", &Terrain::TerrainManager_PythonWrapper::create)
+        .def("getRayIntersection", &Terrain::TerrainManager_PythonWrapper::getRayIntersection)
     ;
 
     // Math Helpers
