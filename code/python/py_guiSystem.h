@@ -68,6 +68,10 @@ namespace Foundation
                  */
                 void setActiveViewport(const unsigned short _nViewport);
 
+                /**
+                 */
+                void setWidgetVisible(const char *_sName, const bool _bVisible);
+
             private:
                 
         };

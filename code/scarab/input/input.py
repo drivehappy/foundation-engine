@@ -96,37 +96,38 @@ def consumeEvent(InputManager, GUIManager):
     # Work on Mouse Events
     MouseEvent = InputManager.getMouseEvent()
     if MouseEvent:
-        # Set the state to the last state, then update according to events
-        mouseState = MouseState()
-        if mouseStatePrev:
-            mouseState.assign(mouseStatePrev)
-        else:
-            mouseState.setDefault()
-
         bGUIConsumeEvent = False
         if GUIManager:
-            bGUIConsumeEvent = GUIManager.injectMouseEvent(MouseEvent)    
-        
-        #if (not bGUIConsumeEvent):
-        if MouseEvent.MouseEventID == Foundation.Events.MOUSE_MOVE:
-            mouseState.AxisX = MouseEvent.MouseAxisX
-            mouseState.AxisY = MouseEvent.MouseAxisY
-            mouseState.DeltaAxisX = mouseState.AxisX - mouseStatePrev.AxisX
-            mouseState.DeltaAxisY = mouseState.AxisY - mouseStatePrev.AxisY
-            mouseState.Move = True
+            bGUIConsumeEvent = GUIManager.injectMouseEvent(MouseEvent)
 
-        if MouseEvent.MouseEventID == Foundation.Events.MOUSE_BUTTON_PRESSED:
-            if MouseEvent.MouseButtonID == 0:
-                mouseState.Button0 = True
-            elif MouseEvent.MouseButtonID == 1:
-                mouseState.Button1 = True
-        elif MouseEvent.MouseEventID == Foundation.Events.MOUSE_BUTTON_RELEASED:
-            if MouseEvent.MouseButtonID == 0:
-                mouseState.Button0 = False
-            elif MouseEvent.MouseButtonID == 1:
-                mouseState.Button1 = False
+            if not bGUIConsumeEvent:
+                # Set the state to the last state, then update according to events
+                mouseState = MouseState()
+                if mouseStatePrev:
+                    mouseState.assign(mouseStatePrev)
+                else:
+                    mouseState.setDefault()
 
-        mouseStatePrev.assign(mouseState)
+                #if (not bGUIConsumeEvent):
+                if MouseEvent.MouseEventID == Foundation.Events.MOUSE_MOVE:
+                    mouseState.AxisX = MouseEvent.MouseAxisX
+                    mouseState.AxisY = MouseEvent.MouseAxisY
+                    mouseState.DeltaAxisX = mouseState.AxisX - mouseStatePrev.AxisX
+                    mouseState.DeltaAxisY = mouseState.AxisY - mouseStatePrev.AxisY
+                    mouseState.Move = True
+
+                if MouseEvent.MouseEventID == Foundation.Events.MOUSE_BUTTON_PRESSED:
+                    if MouseEvent.MouseButtonID == 0:
+                        mouseState.Button0 = True
+                    elif MouseEvent.MouseButtonID == 1:
+                        mouseState.Button1 = True
+                elif MouseEvent.MouseEventID == Foundation.Events.MOUSE_BUTTON_RELEASED:
+                    if MouseEvent.MouseButtonID == 0:
+                        mouseState.Button0 = False
+                    elif MouseEvent.MouseButtonID == 1:
+                        mouseState.Button1 = False
+
+                mouseStatePrev.assign(mouseState)
 
     # Work on Keyboard Events
     # Set the state to the last state, then update according to events
