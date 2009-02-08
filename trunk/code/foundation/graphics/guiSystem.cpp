@@ -259,4 +259,14 @@ void GUIManager::setActiveViewport(const unsigned short _nViewport)
     m_pGUI->setActiveViewport((Ogre::ushort)_nViewport);
 }
 
+void GUIManager::setWidgetVisible(const char *_sName, const bool _bVisible)
+{
+    MyGUI::WidgetPtr pWidget;
+
+    pWidget = m_pGUI->findWidgetT(_sName, false);
+    if (pWidget)
+        pWidget->setVisible(_bVisible);
+}
+
+
 #endif  // S_ENABLE_GRAPHIC

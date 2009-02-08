@@ -346,6 +346,7 @@ BOOST_PYTHON_MODULE(FoundationPython)
         .def("yaw", &Graphic::Camera_PythonWrapper::yaw)
         .def("pitch", &Graphic::Camera_PythonWrapper::pitch)
         .def("getPosition", &Graphic::Camera_PythonWrapper::getPosition)
+        .def("getRotation", &Graphic::Camera_PythonWrapper::getRotation)
         .def("moveRelative", &Graphic::Camera_PythonWrapper::moveRelative)
         .def("isObjectVisible", &Graphic::Camera_PythonWrapper::isObjectVisible)
         .def("setAspectRatio", &Graphic::Camera_PythonWrapper::setAspectRatio)
@@ -456,6 +457,8 @@ BOOST_PYTHON_MODULE(FoundationPython)
         .def("destroyObject", &Graphic::GUIManager_PythonWrapper::destroyObject)
 
         .def("setActiveViewport", &Graphic::GUIManager_PythonWrapper::setActiveViewport)
+
+        .def("setWidgetVisible", &Graphic::GUIManager_PythonWrapper::setWidgetVisible)
     ;
 
     // Water - Hydrax

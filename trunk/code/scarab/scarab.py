@@ -6,6 +6,7 @@ import gui.gui
 import entity.EntityManager
 import random
 import struct
+import math
 
 # --------------------------------------------------
 # Python Libs
@@ -69,14 +70,16 @@ Joystick1StateChange = JoystickState()
 
 CAMERA_SPEED = 1000
 
-SelectionBounds = Foundation.Vector4(0, 0, 0, 0)
+SelectionBounds         = Foundation.Vector4(0, 0, 0, 0)
+SelectionWorldBounds    = Foundation.Vector4(0, 0, 0, 0)
+SelectedEntityList      = []
 
 # ------------------------------------------------
 # InputWork
 def doInput(_nDeltaTime):
     global MouseStateChange, KeyboardStateChange, Joystick0StateChange, Joystick1StateChange
     global TimerKeyDelay
-    global SelectionBounds
+    global SelectionBounds, SelectionWorldBounds, SelectedEntityList
 
     mouseState, keyboardState, joystickState = consumeEvent(InputManager, GUIManager)
 
@@ -111,6 +114,7 @@ def doInput(_nDeltaTime):
 
     # Mouse
     if mouseState:
+        # Our left mouse button just went down, create an intersection point
         if mouseState.Button0 and not MouseStateChange.Button0:
             print ("MouseDown (%i, %i), Creating Selection Frustrum..." % (mouseState.AxisX, mouseState.AxisY))
             SelectionBounds[0] = mouseState.AxisX
@@ -119,8 +123,29 @@ def doInput(_nDeltaTime):
             # FIXME: Screen Width/Height Variable
             SelectionPoint = Foundation.Vector2(SelectionBounds[0], SelectionBounds[1])
             nIntersectionPoint = TerrainManager.getRayIntersection("SceneManager0", "Camera0", SelectionPoint, Foundation.Vector2(1024, 768))
+            SelectionWorldBounds[0] = nIntersectionPoint[0]
+            SelectionWorldBounds[1] = nIntersectionPoint[2]
             print "TerrainIntersection: %f, %f, %f" % (nIntersectionPoint[0], nIntersectionPoint[1], nIntersectionPoint[2])
 
+            SelectedEntityList = []
+
+        # Out left mouse button is still down, update our selection line
+        elif mouseState.Button0 and MouseStateChange.Button0:
+            SelectionPoint = Foundation.Vector2(mouseState.AxisX, mouseState.AxisY)
+
+            # FIXME: Screen Width/Height Variable
+            nIntersectionPoint = TerrainManager.getRayIntersection("SceneManager0", "Camera0", SelectionPoint, Foundation.Vector2(1024, 768))
+            SelectionWorldBounds[2] = nIntersectionPoint[0]
+            SelectionWorldBounds[3] = nIntersectionPoint[2]
+
+            nTopLeft        = (SelectionWorldBounds[0], 20, SelectionWorldBounds[1])
+            nTopRight       = (SelectionWorldBounds[2], 20, SelectionWorldBounds[1])
+            nBottomLeft     = (SelectionWorldBounds[0], 20, SelectionWorldBounds[3])
+            nBottomRight    = (SelectionWorldBounds[2], 20, SelectionWorldBounds[3])
+
+            GraphicManager.updateLine("SceneManager0", "SELECTION_LINELIST", [nTopLeft, nTopRight, nBottomRight, nBottomLeft, nTopLeft])
+
+        # Our left mouse button just went up, do picking across our selection area
         elif not mouseState.Button0 and MouseStateChange.Button0:
             print ("MouseUp (%i, %i), Selection Frustrum Created." % (mouseState.AxisX, mouseState.AxisY))
             SelectionBounds[2] = mouseState.AxisX
@@ -128,8 +153,12 @@ def doInput(_nDeltaTime):
             print " Selection Frustrum:", SelectionBounds
 
             # FIXME: Screen Width/Height Variable
-            GraphicManager.doPicking("SceneManager0", "Camera0", 0xffffffff, SelectionBounds, Foundation.Vector2(1024, 768))
-            
+            GraphicManager.doPicking("SceneManager0", "Camera0", 0x1, SelectionBounds, Foundation.Vector2(1024, 768))
+
+            GraphicManager.updateLine("SceneManager0", "SELECTION_LINELIST", [(0, 0, 0)])
+
+            print "Total Selection:", SelectedEntityList
+
         MouseStateChange.assign(mouseState)
     
     # Joystick
@@ -178,6 +207,7 @@ def initManagers():
         Camera0 = GraphicManager.addCamera("SceneManager0", "Camera0", 0, 0.0, 0.0, 1.0, 1.0)
         Camera0.setPosition(Foundation.Vector3(0, 500, 0.01))
         Camera0.setLookAt(Foundation.Vector3(0, 0, 0))
+        GraphicManager.addLine("SceneManager0", "SELECTION_LINELIST", [(0, 0, 0)], (0.0, 1.0, 0.0))
 
         SelectionCallbackChannel.Channel_Join("GRAPHICS_SELECTION", onSelection)
 
@@ -268,8 +298,13 @@ def onMouseEvent(channel, header, data, size):
     # Mouse move
     sButton = data
     if header == 2:
-        if sButton == "Button_Start":
-            pass
+        for i in range(0, 9):
+            if sButton == "Btn_Entity_Create" + str(i):
+                #print sButton, "pressed", "ENTITY =", SelectedEntityList[0].getCreationAbilities()[i]
+                sType = SelectedEntityList[0].getCreationAbilities()[i]
+                SelectedEntityList[0].createUnit(EntityManager.getEntityTypeFromName(sType))
+                print "+ GUI Selected Unit of Type %s From Unit %s" % (sType, SelectedEntityList[0])
+
             
     elif header == 3:
         pass
@@ -277,13 +312,19 @@ def onMouseEvent(channel, header, data, size):
 # --------------------------------------------------
 # Selection Callback
 def onSelection(channel, header, data, size):
-    print "Selection Channel Callback Received"
+    global SelectedEntityList
+
+    #print "Selection Channel Callback Received"
 
     nObjectNameLen = len(data) - 13
     nObjectPosition = struct.unpack("fff", data[nObjectNameLen:nObjectNameLen+12])
     nObjectName = data[:nObjectNameLen]
     
-    print "Name:", nObjectName, "Position:", nObjectPosition[0], nObjectPosition[1], nObjectPosition[2]
+    #print "Name:", nObjectName, "Position:", nObjectPosition[0], nObjectPosition[1], nObjectPosition[2]
+
+    nEntityId = nObjectName[:len(nObjectName) - len("_GRAPHIC")]
+    uEntity = EntityManager.getEntityById(nEntityId)
+    SelectedEntityList.append(uEntity)
 
 # ------------------------------------------------
 # State Machine Transitions
@@ -319,24 +360,30 @@ def doStateTransition(_nSuperState, _nTargetState):
 def main(argv):
     global TimeManager, Schdeuler, AudioManager, InputManager, GraphicManager, GUIManager
     global GameState
+    global SelectedEntityList
 
     doStateTransition(STATES["game"], GAMESTATES["init"])
     initManagers()
 
     GUIHelper.createGameUI()
+    GUIHelper.createEntityUI()
 
     # -----------------------------------
     # TESTING ENTITIES
+    '''
     for x in range(0, 100):
-        NewEntity = EntityManager.addEntity("MyNewEntity", "Scout")
+        uUnitType = EntityManager.getEntityTypeFromName("Scout")
+        NewEntity = EntityManager.addEntity("MyNewEntity" + str(x), uUnitType)
         NewEntity.createGraphic("SceneManager0")
         NewEntity.createCollision(Foundation.CollisionShapeId.BOX, Foundation.Vector3(1, 1, 1))
         NewEntity.setPosition(Foundation.Vector3((x / 10) * 20, 20, (x % 10) * 20))
         NewEntity.moveTo(Foundation.Vector3(random.randrange(-1000, 1000, 1), 20, random.randrange(-1000, 1000, 1)))
         #Scheduler.AddTask(NewEntity.Task, 1, 0)
-
+    '''
+    
     # TEST BUILDING ENTITIES
-    CommandCenter = EntityManager.addEntity("CommandCenter0", "CommandCenter")
+    uUnitType = EntityManager.getEntityTypeFromName("CommandCenter")
+    CommandCenter = EntityManager.addEntity("CommandCenter0", uUnitType)
     CommandCenter.createGraphic("SceneManager0")
     CommandCenter.createCollision(Foundation.CollisionShapeId.BOX, Foundation.Vector3(4, 4, 4))
     CommandCenter.setPosition(Foundation.Vector3(0, 20, 0))
@@ -355,6 +402,8 @@ def main(argv):
 
         # Update GUI
         GUIHelper.updateGameUI(nDeltaTime, TimeManager.getTime(), GraphicManager.getAverageFPS())
+        if len(SelectedEntityList) > 0:
+            GUIHelper.updateEntityUI(nDeltaTime, SelectedEntityList[0])
 
         Scheduler.Step(1.0)
 

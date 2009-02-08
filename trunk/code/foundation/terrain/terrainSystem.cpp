@@ -89,13 +89,6 @@ gmtl::Vec3f TerrainManager::getRayIntersection(const char *sSceneManagerName, co
     uRaySceneQuery->setQueryTypeMask(Ogre::SceneManager::WORLD_GEOMETRY_TYPE_MASK);
 
     uResult = uRaySceneQuery->execute();
-    // DEBUG
-    f_printf("--> Result Size: %i\n", uResult.size());
-    for (itrResult = uResult.begin(); itrResult != uResult.end(); itrResult++) {
-        Foundation::Graphic::SelectionObject *pObject = (Foundation::Graphic::SelectionObject*)(itrResult->movable);
-        f_printf("--  Name: %s\n", pObject->getName());
-    }
-    //--
 
     for (itrResult = uResult.begin(); itrResult != uResult.end(); itrResult++) {
         Ogre::Vector3 nIntersectionPoint = uRayIntersection.getPoint(itrResult->distance);

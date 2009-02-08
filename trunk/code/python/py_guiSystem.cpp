@@ -81,4 +81,9 @@ void GUIManager_PythonWrapper::setActiveViewport(const unsigned short _nViewport
     GUIManager::getSingleton().setActiveViewport(_nViewport);
 }
 
+void GUIManager_PythonWrapper::setWidgetVisible(const char *_sName, const bool _bVisible)
+{
+    GUIManager::getSingleton().setWidgetVisible(_sName, _bVisible);
+}
+
 #endif  // S_ENABLE_GRAPHIC

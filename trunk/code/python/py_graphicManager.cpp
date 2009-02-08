@@ -19,6 +19,11 @@ gmtlVector3_PythonWrapper Camera_PythonWrapper::getPosition() const
     return (gmtlVector3_PythonWrapper)Camera::getPosition();
 }
 
+gmtlQuaternion_PythonWrapper Camera_PythonWrapper::getRotation() const
+{
+    return (gmtlQuaternion_PythonWrapper)Camera::getRotation();
+}
+
 bool Camera_PythonWrapper::isObjectVisible(const gmtlVector3_PythonWrapper _nPosition) const
 {
     return Camera::isObjectVisible(gmtl::Vec3f(_nPosition));

@@ -767,6 +767,8 @@ void GraphicManager::addLine(const char *_sSceneManagerName, const char *_sID, v
     else
         myManualObject = pSceneManager->createManualObject(sManualObjectName);
 
+    myManualObject->setQueryFlags(0);
+
     // Get/Create the scenenode holding the manualobject
     if (pSceneManager->hasSceneNode(_sID)) {
         myManualObjectNode = pSceneManager->getSceneNode(_sID);

@@ -109,6 +109,12 @@ namespace Foundation
                     return Ogre::Camera::isVisible(Ogre::Vector3(_nPosition[0], _nPosition[1], _nPosition[2]));
                 };
 
+                gmtl::Quatf getRotation() const {
+                    Ogre::Quaternion nRotation = Ogre::Camera::getOrientation();
+
+                    return gmtl::Quatf(nRotation[0], nRotation[1], nRotation[2], nRotation[3]);
+                }
+
 				/*
                 void setAspectRatio(const float _nRatio) {
                     Ogre::Camera::setAspectRatio(_nRatio);

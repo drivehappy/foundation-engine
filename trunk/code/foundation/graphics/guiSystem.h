@@ -108,6 +108,10 @@ namespace Foundation
                  */
                 static void setActiveViewport(const unsigned short _nViewport);
 
+                /**
+                 */
+                static void setWidgetVisible(const char *_sName, const bool _bVisible);
+
             protected:
                 GUIManager();
                 GUIManager(const GUIManager&);

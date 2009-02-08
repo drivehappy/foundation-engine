@@ -28,6 +28,8 @@ namespace Foundation {
 
             gmtlVector3_PythonWrapper getPosition() const;
 
+            gmtlQuaternion_PythonWrapper getRotation() const;
+
             bool isObjectVisible(gmtlVector3_PythonWrapper _nPosition) const;
 
 			/*

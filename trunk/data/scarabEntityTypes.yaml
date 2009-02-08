@@ -2,6 +2,7 @@
 
 EntityTypes:
   Scout:
+    Name:       Scout
     HitPoints:  100
     Speed:      20
     Armor:      4
@@ -9,7 +10,7 @@ EntityTypes:
     Size:       1
     Cost_Gold:  30
     Cost_Wood:  5
-    BuildTime:  10.0
+    BuildTime:  5.0
 
     # Graphic Options
     Mesh:       cube.mesh
@@ -26,6 +27,7 @@ EntityTypes:
     Creations:
 
   CommandCenter:
+    Name:       CommandCenter
     HitPoints:  100
     Speed:      0
     Armor:      40
@@ -46,4 +48,4 @@ EntityTypes:
     CollisionSize:  [4, 4, 4]
 
     # Creation
-    Creations:  Scout
+    Creations:  [Scout]

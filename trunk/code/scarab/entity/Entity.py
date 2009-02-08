@@ -3,6 +3,7 @@
 import FoundationPython as Foundation
 from EntityCollision import *
 from EntityPhysics import *
+from EntityWeapon import *
 
 # --------------------------------------------------
 #
@@ -91,13 +92,18 @@ class Entity(Foundation.Entity):
     # ------------------------------------------
     # Unit Creation
     def createUnit(self, _uUnit):
-        if (self.m_uCreationQueueList.size() == 0):
-            self.m_uCreationType = _uUnit
-            self.m_uCreationTimer.reset()
-            self.m_bCreating = True
-            self.m_nCreationTime = _uUnit["BuildTime"]
+        if _uUnit:
+            if (len(self.m_uCreationQueueList) == 0):
+                self.m_uCreationType = _uUnit
+                self.m_uCreationTimer.reset()
+                self.m_bCreating = True
+                self.m_nCreationTime = _uUnit["BuildTime"]
+                print "+ Entity %s creating unit: %s" % (self.getId(), _uUnit)
 
-        self.m_uCreationQueueList.append(_uUnit)
+            self.m_uCreationQueueList.append(_uUnit)
+            print "+ Entity queued unit for production."
+        else:
+            print "[Entity] Warning: Attempted to create None type unit."
 
     # Cancel the unit that matches in the back of the list
     def cancelUnitQueueInBack(self, _sUnit):
@@ -116,25 +122,35 @@ class Entity(Foundation.Entity):
     def cancelUnitQueueInFront(self, _sUnit):
         # Run through our queue in reverse
         bRemovedCreationUnit = False
+        bRemovedUnit = False
         for nIndex, sUnit in enumerate(self.m_uCreationQueueList):
-            if _sUnit == sUnit:
-                self.m_uCreationQueueList.remove(nIndex)
+            if _sUnit == sUnit["Name"]:
+                del self.m_uCreationQueueList[nIndex]
+                bRemovedUnit = True
+                
                 if nIndex == 0:
                     # We removed the unit we're currently producing
                     bRemovedCreationUnit = True
 
+                break
+
         # If we cancelled our 1 unit in creation progress...
-        if bRemovedCreationUnit and (self.m_uCreationQueueList.size() == 0):
+        if bRemovedCreationUnit and (len(self.m_uCreationQueueList) == 0):
             self.m_uCreationType = ""
             self.m_bCreating = False
             self.m_nCreationTime = 0
-        elif bRemovedCreationUnit and (self.m_uCreationQueueList.size() > 0):
+        elif bRemovedCreationUnit and (len(self.m_uCreationQueueList) > 0):
             # Set our creation type and shift the queue forward one
             self.m_uCreationType = self.m_uCreationQueueList[0]
-            self.m_uCreationQueueList.remove(0)
             self.m_uCreationTimer.reset()
             self.m_bCreating = True
-            self.m_nCreationTime = self.m_uType["BuildTime"]
+            self.m_nCreationTime = self.m_uCreationType["BuildTime"]
+
+        return bRemovedUnit
+
+    #
+    def getUnitQueue(self):
+        return self.m_uCreationQueueList
 
     # Check if we have a unit creation in progress
     #  called by the EntityManager so it can easily handle unit creation
@@ -143,8 +159,13 @@ class Entity(Foundation.Entity):
             if (self.m_uCreationTimer.getTime() >= self.m_nCreationTime):
                 # Our unit in creation progress is done, pop it out and adjust the queue
                 uUnitType = self.m_uCreationQueueList[0]
-                self.cancelUnitQueueInFront()
 
+                print "^^ REMOVING UNIT LISTSIZE =", len(self.m_uCreationQueueList)
+                bUnitRemoved = self.cancelUnitQueueInFront(uUnitType["Name"])
+                print "^^ REMOVING UNIT LISTSIZE =", len(self.m_uCreationQueueList)
+
+                print bUnitRemoved
+                
                 # Inform the EntityManager to create the unit
                 return uUnitType
 
