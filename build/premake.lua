@@ -359,13 +359,16 @@ package = newpackage()
 
     if (windows) then
         package.config["Debug"].postbuildcommands = {
+            "mkdir ..\\..\\bin\\debug\\yaml",
+            "mkdir ..\\..\\bin\\debug\\psyco",
+            
             "copy ..\\..\\libs\\ogre\\bin\\debug\\*.dll ..\\..\\bin\\debug",
             "copy ..\\..\\libs\\python\\bin\\*.* ..\\..\\bin\\debug",
             "copy ..\\..\\libs\\fmod\\bin\\*.dll ..\\..\\bin\\debug",
             "copy ..\\..\\libs\\mygui\\bin\\Debug\\*.dll ..\\..\\bin\\debug",
             "copy ..\\..\\bin\\common\\* ..\\..\\bin\\debug",
-            "copy ..\\..\\bin\\common\\yaml ..\\..\\bin\\debug",
-            "copy ..\\..\\bin\\common\\psyco ..\\..\\bin\\debug",
+            "copy ..\\..\\bin\\common\\yaml\\*.* ..\\..\\bin\\debug\\yaml",
+            "copy ..\\..\\bin\\common\\psyco\\*.* ..\\..\\bin\\debug\\psyco",
             "copy ..\\..\\bin\\common\\plugins\\plugins_win_debug.cfg ..\\..\\bin\\debug\\plugins_win.cfg",
         }
 
@@ -383,13 +386,16 @@ package = newpackage()
 
     if (windows) then
         package.config["Release"].postbuildcommands = {
+            "mkdir ..\\..\\bin\\release\\yaml",
+            "mkdir ..\\..\\bin\\release\\psyco",
+            
             "copy ..\\..\\libs\\ogre\\bin\\release\\*.dll ..\\..\\bin\\release",
             "copy ..\\..\\libs\\python\\bin\\*.* ..\\..\\bin\\release",
             "copy ..\\..\\libs\\fmod\\bin\\*.dll ..\\..\\bin\\release",
             "copy ..\\..\\libs\\mygui\\bin\\Release\\*.dll ..\\..\\bin\\release",
             "copy ..\\..\\bin\\common\\* ..\\..\\bin\\release",
-            "copy ..\\..\\bin\\common\\yaml ..\\..\\bin\\release",
-            "copy ..\\..\\bin\\common\\psyco ..\\..\\bin\\release",
+            "copy ..\\..\\bin\\common\\yaml\\*.* ..\\..\\bin\\release\\yaml",
+            "copy ..\\..\\bin\\common\\psyco\\*.* ..\\..\\bin\\release\\psyco",
             "copy ..\\..\\bin\\common\\plugins\\plugins_win.cfg ..\\..\\bin\\release\\plugins_win.cfg",
         }
 
