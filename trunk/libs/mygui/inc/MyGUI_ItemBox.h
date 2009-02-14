@@ -91,21 +91,21 @@ namespace MyGUI
 		/** Get vertical alignment grid mode flag */
 		bool getItemBoxAlignVert() { return mAlignVert; }
 
-		// возвращает индекс елемента, по указателю на виджет айтема
 		/** Get item index by item Widget pointer */
 		size_t getIndexByWidget(WidgetPtr _widget);
 
-		// возвращает виджет, созданный для дропа
-		/** DESCRIBE_ME */
-		WidgetPtr getWidgetDrop() { return mItemDrag; }
+		/** Get widget created for drop */
+		WidgetPtr getWidgetDrag() { return mItemDrag; }
 
-		// возвращает виджет индекса, если он виден
-		/** Get item Widget pointer by item index */
+		/** Get item Widget pointer by item index if it is visible
+			@note returned widget can be deleted, so this pointer
+			is valid only at time when you got it and can be invalid
+			next frame
+		*/
 		WidgetPtr getWidgetByIndex(size_t _index);
 
-		// сбрасывает дроп, как буд-то бросили в пустое место
-		/** DESCRIBE_ME */
-		void resetDrop() { endDrop(true); }
+		/** Interrupt drag as if widget was dropped into empty space */
+		void resetDrag() { endDrop(true); }
 
 		//! @copydoc Widget::setPosition(const IntPoint & _point)
 		virtual void setPosition(const IntPoint & _point);
@@ -204,6 +204,11 @@ namespace MyGUI
 		void resetItemSelect() { clearIndexSelected(); }
 		MYGUI_OBSOLETE("use : void ItemBox::setIndexSelected(size_t _index)")
 		void setItemSelect(size_t _index) { setIndexSelected(_index); }
+
+		MYGUI_OBSOLETE("use : WidgetPtr ItemBox::getWidgetDrag()")
+		WidgetPtr getWidgetDrop() { return getWidgetDrag(); }
+		MYGUI_OBSOLETE("use : void ItemBox::resetDrag()")
+		void resetDrop() { resetDrag(); }
 
 #endif // MYGUI_DONT_USE_OBSOLETE
 

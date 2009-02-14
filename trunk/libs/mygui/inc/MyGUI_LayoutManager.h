@@ -16,8 +16,6 @@
 namespace MyGUI
 {
 
-	//std::
-
 	class MYGUI_EXPORT LayoutManager
 	{
 		MYGUI_INSTANCE_HEADER(LayoutManager);
@@ -41,7 +39,7 @@ namespace MyGUI
 			@param _group Ogre resource group where _file is
 			@return Return vector of pointers of loaded root widgets (root == without parents)
 		*/
-		VectorWidgetPtr loadLayout(const std::string & _file, const std::string & _prefix = "", WidgetPtr _parent = NULL, const std::string & _group = MyGUI::ResourceManager::GUIResourceGroupName);
+		VectorWidgetPtr loadLayout(const std::string & _file, const std::string & _prefix = "", WidgetPtr _parent = nullptr, const std::string & _group = MyGUI::ResourceManager::GUIResourceGroupName);
 
 		/** Unload layout file */
 		void unloadLayout(VectorWidgetPtr & _widgets);
