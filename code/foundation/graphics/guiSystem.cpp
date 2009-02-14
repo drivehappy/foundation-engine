@@ -221,7 +221,7 @@ void GUIManager::setObjectColor(const char *_sObjectName, float _nR, float _nG, 
 
     pWidget = m_pGUI->findWidgetT(_sObjectName, false);
     if (pWidget) {
-        pWidget->setTextColour(Ogre::ColourValue(_nR, _nG, _nB, 1.0));
+        pWidget->setTextColour(MyGUI::Colour(_nR, _nG, _nB, 1.0));
     }
 }
 
@@ -231,8 +231,8 @@ void GUIManager::setTextFont(const char *_sObjectName, const char *_sFontFace, i
 
     pWidget = m_pGUI->findWidgetT(_sObjectName, false);
     if (pWidget) {
-        pWidget->setFontName(_sFontFace);
-        pWidget->setFontHeight(_nFontSize);
+        pWidget->setFontName(std::string(_sFontFace));
+        pWidget->setFontHeight((MyGUI::uint)_nFontSize);
     }
 }
 

@@ -14,6 +14,9 @@
 // MyGUI
 #include <MyGUI.h>
 
+// STL
+#include <string.h>
+
 
 namespace Foundation
 {
