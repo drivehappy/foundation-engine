@@ -2,6 +2,7 @@
 # Foundation Libs
 import FoundationPython as Foundation
 import Entity
+from logger.HTTPlogger import *
 
 # --------------------------------------------------
 # Python Libs
@@ -17,6 +18,9 @@ class EntityManager(object):
         self.__readEntityTypesFromYaml(_sEntityTypeFilename)
         self.m_uEntityList = []
 
+        self.m_uLogger = HTTPLogger("../entitymgr_log.html")
+        self.m_uLogger.newTable("Foundation Engine (entmgr)", "Time (s)", "Description")
+
     def doTask(self, _nDeltaTime):
         for uEntity in self.m_uEntityList:
             uEntity.doTask(_nDeltaTime)
@@ -30,16 +34,18 @@ class EntityManager(object):
                 uEntityNew.setPosition(Foundation.Vector3(30, 20, 30))
                 uEntityNew.moveTo(Foundation.Vector3(random.randrange(-500, 500, 1), 20, random.randrange(-500, 500, 1)))
 
+                self.m_uLogger.writeContent(LoggerError.NONE, "Entity type %s created by %s" % (uUnitType["Name"], uEntity.getName()))
+
     def addEntity(self, _sName, _uType):
         if not self.hasEntityType(_uType["Name"]):
-            print "[EntityManager] Error: EntityType " + _sType + " doesn't exist."
+            self.m_uLogger.writeContent(LoggerError.ERROR, "[EntityManager] EntityType " + _sType + " doesn't exist.")
             return None
         else:
-            entDerived = Entity.Entity(self.m_uManager.addEntity(_sName))
+            entDerived = Entity.Entity(self.m_uManager.addEntity(_sName), self.m_uLogger)
             entDerived.setType(_uType)
 
             self.m_uEntityList.append(entDerived)
-            print "[EntityManager] Created Entity of Type %s" % (_uType["Name"])
+            self.m_uLogger.writeContent(LoggerError.NONE, "[EntityManager] Created Entity of Type %s" % (_uType["Name"]))
 
             return entDerived
 

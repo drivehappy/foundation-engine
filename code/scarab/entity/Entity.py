@@ -4,18 +4,20 @@ import FoundationPython as Foundation
 from EntityCollision import *
 from EntityPhysics import *
 from EntityWeapon import *
+from logger.HTTPlogger import *
 
 # --------------------------------------------------
 #
 class Entity(Foundation.Entity):
 
-    def __init__(self, FoundationEntity):
+    def __init__(self, FoundationEntity, _uLogger):
         self.__bases__ = FoundationEntity
         self.Task = Foundation.Task(self, "doTask")
         self.Entity = FoundationEntity
         self.EntityGraphic = None
         self.EntityCollision = None
         self.EntityPhysics = EntityPhysics()
+        self.m_uLogger = _uLogger
 
         self.m_uType = None
 
@@ -33,7 +35,7 @@ class Entity(Foundation.Entity):
         self.setGraphics(entityGraphics)
 
         if self.m_uType == None:
-            print "[Entity] Warning: Entity Type not set when attempting to setup graphics."
+            self.m_uLogger.writeContent(LoggerError.WARNING, "[Entity] Warning: Entity Type not set when attempting to setup graphics.")
         else:
             nScale      = self.m_uType["Scale"]
             nPosition   = self.m_uType["Position"]
@@ -53,7 +55,6 @@ class Entity(Foundation.Entity):
 
     def createCollision(self, _uShape, _nSize):
         self.EntityCollision = EntityCollision(_uShape, _nSize)
-        pass
 
     def getId(self):
         sID = "ENTITYID_" + str(self.__bases__.getId())
@@ -98,12 +99,11 @@ class Entity(Foundation.Entity):
                 self.m_uCreationTimer.reset()
                 self.m_bCreating = True
                 self.m_nCreationTime = _uUnit["BuildTime"]
-                print "+ Entity %s creating unit: %s" % (self.getId(), _uUnit)
 
             self.m_uCreationQueueList.append(_uUnit)
-            print "+ Entity queued unit for production."
+            self.m_uLogger.writeContent(LoggerError.NONE, "Entity %s queued unit for production." % (_uUnit["Name"]))
         else:
-            print "[Entity] Warning: Attempted to create None type unit."
+            self.m_uLogger.writeContent(LoggerError.WARNING, "[Entity] Warning: Attempted to create None type unit.")
 
     # Cancel the unit that matches in the back of the list
     def cancelUnitQueueInBack(self, _sUnit):
@@ -160,11 +160,9 @@ class Entity(Foundation.Entity):
                 # Our unit in creation progress is done, pop it out and adjust the queue
                 uUnitType = self.m_uCreationQueueList[0]
 
-                print "^^ REMOVING UNIT LISTSIZE =", len(self.m_uCreationQueueList)
                 bUnitRemoved = self.cancelUnitQueueInFront(uUnitType["Name"])
-                print "^^ REMOVING UNIT LISTSIZE =", len(self.m_uCreationQueueList)
 
-                print bUnitRemoved
+                self.m_uLogger.writeContent(LoggerError.NONE, "[Entity] Removed unit from queue: " + uUnitType["Name"])
                 
                 # Inform the EntityManager to create the unit
                 return uUnitType
@@ -173,6 +171,7 @@ class Entity(Foundation.Entity):
     #
     def moveTo(self, _nPosition):
         self.EntityPhysics.moveTo(_nPosition)
+        self.m_uLogger.writeContent(LoggerError.NONE, "Moving entity %s to: %f %f %f" % (self.getName(), _nPosition[0], _nPosition[1], _nPosition[2]))
 
     def doTask(self, _nDeltaTime):
         self.EntityPhysics.doTask(_nDeltaTime)

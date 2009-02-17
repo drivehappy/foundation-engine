@@ -4,12 +4,14 @@ import FoundationPython as Foundation
 from input.input import *
 import gui.gui
 import entity.EntityManager
+from logger.HTTPlogger import *
+
+# --------------------------------------------------
+# Python Libs
 import random
 import struct
 import math
 
-# --------------------------------------------------
-# Python Libs
 import psyco
 psyco.full()
 
@@ -27,6 +29,7 @@ TerrainManager  = Foundation.TerrainManager()
 EntityManager   = entity.EntityManager.EntityManager("../../data/scarabEntityTypes.yaml")
 FileManager     = Foundation.FileManager()
 Camera0         = None
+Logger          = None
 
 MouseEventChannel           = Foundation.Channel()
 SelectionCallbackChannel    = Foundation.Channel()
@@ -178,28 +181,28 @@ def initManagers():
     global TimeManager, Schdeuler, AudioManager, InputManager, GraphicManager, GUIManager, MouseEventChannel, Camera0
     
     # Init Audio
-    print " - [AudioManager] Initializing..."
+    Logger.writeContent(LoggerError.NONE, "[AudioManager] Initializing...")
     bResult = AudioManager.initialize()
     if bResult:
         nAudioDeviceCount = AudioManager.getDriverCount()
-        print " - [AudioManager] Found %i devices:" % (nAudioDeviceCount)
+        Logger.writeContent(LoggerError.NONE, "[AudioManager] Found %i devices:" % (nAudioDeviceCount))
         sAudioDeviceName = ""
         for nIndex in range(0, nAudioDeviceCount):
             sAudioDeviceName += AudioManager.getDriverInfo(nIndex) + ", "
-        print " - [AudioManager] Devices: %s" % (sAudioDeviceName)
+        Logger.writeContent(LoggerError.NONE, "[AudioManager] Devices: %s" % (sAudioDeviceName))
         Scheduler.AddTask(AudioManager.getTaskUpdate(), 0, 1)
-        print " - [AudioManager] Success."
+        Logger.writeContent(LoggerError.NONE, "[AudioManager] Success.")
     else:
-        print " - [AudioManager] Error."
+        Logger.writeContent(LoggerError.NONE, "[AudioManager] Error.")
         return False
 
     # Init Physics
-    print " - [PhysicsManager] Initializing..."
+    Logger.writeContent(LoggerError.NONE, "[AudioManager] Initializing...")
     Scheduler.AddTask(PhysicsManager.getTaskUpdate(), 1, 0)
-    print " - [PhysicsManager] Success."
+    Logger.writeContent(LoggerError.NONE, "[AudioManager] Success.")
 
     # Init Graphics
-    print " - [GraphicManager] Initializing..."
+    Logger.writeContent(LoggerError.NONE, "[AudioManager] Initializing...")
     bResult = GraphicManager.initialize("Scarab")
     if bResult:
         GraphicManager.showCursor(False)
@@ -213,9 +216,9 @@ def initManagers():
         SelectionCallbackChannel.Channel_Join("GRAPHICS_SELECTION", onSelection)
 
         Scheduler.AddTask(GraphicManager.getTaskRender(), 1, 0)
-        print " - [GraphicManager] Success."
+        Logger.writeContent(LoggerError.NONE, "[GraphicManager] Success.")
     else:
-        print " - [GraphicManager] Error - check ogre.log for more information."
+        Logger.writeContent(LoggerError.ERROR, "[AudioManager] Check ogre.log for more information.")
         return False
 
     # Init Input
@@ -246,50 +249,50 @@ def initManagers():
 def cleanupManagers():
     global TimeManager, Schdeuler, AudioManager, InputManager, GraphicManager, GUIManager
 
-    print " - [Scheduler] Shutting down..."
+    Logger.writeContent(LoggerError.NONE, "[Scheduler] Shutting down...")
     if Scheduler:
         if EntityManager:
-            print " - [EntityManager] Shutting down..."
+            Logger.writeContent(LoggerError.NONE, "[EntityManager] Shutting down...")
             EntityManagerTask = Foundation.Task(EntityManager, "doTask")
             Scheduler.RemoveTask(EntityManagerTask)
-            print " - [EntityManager] Complete."
+            Logger.writeContent(LoggerError.NONE, "[EntityManager] Complete.")
 
         if AudioManager:
-            print " - [AudioManager] Shutting down..."
+            Logger.writeContent(LoggerError.NONE, "[AudioManager] Shutting down...")
             Scheduler.RemoveTask(AudioManager.getTaskUpdate())
             AudioManager.destroy()
             AudioManager = None
-            print " - [AudioManager] Complete."
+            Logger.writeContent(LoggerError.NONE, "[AudioManager] Complete.")
 
         if GUIManager:
-            print " - [GUIManager] Shutting down..."
+            Logger.writeContent(LoggerError.NONE, "[GUIManager] Shutting down...")
             GUIManager.destroy()
             GUIManager = None
-            print " - [GUIManager] Complete."
+            Logger.writeContent(LoggerError.NONE, "[EntiGUIManagertyManager] Complete.")
 
         if InputManager:
-            print " - [InputManager] Shutting down..."
+            Logger.writeContent(LoggerError.NONE, "[InputManager] Shutting down...")
             Scheduler.RemoveTask(InputManager.getTaskCapture())
             InputManager.destroy()
             InputManager = None
-            print " - [InputManager] Complete."
+            Logger.writeContent(LoggerError.NONE, "[InputManager] Complete.")
 
         if PhysicsManager:
-            print " - [PhysicsManager] Shutting down..."
+            Logger.writeContent(LoggerError.NONE, "[PhysicsManager] Shutting down...")
             Scheduler.RemoveTask(PhysicsManager.getTaskUpdate())
-            print " - [PhysicsManager] Complete."
+            Logger.writeContent(LoggerError.NONE, "[PhysicsManager] Complete.")
 
         if GraphicManager:
-            print " - [GraphicManager] Shutting down..."
+            Logger.writeContent(LoggerError.NONE, "[GraphicManager] Shutting down...")
             GraphicManager.showCursor(True)
             Scheduler.RemoveTask(GraphicManager.getTaskRender())
             GraphicManager.destroy()
             GraphicManager = None
-            print " - [GraphicManager] Complete."
+            Logger.writeContent(LoggerError.NONE, "[GraphicManager] Complete.")
 
-        print " - [Scheduler] Complete."
+        Logger.writeContent(LoggerError.NONE, "[Scheduler] Complete.")
     else:
-        print " - [Scheduler] Error: Scheduler is already destroyed."
+        Logger.writeContent(LoggerError.ERROR, "[Scheduler] Scheduler is already destroyed.")
 
 
 # --------------------------------------------------
@@ -320,7 +323,8 @@ def onSelection(channel, header, data, size):
     nObjectNameLen = len(data) - 13
     nObjectPosition = struct.unpack("fff", data[nObjectNameLen:nObjectNameLen+12])
     nObjectName = data[:nObjectNameLen]
-    
+
+    Logger.writeContent(LoggerError.NONE, "Selected Object: " + nObjectName + " at " + str(nObjectPosition[0]) + "," + str(nObjectPosition[1]) + "," + str(nObjectPosition[2]))
     #print "Name:", nObjectName, "Position:", nObjectPosition[0], nObjectPosition[1], nObjectPosition[2]
 
     nEntityId = nObjectName[:len(nObjectName) - len("_GRAPHIC")]
@@ -331,6 +335,8 @@ def onSelection(channel, header, data, size):
 # State Machine Transitions
 def doStateTransition(_nSuperState, _nTargetState):
     global GameState
+
+    Logger.writeContent(LoggerError.NONE, "Game State Transition: " + str(GameState) + "=>" + str(_nTargetState))
 
     # Don't transition into a state we're already in
     if _nSuperState == STATES["game"]:
@@ -362,6 +368,10 @@ def main(argv):
     global TimeManager, Schdeuler, AudioManager, InputManager, GraphicManager, GUIManager
     global GameState
     global SelectedEntityList
+    global Logger
+
+    Logger = HTTPLogger("../scarab_log.html")
+    Logger.newTable("Foundation Engine (scarab)", "Time (s)", "Description")
 
     doStateTransition(STATES["game"], GAMESTATES["init"])
     initManagers()
@@ -411,4 +421,5 @@ def main(argv):
         #TimeManager.sleep(1)
 
     doStateTransition(STATES["game"], GAMESTATES["destroy"])
+    Logger.endTable()
     print "Scarab Done."
