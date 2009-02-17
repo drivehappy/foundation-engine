@@ -7,12 +7,14 @@ FileManager = Foundation.FileManager()
 
 class Logger:
     def __init__(self):
-        pass
+        self.m_uFile = None
 
-    def openLog(self, _sFilename):
-        return FileManager.open(_sFilename, Foundation.FileAccess.APPEND, Foundation.FileMode.TEXT)
+    def openLog(self, _sFilename, _uFileAccess):
+        self.m_uFile = FileManager.open(_sFilename, _uFileAccess, Foundation.FileMode.TEXT)
 
-    def closeLog(self, _uFile):
-        FileManager.close(_uFile)
+    def closeLog(self):
+        FileManager.close(self.m_uFile)
 
+    def writeLog(self, _sString):
+        self.m_uFile.write(_sString, len(_sString))
     
