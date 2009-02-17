@@ -25,6 +25,7 @@ AudioManager    = Foundation.AudioManager()
 PhysicsManager  = Foundation.PhysicsManager()
 TerrainManager  = Foundation.TerrainManager()
 EntityManager   = entity.EntityManager.EntityManager("../../data/scarabEntityTypes.yaml")
+FileManager     = Foundation.FileManager()
 Camera0         = None
 
 MouseEventChannel           = Foundation.Channel()
