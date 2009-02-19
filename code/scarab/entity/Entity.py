@@ -4,7 +4,7 @@ import FoundationPython as Foundation
 from EntityCollision import *
 from EntityPhysics import *
 from EntityWeapon import *
-from logger.HTTPlogger import *
+from log.HTTPLogger import *
 
 # --------------------------------------------------
 #
@@ -29,11 +29,8 @@ class Entity(Foundation.Entity):
         self.m_nCreationTime = 0
         self.m_bCreating = False
 
-
-        # Test
-        print "Ent Init"
-        entProjectile1 = EntityProjectile()
-        EntityProjectileManager.addProjectile(entProjectile1)
+        # Weapon List
+        self.m_uWeaponList = []
 
     def createGraphic(self, _sSceneManagerName):
         entityGraphics = Foundation.EntityGraphic(_sSceneManagerName, str(self.getId()) + "_GRAPHIC")
@@ -95,6 +92,13 @@ class Entity(Foundation.Entity):
         self.m_uCreationAbilityList.append(_uUnitList)
     def getCreationAbilities(self):
         return self.m_uCreationAbilityList
+
+    # ------------------------------------------
+    # Weapons
+    def addWeapon(self, _uWeapon):
+        self.m_uWeaponList.append(_uWeapon)
+    def getWeaponList(self):
+        return self.m_uWeaponList
 
     # ------------------------------------------
     # Unit Creation

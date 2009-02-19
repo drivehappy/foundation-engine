@@ -2,7 +2,7 @@
 # Foundation Libs
 import FoundationPython as Foundation
 import Entity
-from logger.HTTPlogger import *
+from log.HTTPLogger import *
 
 # --------------------------------------------------
 # Python Libs

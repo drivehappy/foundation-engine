@@ -4,7 +4,7 @@ import FoundationPython as Foundation
 from input.input import *
 import gui.gui
 import entity.EntityManager
-from logger.HTTPlogger import *
+from log.HTTPLogger import *
 
 # --------------------------------------------------
 # Python Libs
@@ -421,5 +421,6 @@ def main(argv):
         #TimeManager.sleep(1)
 
     doStateTransition(STATES["game"], GAMESTATES["destroy"])
+    Logger.writeContent(LoggerError.NONE, "Done.")
     Logger.endTable()
     print "Scarab Done."
