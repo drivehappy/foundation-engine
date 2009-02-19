@@ -10,14 +10,13 @@ from log.HTTPLogger import *
 #
 class Entity(Foundation.Entity):
 
-    def __init__(self, FoundationEntity, _uLogger):
+    def __init__(self, FoundationEntity):
         self.__bases__ = FoundationEntity
         self.Task = Foundation.Task(self, "doTask")
         self.Entity = FoundationEntity
         self.EntityGraphic = None
         self.EntityCollision = None
         self.EntityPhysics = EntityPhysics()
-        self.m_uLogger = _uLogger
 
         self.m_uType = None
 
@@ -38,7 +37,7 @@ class Entity(Foundation.Entity):
         self.setGraphics(entityGraphics)
 
         if self.m_uType == None:
-            self.m_uLogger.writeContent(LoggerError.WARNING, "[Entity] Warning: Entity Type not set when attempting to setup graphics.")
+            HTTPLogger().writeContent(LoggerError.WARNING, "[Entity] Warning: Entity Type not set when attempting to setup graphics.")
         else:
             nScale      = self.m_uType["Scale"]
             nPosition   = self.m_uType["Position"]
@@ -95,8 +94,10 @@ class Entity(Foundation.Entity):
 
     # ------------------------------------------
     # Weapons
-    def addWeapon(self, _uWeapon):
+    def attachWeapon(self, _uWeapon):
         self.m_uWeaponList.append(_uWeapon)
+    def detachWeapon(self, _uWeapon):
+        del self.m_uWeaponList[_uWeapon]
     def getWeaponList(self):
         return self.m_uWeaponList
 
@@ -114,9 +115,9 @@ class Entity(Foundation.Entity):
                 self.m_nCreationTime = _uUnit["BuildTime"]
 
             self.m_uCreationQueueList.append(_uUnit)
-            self.m_uLogger.writeContent(LoggerError.NONE, "Entity %s queued unit for production." % (_uUnit["Name"]))
+            HTTPLogger().writeContent(LoggerError.NONE, "Entity %s queued unit for production." % (_uUnit["Name"]))
         else:
-            self.m_uLogger.writeContent(LoggerError.WARNING, "[Entity] Warning: Attempted to create None type unit.")
+            HTTPLogger().writeContent(LoggerError.WARNING, "[Entity] Warning: Attempted to create None type unit.")
 
     # Cancel the unit that matches in the back of the list
     def cancelUnitQueueInBack(self, _sUnit):
@@ -175,7 +176,7 @@ class Entity(Foundation.Entity):
 
                 bUnitRemoved = self.cancelUnitQueueInFront(uUnitType["Name"])
 
-                self.m_uLogger.writeContent(LoggerError.NONE, "[Entity] Removed unit from queue: " + uUnitType["Name"])
+                HTTPLogger().writeContent(LoggerError.NONE, "[Entity] Removed unit from queue: " + uUnitType["Name"])
                 
                 # Inform the EntityManager to create the unit
                 return uUnitType
@@ -184,7 +185,12 @@ class Entity(Foundation.Entity):
     #
     def moveTo(self, _nPosition):
         self.EntityPhysics.moveTo(_nPosition)
-        self.m_uLogger.writeContent(LoggerError.NONE, "Moving entity %s to: %f %f %f" % (self.getName(), _nPosition[0], _nPosition[1], _nPosition[2]))
+        HTTPLogger().writeContent(LoggerError.NONE, "Moving entity %s to: %f %f %f" % (self.getName(), _nPosition[0], _nPosition[1], _nPosition[2]))
+
+    def attackUnit(self, _uUnit):
+        if _uUnit:
+            for uWeapon in self.m_uWeaponList:
+                uWeapon.fireAtEntity(_uUnit)
 
     def doTask(self, _nDeltaTime):
         self.EntityPhysics.doTask(_nDeltaTime)

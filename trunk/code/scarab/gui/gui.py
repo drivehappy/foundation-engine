@@ -41,6 +41,8 @@ class GUIHelper:
         GUIManager.setObjectColor("Text_Entity_BuildQueue", 1, 1, 1)
         GUIManager.createStaticText("Window_Entity", "Text_Entity_BuildProgress", 10, 70, 450, 20, "Build Progress: 0%")
         GUIManager.setObjectColor("Text_Entity_BuildProgress", 1, 1, 1)
+        GUIManager.createStaticText("Window_Entity", "Text_Entity_WeaponList", 10, 90, 450, 20, "Weapons: None")
+        GUIManager.setObjectColor("Text_Entity_WeaponList", 1, 1, 1)
 
         # Create Creation Buttons
         GUIManager.createButton("Window_Entity", "Btn_Entity_Create0", 300, 10, 60, 20, "0")
@@ -91,9 +93,17 @@ class GUIHelper:
                 nProgress = _uEntity.m_uCreationTimer.getTime() / _uEntity.m_nCreationTime * 100.0
                 nTimeRemaining = _uEntity.m_nCreationTime - _uEntity.m_uCreationTimer.getTime()
             GUIManager.setWidgetCaption("Text_Entity_BuildProgress", ("Build Progress: %i%% (%2.1fs)" % (nProgress, nTimeRemaining)))
+
+            # Update current weapos on the entity
+            sWeaponList = ""
+            for uWeapon in _uEntity.getWeaponList():
+                sWeaponList += uWeapon.getName() + " "
+            GUIManager.setWidgetCaption("Text_Entity_WeaponList", "Weapons: " + (sWeaponList))
+
         else:
             GUIManager.setWidgetCaption("Text_Entity_Name", ("Name: None"))
             GUIManager.setWidgetCaption("Text_Entity_CreationList", ("Name: None"))
+            GUIManager.setWidgetCaption("Text_Entity_WeaponList", ("Weapons: None"))
 
     def cleanupEntityUI(self):
         GUIManager.destroyObject("Window_Entity")

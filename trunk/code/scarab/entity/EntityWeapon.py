@@ -2,6 +2,9 @@
 # Foundation Libs
 import FoundationPython as Foundation
 import Entity
+from log.HTTPLogger import *
+
+GraphicManager = Foundation.GraphicManager()
 
 # --------------------------------------------------
 # Python Libs
@@ -17,13 +20,17 @@ class EntityProjectile:
         self.m_nPosition = Foundation.Vector3(0, 0, 0)
         self.m_nTarget = Foundation.Vector3(0, 0, 0)
         self.m_uEntityOwner = None
+        self.m_sName = "EntityProjectile"
         
         # Projectile Graphics
-        self.m_uGraphic = None
+        self.m_uParticleSystemList = []
 
     def onUpdate(self, _nDeltaTime):
         self.m_nPosition += (self.m_nSpeed * _nDeltaTime)
-
+        for sParticleSystem in self.m_uParticleSystemList:
+            self.translatePartileSystem(sParticleSystem, self.m_nPosition)
+            
+    # Attributes
     def setOwner(self, _uOwner):
         self.m_uEntityOwner = _uOwner
 
@@ -39,9 +46,31 @@ class EntityProjectile:
         self.m_nDirection = self.m_nTarget - self.m_nPosition
         self.m_nDirection.normalize()
 
+    # ParticleSystem
+    def destroyAllParticleSystems(self):
+        for ParticleSystem in self.m_uParticleSystemList:
+            GraphicManager.destroyParticleSystem("SceneManager0", ParticleSystem)
+        self.m_uParticleSystemList = []
+        HTTPLogger().writeContent(LoggerError.NONE, "<b>[EntityProjectile]</b> Destroyed All Particle Systems")
+
+    def createParticleSystem(self, _sParticleMaterial):
+        if (len(self.m_uParticleSystemList) < 15):
+            sParticleSystemName = self.m_sName + "ParticleSystem" + str(len(self.m_uParticleSystemList))
+            if GraphicManager:
+                GraphicManager.addParticleSystem("SceneManager0", sParticleSystemName, self.m_sName, _sParticleMaterial)
+                self.m_uParticleSystemList.append(sParticleSystemName)
+                HTTPLogger().writeContent(LoggerError.NONE, "<b>[EntityProjectile]</b> Created Particle System '%s' with Material '%s'" % (sParticleSystemName, _sParticleMaterial))
+                return sParticleSystemName
+        return None
+
+    def translateParticleSystem(self, _sParticleSystemName, _nPosition):
+        if GraphicManager:
+            GraphicManager.translateParticleSystem("SceneManager0", _sParticleSystemName, _nPosition)
+
+
 # -----------------------------------------------------
 # Singleton Class to Handle Projectiles
-class EntityProjectileManager(Singleton):
+class EntityProjectileManager():
     class __impl:
         def __init__(self):
             self.m_uProjectileList = []
@@ -52,6 +81,7 @@ class EntityProjectileManager(Singleton):
 
         def addProjectile(self, _uProjectile):
             self.m_uProjectileList.append(_uProjectile)
+            HTTPLogger().writeContent(LoggerError.NONE, "<b>[EntityProjectileManager]</b> Projectile Added")
         def getProjectileList(self):
             return self.m_uProjectileList
 
@@ -73,24 +103,27 @@ class EntityProjectileManager(Singleton):
 class EntityWeapon:
     def __init__(self):
         self.m_nPower = 0
-        self.m_nSpeed = 0
+        self.m_nSpeed = 0.0
         self.m_nRangeMax = 0.0
         self.m_nRangeMin = 0.0
         self.m_nCooldownTime = 0.0
-        self.m_nProjectileSpeed = 0.0
-        self.m_nFrontalArcAngle = math.pi * 2
+        self.m_nFrontalArcAngle = 360
         self.m_nCurrentCooldownTime = 0.0
+        self.m_sName = ""
         self.m_uTarget = None
         self.m_uOwner = None
 
-    def setup(self, _nPower, _nSpeed, _nRangeMin, _nRangeMax, _nCooldown, _nProjectileSpeed, _nFrontalArcAngle = math.pi * 2):
+    def setup(self, _sName, _nPower, _nSpeed, _nRangeMin, _nRangeMax, _nCooldown, _nFrontalArcAngle = 360):
+        self.m_sName = _sName
         self.m_nPower = _nPower
         self.m_nSpeed = _nSpeed
         self.m_nRangeMax = _nRangeMin
         self.m_nRangeMin = _nRangeMax
         self.m_nCooldownTime = _nCooldown
-        self.m_nProjectileSpeed = _nProjectileSpeed
         self.m_nFrontalArcAngle = _nFrontalArcAngle
+
+    def getName(self):
+        return self.m_sName
 
     def onUpdate(self, _nDeltaTime):
         if (self.m_nCurrentCooldownTime > 0.0):

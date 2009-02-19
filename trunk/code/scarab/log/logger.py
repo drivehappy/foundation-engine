@@ -13,8 +13,12 @@ class Logger:
         self.m_uFile = FileManager.open(_sFilename, _uFileAccess, Foundation.FileMode.TEXT)
 
     def closeLog(self):
-        FileManager.close(self.m_uFile)
+        if (self.m_uFile):
+            FileManager.close(self.m_uFile)
 
     def writeLog(self, _sString):
-        self.m_uFile.write(_sString, len(_sString))
+        if (self.m_uFile):
+            self.m_uFile.write(_sString, len(_sString))
+        else:
+            print "Error writing to log, file isn't open."
     

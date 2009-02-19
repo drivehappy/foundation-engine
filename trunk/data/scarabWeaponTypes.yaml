@@ -1,0 +1,15 @@
+# --
+
+WeaponTypes:
+  Rifle:
+    Name:       Rifle
+    Speed:      5
+    Power:      1
+    RangeMax:   20.0
+    RangeMin:   0.0
+    Cooldown:   1.0
+    FrontalArc: 360.0
+
+    # Graphic Options
+    Material:   Scarab/EntityTestMaterial
+

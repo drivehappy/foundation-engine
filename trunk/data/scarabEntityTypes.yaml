@@ -26,6 +26,9 @@ EntityTypes:
     # Creation
     Creations:
 
+    # Weapons
+    Weapons:    [Rifle]
+
   CommandCenter:
     Name:       CommandCenter
     HitPoints:  100
@@ -49,3 +52,6 @@ EntityTypes:
 
     # Creation
     Creations:  [Scout]
+
+    # Weapons
+    Weapons:
