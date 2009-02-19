@@ -100,6 +100,9 @@ class Entity(Foundation.Entity):
     def getWeaponList(self):
         return self.m_uWeaponList
 
+    # TODO: Obtain firing solution, figure out how to pass the requried
+    #       entity direction back to this entity to fire upon the target
+
     # ------------------------------------------
     # Unit Creation
     def createUnit(self, _uUnit):
