@@ -29,6 +29,12 @@ class Entity(Foundation.Entity):
         self.m_nCreationTime = 0
         self.m_bCreating = False
 
+
+        # Test
+        print "Ent Init"
+        entProjectile1 = EntityProjectile()
+        EntityProjectileManager.addProjectile(entProjectile1)
+
     def createGraphic(self, _sSceneManagerName):
         entityGraphics = Foundation.EntityGraphic(_sSceneManagerName, str(self.getId()) + "_GRAPHIC")
 
