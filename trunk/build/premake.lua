@@ -310,6 +310,10 @@ package = newpackage()
     package.config["Release"].objdir        = "../objs/release/foundationPython"
     package.config["Release"].buildflags    = { "optimize", "no-frame-pointer" }
 
+	if (windows) then
+		table.insert(package.config["Release"].postbuildcommands, "..\\tools\\upx\\upx.exe ..\\..\\bin\\release\\*.pyd")
+	end
+
     --- Generate defines based on the enable options at the top
     if (ENABLE_GRAPHIC) then
         table.insert(package.defines, "S_ENABLE_GRAPHIC")
@@ -405,7 +409,8 @@ package = newpackage()
             table.insert(package.config["Release"].postbuildcommands, "copy ..\\..\\libs\\boost\\bin\\release\\*vc90*.dll ..\\..\\bin\\release")
         end
         
-        table.insert(package.config["Release"].postbuildcommands, "tools/upx/upx.exe *.dll")
+        table.insert(package.config["Release"].postbuildcommands, "..\\tools\\upx\\upx.exe ..\\..\\bin\\release\\*.dll")
+        table.insert(package.config["Release"].postbuildcommands, "..\\tools\\upx\\upx.exe ..\\..\\bin\\release\\*.exe")
     end
 
 

@@ -9,6 +9,8 @@ from common.singleton import *
 import math
 
 
+# ---------------------------------
+#
 class EntityProjectile:
     def __init__(self):
         self.m_nSpeed = 0.0
@@ -17,18 +19,36 @@ class EntityProjectile:
         self.m_nTarget = Foundation.Vector3(0, 0, 0)
         self.m_uEntityOwner = None
 
+# -----------------------------------------------------
+# Singleton Class to Handle Projectiles
 class EntityProjectileManager(Singleton):
+    class __impl:
+        def __init__(self):
+            self.m_uProjectileList = []
+
+        def onUpdate(self, _nDeltaTime):
+            for uProjectile in self.m_uProjectileList:
+                pass
+
+        def addProjectile(self, _uProjectile):
+            self.m_uProjectileList.append(_uProjectile)
+
+
+    __instance = None
+
     def __init__(self):
-        self.m_uProjectileList = []
+        if EntityProjectileManager.__instance is None:
+            EntityProjectileManager.__instance = EntityProjectileManager.__impl()
+        self.__dict__['_EntityProjectileManager__instance'] = EntityProjectileManager.__instance
 
-    def onUpdate(self, _nDeltaTime):
-        for uProjectile in self.m_uProjectileList:
-            pass
+    def __getattr__(self, attr):
+        return getattr(self.__instance, attr)
 
-    def addProjectile(self, _uProjectile):
-        self.m_uProjectileList.append(_uProjectile)
+    def __setattr__(self, attr, value):
+        return setattr(self.__instance, attr, value)
 
-
+# ---------------------------------
+#
 class EntityWeapon:
     def __init__(self):
         self.m_nPower = 0
