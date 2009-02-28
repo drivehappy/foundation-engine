@@ -8,12 +8,10 @@ from log.HTTPLogger import *
 
 # --------------------------------------------------
 # Python Libs
+import stackless
 import random
 import struct
 import math
-
-import psyco
-psyco.full()
 
 # --------------------------------------------------
 # Managers
@@ -253,8 +251,7 @@ def cleanupManagers():
     if Scheduler:
         if EntityManager:
             HTTPLogger().writeContent(LoggerError.NONE, "[EntityManager] Shutting down...")
-            EntityManagerTask = Foundation.Task(EntityManager, "doTask")
-            Scheduler.RemoveTask(EntityManagerTask)
+            Scheduler.RemoveTask(EntityManager.Task)
             HTTPLogger().writeContent(LoggerError.NONE, "[EntityManager] Complete.")
 
         if AudioManager:
@@ -370,6 +367,8 @@ def main(argv):
     global SelectedEntityList
     global Logger
 
+    print "Starting up..."
+
     HTTPLogger("../scarab_log.html")
     HTTPLogger().newTable("Foundation Engine (scarab)", "Time (s)", "Description")
 
@@ -415,6 +414,9 @@ def main(argv):
         GUIHelper.updateGameUI(nDeltaTime, TimeManager.getTime(), GraphicManager.getAverageFPS())
         if len(SelectedEntityList) > 0:
             GUIHelper.updateEntityUI(nDeltaTime, SelectedEntityList[0])
+
+        # Update EntityManager
+        #EntityManager.doTask()
 
         Scheduler.Step(1.0)
 

@@ -99,7 +99,8 @@ if (linux) then
                             "/usr/include/boost-1_35",
                             "../../libs" }
 elseif (windows) then
-    incpathExternalLibs = { "../../libs/python/inc", 
+    incpathExternalLibs = { "../../libs/python/inc",
+                            "../../libs/python/inc/stackless",
                             "../../libs/boost/inc",
                             "../../libs/etl/inc",
                             "../../libs/btogre/inc",
@@ -155,7 +156,6 @@ elseif (windows) then
     LIBDIR_FOUNDATIONPYTHON_DEBUG = { 
                             "../../bin/debug",
                             "../../libs/python/lib",
-                            "../../libs/boost/lib",
                             "../../libs/ogre/lib",
                             "../../libs/bullet/lib",
                             "../../libs/mygui/lib/",
@@ -168,7 +168,6 @@ elseif (windows) then
     LIBDIR_FOUNDATIONPYTHON_RELEASE = { 
                             "../../bin/release",
                             "../../libs/python/lib",
-                            "../../libs/boost/lib",
                             "../../libs/ogre/lib",
                             "../../libs/bullet/lib",
                             "../../libs/mygui/lib/",
@@ -223,8 +222,8 @@ if (windows) then
     libfileBtOgre_DEBUG = "btogre_d"
     libfileBtOgre       = "btogre"
     
-    libfileAllDebug = { libfileRaknet_DEBUG, libfileBoost_DEBUG, libfileETL_DEBUG, libfileBtOgre_DEBUG }
-    libfileAllRelease = { libfilePython, libfileBoost, libfileETL, libfileBtOgre }
+    libfileAllDebug = { libfileRaknet_DEBUG, libfileETL_DEBUG, libfileBtOgre_DEBUG }
+    libfileAllRelease = { libfilePython, libfileETL, libfileBtOgre }
 elseif (linux) then
     project.path = "./gnuc"
     libfileYAML = "yaml"
@@ -276,7 +275,9 @@ package = newpackage()
     package.includepaths = { incpathFoundation, "../../code/python", incpathExternalLibs }
 
     package.files = {
-        matchrecursive( "../../code/python/*.cpp", "../../code/python/*h" )
+        matchrecursive( "../../code/python/*.cpp", "../../code/python/*h",
+                        "../../libs/boost/src/*.cpp"
+                      )
     }
 
     if (windows) then
@@ -376,11 +377,13 @@ package = newpackage()
             "copy ..\\..\\bin\\common\\plugins\\plugins_win_debug.cfg ..\\..\\bin\\debug\\plugins_win.cfg",
         }
 
+        --[[
         if (target == "vs2005") then
             table.insert(package.config["Debug"].postbuildcommands, "copy ..\\..\\libs\\boost\\bin\\debug\\*vc80*.dll ..\\..\\bin\\debug")
         elseif (target == "vs2008") then
             table.insert(package.config["Debug"].postbuildcommands, "copy ..\\..\\libs\\boost\\bin\\debug\\*vc90*.dll ..\\..\\bin\\debug")
         end
+        ]]
     end
     
     package.config["Release"].libpaths = { LIBDIR_FOUNDATION_RELEASE }
@@ -403,14 +406,18 @@ package = newpackage()
             "copy ..\\..\\bin\\common\\plugins\\plugins_win.cfg ..\\..\\bin\\release\\plugins_win.cfg",
         }
 
+        --[[
         if (target == "vs2005") then
             table.insert(package.config["Release"].postbuildcommands, "copy ..\\..\\libs\\boost\\bin\\release\\*vc80*.dll ..\\..\\bin\\release")
         elseif (target == "vs2008") then
             table.insert(package.config["Release"].postbuildcommands, "copy ..\\..\\libs\\boost\\bin\\release\\*vc90*.dll ..\\..\\bin\\release")
         end
-        
+        ]]
+
+        --[[
         table.insert(package.config["Release"].postbuildcommands, "..\\tools\\upx\\upx.exe ..\\..\\bin\\release\\*.dll")
         table.insert(package.config["Release"].postbuildcommands, "..\\tools\\upx\\upx.exe ..\\..\\bin\\release\\*.exe")
+        ]]
     end
 
 

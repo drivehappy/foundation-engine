@@ -18,9 +18,7 @@ namespace Foundation {
             : _this(_pThis), _functionPointer(_pFunctionPointer)
         {};
         ~Task()
-        {
-
-        };
+        {};
 
         virtual void run(void *_pArgs) {
             _functionPointer(_this, _pArgs);
