@@ -3,6 +3,10 @@
 from FoundationPython import *
 
 # --------------------------------------------------
+# Python Libs
+import stackless
+
+# --------------------------------------------------
 # Globals
 TASKSLEEPTIME = 100
 
@@ -40,3 +44,4 @@ def run(argv):
     print "Cleaning up..."
     Test_Scheduler.RemoveTask(Test_Task)
     Test_Scheduler.RemoveTask(Test_ClassTask)
+
