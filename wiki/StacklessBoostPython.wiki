@@ -16,3 +16,5 @@ Include the Python include directory (e.g. Python25\include)
 Include the Stackless include directory (e.g. Python25\include\Stackless)
 
 Add: "#define BOOST_PYTHON_STATIC_LIB" to boost\python\detail\config.hpp at line 62
+
+define BOOST_ALL_NO_LIB under boost\config\user.hpp: #define BOOST_ALL_NO_LIB
