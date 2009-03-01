@@ -118,6 +118,8 @@
 
 //  enable automatic library variant selection  ------------------------------// 
 
+#define BOOST_PYTHON_NO_LIB
+
 #if !defined(BOOST_PYTHON_SOURCE) && !defined(BOOST_ALL_NO_LIB) && !defined(BOOST_PYTHON_NO_LIB)
 //
 // Set the name of our library, this will get undef'ed by auto_link.hpp
@@ -133,7 +135,7 @@
 //
 // And include the header that does the work:
 //
-#include <boost/config/auto_link.hpp>
+//#include <boost/config/auto_link.hpp>
 #endif  // auto-linking disabled
 
 #ifndef BOOST_PYTHON_NO_PY_SIGNATURES
