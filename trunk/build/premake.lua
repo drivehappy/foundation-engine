@@ -216,14 +216,15 @@ if (windows) then
     
     libfileRaknet_DEBUG = "RakNetLibStaticDebug"
     libfileRaknet       = "RakNetLibStatic"
-    libfilePython       = "python25"
+    libfilePython       = "python26"
+    libfilePython_DEBUG = "python26_d"
     libfileETL_DEBUG    = "etl_d"
     libfileETL          = "etl"
     libfileBtOgre_DEBUG = "btogre_d"
     libfileBtOgre       = "btogre"
     
-    libfileAllDebug = { libfileRaknet_DEBUG, libfileETL_DEBUG, libfileBtOgre_DEBUG }
-    libfileAllRelease = { libfilePython, libfileETL, libfileBtOgre }
+    libfileAllDebug = { libfileRaknet_DEBUG, libfileETL_DEBUG, libfileBtOgre_DEBUG, libfilePython_DEBUG }
+    libfileAllRelease = { libfilePython, libfileETL, libfileBtOgre, libfilePython }
 elseif (linux) then
     project.path = "./gnuc"
     libfileYAML = "yaml"
@@ -231,7 +232,7 @@ elseif (linux) then
     libfileBoost = "boost_python"
     libfileUUID = "uuid"
 
-    libfileAllDebug = { libfilePython, libfileBoost, libfileUUID }
+    libfileAllDebug = { libfilePython_DEBUG, libfileBoost, libfileUUID }
     libfileAllRelease = { libfilePython, libfileBoost, libfileUUID }
 end
 
@@ -368,7 +369,7 @@ package = newpackage()
             "mkdir ..\\..\\bin\\debug\\psyco",
             
             "copy ..\\..\\libs\\ogre\\bin\\debug\\*.dll ..\\..\\bin\\debug",
-            "copy ..\\..\\libs\\python\\bin\\*.* ..\\..\\bin\\debug",
+            "copy ..\\..\\libs\\python\\bin\\python26_d.dll ..\\..\\bin\\debug",
             "copy ..\\..\\libs\\fmod\\bin\\*.dll ..\\..\\bin\\debug",
             "copy ..\\..\\libs\\mygui\\bin\\Debug\\*.dll ..\\..\\bin\\debug",
             "copy ..\\..\\bin\\common\\* ..\\..\\bin\\debug",
@@ -397,7 +398,7 @@ package = newpackage()
             "mkdir ..\\..\\bin\\release\\psyco",
             
             "copy ..\\..\\libs\\ogre\\bin\\release\\*.dll ..\\..\\bin\\release",
-            "copy ..\\..\\libs\\python\\bin\\*.* ..\\..\\bin\\release",
+            "copy ..\\..\\libs\\python\\bin\\python26.dll ..\\..\\bin\\debug",
             "copy ..\\..\\libs\\fmod\\bin\\*.dll ..\\..\\bin\\release",
             "copy ..\\..\\libs\\mygui\\bin\\Release\\*.dll ..\\..\\bin\\release",
             "copy ..\\..\\bin\\common\\* ..\\..\\bin\\release",
