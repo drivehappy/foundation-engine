@@ -1,3 +1,4 @@
+//#define BOOST_PYTHON_NO_LIB 1
 
 #include <boost/python.hpp>
 using namespace boost::python;
