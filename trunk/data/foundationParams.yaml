@@ -21,4 +21,9 @@ program:
         script: testsuite
         profiling: False
 
+    attrition:
+        folder: attrition
+        script: Attrition
+        profiling: False
+
 
