@@ -366,7 +366,7 @@ def main(argv):
     global GameState
     global SelectedEntityList
     global Logger
-
+    
     print "Starting up..."
 
     HTTPLogger("../scarab_log.html")
