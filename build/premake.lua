@@ -95,7 +95,7 @@ end
 
 -- Foundation: Generate proper include paths depending upon what is enabled from above
 if (linux) then
-    incpathExternalLibs = { "/usr/include/python2.5", 
+    incpathExternalLibs = { "/usr/include/python2.6",
                             "/usr/include/boost-1_35",
                             "../../libs" }
 elseif (windows) then
@@ -110,13 +110,13 @@ end
 -- FoundationPython: Generate proper include paths depending upon what is enabled from above
 if (linux) then
     LIBDIR_FOUNDATION_DEBUG = { 
-                            "/usr/include/python2.5", 
+                            "/usr/include/python2.6",
                             "/usr/include/boost-1_35", 
                             "../../libs", 
                             PHYSIC_LIB_BINDIR_32BIT,
                             AUDIO_LIB_BINDIR_32BIT }
     LIBDIR_FOUNDATION_RELEASE = { 
-                            "/usr/include/python2.5", 
+                            "/usr/include/python2.6",
                             "/usr/include/boost-1_35", 
                             "../../libs", 
                             PHYSIC_LIB_BINDIR_32BIT,
@@ -124,7 +124,7 @@ if (linux) then
                             
     LIBDIR_FOUNDATIONPYTHON_DEBUG = { 
                             "../../bin/debug",
-                            "/usr/include/python2.5",
+                            "/usr/include/python2.6",
                             "../../libs/boost/lib",
                             "../../libs/ogre/lib",
                             "../../libs/bullet/out/debug8/libs",
@@ -135,7 +135,7 @@ if (linux) then
                             AUDIO_LIB_BINDIR_32BIT }
     LIBDIR_FOUNDATIONPYTHON_RELEASE = { 
                             "../../bin/release",
-                            "/usr/include/python2.5",
+                            "/usr/include/python2.6",
                             "../../libs/boost/lib",
                             "../../libs/ogre/lib",
                             "../../libs/bullet/out/release8/libs",
@@ -228,7 +228,7 @@ if (windows) then
 elseif (linux) then
     project.path = "./gnuc"
     libfileYAML = "yaml"
-    libfilePython = "python2.5"
+    libfilePython = "python2.6"
     libfileBoost = "boost_python"
     libfileUUID = "uuid"
 
@@ -313,7 +313,7 @@ package = newpackage()
     package.config["Release"].buildflags    = { "optimize", "no-frame-pointer" }
 
 	if (windows) then
-		table.insert(package.config["Release"].postbuildcommands, "..\\tools\\upx\\upx.exe ..\\..\\bin\\release\\*.pyd")
+		table.insert(package.config["Release"].postbuildcommands, "..\\tools\\upx\\upx.exe ..\\..\\bin\\release\\FoundationPython.pyd")
 	end
 
     --- Generate defines based on the enable options at the top
@@ -370,6 +370,7 @@ package = newpackage()
             
             "copy ..\\..\\libs\\ogre\\bin\\debug\\*.dll ..\\..\\bin\\debug",
             "copy ..\\..\\libs\\python\\bin\\python26_d.dll ..\\..\\bin\\debug",
+            "copy ..\\..\\libs\\python\\bin\\python.exe ..\\..\\bin\\debug",
             "copy ..\\..\\libs\\fmod\\bin\\*.dll ..\\..\\bin\\debug",
             "copy ..\\..\\libs\\mygui\\bin\\Debug\\*.dll ..\\..\\bin\\debug",
             "copy ..\\..\\bin\\common\\* ..\\..\\bin\\debug",
@@ -377,14 +378,6 @@ package = newpackage()
             "copy ..\\..\\bin\\common\\psyco\\*.* ..\\..\\bin\\debug\\psyco",
             "copy ..\\..\\bin\\common\\plugins\\plugins_win_debug.cfg ..\\..\\bin\\debug\\plugins_win.cfg",
         }
-
-        --[[
-        if (target == "vs2005") then
-            table.insert(package.config["Debug"].postbuildcommands, "copy ..\\..\\libs\\boost\\bin\\debug\\*vc80*.dll ..\\..\\bin\\debug")
-        elseif (target == "vs2008") then
-            table.insert(package.config["Debug"].postbuildcommands, "copy ..\\..\\libs\\boost\\bin\\debug\\*vc90*.dll ..\\..\\bin\\debug")
-        end
-        ]]
     end
     
     package.config["Release"].libpaths = { LIBDIR_FOUNDATION_RELEASE }
@@ -398,7 +391,8 @@ package = newpackage()
             "mkdir ..\\..\\bin\\release\\psyco",
             
             "copy ..\\..\\libs\\ogre\\bin\\release\\*.dll ..\\..\\bin\\release",
-            "copy ..\\..\\libs\\python\\bin\\python26.dll ..\\..\\bin\\debug",
+            "copy ..\\..\\libs\\python\\bin\\python26.dll ..\\..\\bin\\release",
+            "copy ..\\..\\libs\\python\\bin\\python.exe ..\\..\\bin\\release",
             "copy ..\\..\\libs\\fmod\\bin\\*.dll ..\\..\\bin\\release",
             "copy ..\\..\\libs\\mygui\\bin\\Release\\*.dll ..\\..\\bin\\release",
             "copy ..\\..\\bin\\common\\* ..\\..\\bin\\release",
@@ -407,18 +401,8 @@ package = newpackage()
             "copy ..\\..\\bin\\common\\plugins\\plugins_win.cfg ..\\..\\bin\\release\\plugins_win.cfg",
         }
 
-        --[[
-        if (target == "vs2005") then
-            table.insert(package.config["Release"].postbuildcommands, "copy ..\\..\\libs\\boost\\bin\\release\\*vc80*.dll ..\\..\\bin\\release")
-        elseif (target == "vs2008") then
-            table.insert(package.config["Release"].postbuildcommands, "copy ..\\..\\libs\\boost\\bin\\release\\*vc90*.dll ..\\..\\bin\\release")
-        end
-        ]]
-
-        --[[
         table.insert(package.config["Release"].postbuildcommands, "..\\tools\\upx\\upx.exe ..\\..\\bin\\release\\*.dll")
         table.insert(package.config["Release"].postbuildcommands, "..\\tools\\upx\\upx.exe ..\\..\\bin\\release\\*.exe")
-        ]]
     end
 
 
