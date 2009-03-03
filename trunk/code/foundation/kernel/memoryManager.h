@@ -90,7 +90,7 @@ namespace Foundation {
         */
         static void s_free(void* pMemory);
 
-    //protected:
+    protected:
         MemoryManager();
         MemoryManager(const MemoryManager&);
         MemoryManager& operator=(const MemoryManager&);
@@ -141,7 +141,7 @@ using namespace Foundation;
     #if FOUNDATION_PLATFORM == FOUNDATION_PLATFORM_WIN
     static
     #endif
-    inline void* operator new(s_size nSize)
+    void* operator new(s_size nSize)
     #ifdef USE_STL
     throw (std::bad_alloc)
     #endif
@@ -155,7 +155,7 @@ using namespace Foundation;
     #if FOUNDATION_PLATFORM == FOUNDATION_PLATFORM_WIN
     static
     #endif
-    inline void* operator new(s_size nSize, const char* cSrcName, unsigned int iSrcLine)
+    void* operator new(s_size nSize, const char* cSrcName, unsigned int iSrcLine)
     #ifdef USE_STL
     throw (std::bad_alloc)
     #endif
@@ -227,7 +227,7 @@ using namespace Foundation;
     }
 
     // exp handles the Placement New
-    #define new(exp) new(exp, __FILE__, __LINE__)
+    //#define new new(__FILE__, __LINE__)
 
 #endif  // _ENABLE_MEMORYMANAGER
 

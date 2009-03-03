@@ -217,13 +217,12 @@ if (windows) then
     libfileRaknet_DEBUG = "RakNetLibStaticDebug"
     libfileRaknet       = "RakNetLibStatic"
     libfilePython       = "python26"
-    libfilePython_DEBUG = "python26_d"
     libfileETL_DEBUG    = "etl_d"
     libfileETL          = "etl"
     libfileBtOgre_DEBUG = "btogre_d"
     libfileBtOgre       = "btogre"
     
-    libfileAllDebug = { libfileRaknet_DEBUG, libfileETL_DEBUG, libfileBtOgre_DEBUG, libfilePython_DEBUG }
+    libfileAllDebug = { libfileRaknet_DEBUG, libfileETL_DEBUG, libfileBtOgre_DEBUG, libfilePython }
     libfileAllRelease = { libfilePython, libfileETL, libfileBtOgre, libfilePython }
 elseif (linux) then
     project.path = "./gnuc"
@@ -358,10 +357,10 @@ package = newpackage()
         package.defines                         = { "MACOSX" }
     end
 
-    package.config["Debug"].libpaths = { LIBDIR_FOUNDATION_DEBUG }
-    package.config["Debug"].defines = { "_DEBUG" }
-    package.config["Debug"].target = "foundationd"
-    package.config["Debug"].objdir = "../objs/debug/foundation"
+    package.config["Debug"].libpaths =      { LIBDIR_FOUNDATION_DEBUG }
+    package.config["Debug"].defines =       { "_DEBUG", "BOOST_ALL_NO_LIB" }
+    package.config["Debug"].target =        "foundationd"
+    package.config["Debug"].objdir =        "../objs/debug/foundation"
 
     if (windows) then
         package.config["Debug"].postbuildcommands = {
@@ -369,7 +368,7 @@ package = newpackage()
             "mkdir ..\\..\\bin\\debug\\psyco",
             
             "copy ..\\..\\libs\\ogre\\bin\\debug\\*.dll ..\\..\\bin\\debug",
-            "copy ..\\..\\libs\\python\\bin\\python26_d.dll ..\\..\\bin\\debug",
+            "copy ..\\..\\libs\\python\\bin\\python26.dll ..\\..\\bin\\debug",
             "copy ..\\..\\libs\\python\\bin\\python.exe ..\\..\\bin\\debug",
             "copy ..\\..\\libs\\fmod\\bin\\*.dll ..\\..\\bin\\debug",
             "copy ..\\..\\libs\\mygui\\bin\\Debug\\*.dll ..\\..\\bin\\debug",
@@ -380,10 +379,11 @@ package = newpackage()
         }
     end
     
-    package.config["Release"].libpaths = { LIBDIR_FOUNDATION_RELEASE }
-    package.config["Release"].target = "foundation"
-    package.config["Release"].objdir = "../objs/release/foundation"
-    package.config["Release"].buildflags = { "optimize", "no-frame-pointer" }
+    package.config["Release"].libpaths =    { LIBDIR_FOUNDATION_RELEASE }
+    package.config["Release"].defines =     { "BOOST_ALL_NO_LIB" }
+    package.config["Release"].target =      "foundation"
+    package.config["Release"].objdir =      "../objs/release/foundation"
+    package.config["Release"].buildflags =  { "optimize", "no-frame-pointer" }
 
     if (windows) then
         package.config["Release"].postbuildcommands = {
