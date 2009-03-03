@@ -28,8 +28,6 @@ if __name__ == '__main__':
         except:
             print "Unexpected error:", sys.exc_info()[0]
             raise
-        finally:
-            print "Done."
         EVAL = FOUNDATION_MODULE_NAME + '.main(sys.argv[2:])'
 	    
         if PROFILE:
@@ -37,12 +35,15 @@ if __name__ == '__main__':
             stats = pstats.Stats("foundation.cprof")
             stats.strip_dirs().sort_stats('time').print_stats(20)
         else:
-            eval(EVAL)
+            try:
+                eval(EVAL)
+            except KeyboardInterrupt, SystemExit:
+                print "\n"
     
     else:
-        print "[Python] Error: Program", sys.argv[1], "doesn't exist."
+        print "[FoundationEngine] Error: Program", sys.argv[1], "doesn't exist."
 		
 else:
-    print "[Python] Error: You must run this as a standalone script."
+    print "[FoundationEngine] Error: You must run this as a standalone script."
     
-print "[Python] Shutdown complete."
+print "[FoundationEngine] Shutdown complete."
