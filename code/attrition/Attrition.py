@@ -1,13 +1,375 @@
+# --------------------------------------------------
+# Python Libs
+import stackless
+import sys
+
+# --------------------------------------------------
+# Foundation Libs
+import FoundationPython as Foundation
+from Log.HTTPLogger import *
+import Entity.Actor
+import Entity.Manager
+import Entity.World
+import Entity.Unit
+import Entity.Building
+import GUI.Helper
+import Input.Manager
+
+# --------------------------------------------------
+# Managers
+TimeManager     = Foundation.TimeManager()
+Scheduler       = Foundation.Scheduler()
+GraphicManager  = Foundation.GraphicManager()
+InputManager    = Foundation.InputManager()
+GUIManager      = Foundation.GUIManager()
+GUIHelper       = GUI.Helper.Helper()
+AudioManager    = Foundation.AudioManager()
+PhysicsManager  = Foundation.PhysicsManager()
+TerrainManager  = Foundation.TerrainManager()
+EntityManager   = None
+FileManager     = Foundation.FileManager()
+Camera0         = None
+
+MouseEventChannel           = Foundation.Channel()
+SelectionCallbackChannel    = Foundation.Channel()
+
+# -----------------------------------------------
+# Inputs
+KEY_DELAY   = 0.015
+KEYS        = [Foundation.Keycode.A, Foundation.Keycode.B, Foundation.Keycode.C,
+               Foundation.Keycode.D, Foundation.Keycode.E, Foundation.Keycode.F,
+               Foundation.Keycode.G, Foundation.Keycode.H, Foundation.Keycode.I, Foundation.Keycode.J,
+               Foundation.Keycode.K, Foundation.Keycode.L, Foundation.Keycode.M, Foundation.Keycode.N,
+               Foundation.Keycode.O, Foundation.Keycode.P, Foundation.Keycode.Q, Foundation.Keycode.R,
+               Foundation.Keycode.S, Foundation.Keycode.T, Foundation.Keycode.U, Foundation.Keycode.V,
+               Foundation.Keycode.W, Foundation.Keycode.X, Foundation.Keycode.Y, Foundation.Keycode.Z,
+               Foundation.Keycode.NUMPAD_0, Foundation.Keycode.NUMPAD_1, Foundation.Keycode.NUMPAD_2,
+               Foundation.Keycode.NUMPAD_3, Foundation.Keycode.NUMPAD_4, Foundation.Keycode.NUMPAD_5,
+               Foundation.Keycode.NUMPAD_6, Foundation.Keycode.NUMPAD_7, Foundation.Keycode.NUMPAD_8,
+               Foundation.Keycode.NUMPAD_9,
+               Foundation.Keycode.SPACE,
+               Foundation.Keycode.ESCAPE]
+
+TimerKeyDelay       = Foundation.Timer()
+MouseStateChange    = Input.Manager.MouseState()
+KeyboardStateChange = Input.Manager.KeyboardState()
+Joystick0StateChange = Input.Manager.JoystickState()
+Joystick1StateChange = Input.Manager.JoystickState()
+
+CAMERA_SPEED = 1000
+
+SelectionBounds         = Foundation.Vector4(0, 0, 0, 0)
+SelectionWorldBounds    = Foundation.Vector4(0, 0, 0, 0)
+SelectedEntityList      = []
+
+# ------------------------------------------------
+# InputWork
+def doInput(_nDeltaTime):
+    global MouseStateChange, KeyboardStateChange, Joystick0StateChange, Joystick1StateChange
+    global TimerKeyDelay
+    global SelectionBounds, SelectionWorldBounds, SelectedEntityList
+
+    mouseState, keyboardState, joystickState = Input.Manager.consumeEvent(InputManager, GUIManager)
+
+    # Keyboard
+    if keyboardState and TimerKeyDelay.getTime() > KEY_DELAY:
+        for KeyIndex in keyboardState.Keys:
+            if keyboardState.Keys[KeyIndex]:
+                if KeyIndex == Foundation.Keycode.ESCAPE:
+                    return False
+
+                nCamSpeed = _nDeltaTime * CAMERA_SPEED
+                if KeyIndex == Foundation.Keycode.A:
+                    Camera0.moveRelative(Foundation.Vector3(-nCamSpeed, 0, 0))
+                elif KeyIndex == Foundation.Keycode.W:
+                    Camera0.moveRelative(Foundation.Vector3(0, nCamSpeed, 0))
+
+                if KeyIndex == Foundation.Keycode.S:
+                    Camera0.moveRelative(Foundation.Vector3(0, -nCamSpeed, 0))
+                elif KeyIndex == Foundation.Keycode.D:
+                    Camera0.moveRelative(Foundation.Vector3(nCamSpeed, 0, 0))
+
+                if KeyIndex == Foundation.Keycode.Z:
+                    Camera0.moveRelative(Foundation.Vector3(0, 0.0, -nCamSpeed))
+                elif KeyIndex == Foundation.Keycode.X:
+                    Camera0.moveRelative(Foundation.Vector3(0, 0, nCamSpeed))
+
+                if KeyIndex == Foundation.Keycode.NUMPAD_8:
+                    Camera0.setLookAt(Foundation.Vector3(0, 0, 10))
+
+        KeyboardStateChange.assign(keyboardState)
+        TimerKeyDelay.reset()
+
+    # Mouse
+    if mouseState:
+        # Our left mouse button just went down, create an intersection point
+        if mouseState.Button0 and not MouseStateChange.Button0:
+            print ("MouseDown (%i, %i), Creating Selection Frustrum..." % (mouseState.AxisX, mouseState.AxisY))
+            SelectionBounds[0] = mouseState.AxisX
+            SelectionBounds[1] = mouseState.AxisY
+
+            # FIXME: Screen Width/Height Variable
+            SelectionPoint = Foundation.Vector2(SelectionBounds[0], SelectionBounds[1])
+            nIntersectionPoint = TerrainManager.getRayIntersection("SceneManager0", "Camera0", SelectionPoint, Foundation.Vector2(1024, 768))
+            SelectionWorldBounds[0] = nIntersectionPoint[0]
+            SelectionWorldBounds[1] = nIntersectionPoint[2]
+            print "TerrainIntersection: %f, %f, %f" % (nIntersectionPoint[0], nIntersectionPoint[1], nIntersectionPoint[2])
+
+            SelectedEntityList = []
+
+        # Out left mouse button is still down, update our selection line
+        elif mouseState.Button0 and MouseStateChange.Button0:
+            SelectionPoint = Foundation.Vector2(mouseState.AxisX, mouseState.AxisY)
+
+            # FIXME: Screen Width/Height Variable
+            nIntersectionPoint = TerrainManager.getRayIntersection("SceneManager0", "Camera0", SelectionPoint, Foundation.Vector2(1024, 768))
+            SelectionWorldBounds[2] = nIntersectionPoint[0]
+            SelectionWorldBounds[3] = nIntersectionPoint[2]
+
+            nTopLeft        = (SelectionWorldBounds[0], 20, SelectionWorldBounds[1])
+            nTopRight       = (SelectionWorldBounds[2], 20, SelectionWorldBounds[1])
+            nBottomLeft     = (SelectionWorldBounds[0], 20, SelectionWorldBounds[3])
+            nBottomRight    = (SelectionWorldBounds[2], 20, SelectionWorldBounds[3])
+
+            GraphicManager.updateLine("SceneManager0", "SELECTION_LINELIST", [nTopLeft, nTopRight, nBottomRight, nBottomLeft, nTopLeft])
+
+        # Our left mouse button just went up, do picking across our selection area
+        elif not mouseState.Button0 and MouseStateChange.Button0:
+            print ("MouseUp (%i, %i), Selection Frustrum Created." % (mouseState.AxisX, mouseState.AxisY))
+            SelectionBounds[2] = mouseState.AxisX
+            SelectionBounds[3] = mouseState.AxisY
+            print " Selection Frustrum:", SelectionBounds
+
+            # FIXME: Screen Width/Height Variable
+            GraphicManager.doPicking("SceneManager0", "Camera0", 0x1, SelectionBounds, Foundation.Vector2(1024, 768))
+
+            GraphicManager.updateLine("SceneManager0", "SELECTION_LINELIST", [(0, 0, 0)])
+
+            print "Total Selection:", SelectedEntityList
+
+        MouseStateChange.assign(mouseState)
+
+    # Joystick
+    if joystickState:
+        if (joystickState.Index == 0):
+            Joystick0StateChange.assign(joystickState)
+        elif (joystickState.Index == 1):
+            Joystick1StateChange.assign(joystickState)
+
+    if joystickState:
+        pass
+
+    return True
+
+# ------------------------------------------------
+# Initialize Managers
+def initManagers():
+    global TimeManager, Schdeuler, AudioManager, InputManager, GraphicManager, EntityManager
+    global GUIManager, MouseEventChannel, Camera0
+
+    # Init Audio
+    HTTPLogger().writeContent(LoggerError.NONE, "[AudioManager] Initializing...")
+    bResult = AudioManager.initialize()
+    if bResult:
+        nAudioDeviceCount = AudioManager.getDriverCount()
+        HTTPLogger().writeContent(LoggerError.NONE, "[AudioManager] Found %i devices:" % (nAudioDeviceCount))
+        sAudioDeviceName = ""
+        for nIndex in range(0, nAudioDeviceCount):
+            sAudioDeviceName += AudioManager.getDriverInfo(nIndex) + ", "
+        HTTPLogger().writeContent(LoggerError.NONE, "[AudioManager] Devices: %s" % (sAudioDeviceName))
+        Scheduler.AddTask(AudioManager.getTaskUpdate(), 0, 1)
+        HTTPLogger().writeContent(LoggerError.NONE, "[AudioManager] Success.")
+    else:
+        HTTPLogger().writeContent(LoggerError.NONE, "[AudioManager] Error.")
+        return False
+
+    # Init Physics
+    HTTPLogger().writeContent(LoggerError.NONE, "[PhysicsManager] Initializing...")
+    Scheduler.AddTask(PhysicsManager.getTaskUpdate(), 1, 0)
+    HTTPLogger().writeContent(LoggerError.NONE, "[PhysicsManager] Success.")
+
+    # Init Graphics
+    HTTPLogger().writeContent(LoggerError.NONE, "[GraphicManager] Initializing...")
+    bResult = GraphicManager.initialize("Scarab")
+    if bResult:
+        GraphicManager.showCursor(False)
+        GraphicManager.addSceneManager("SceneManager0")
+        TerrainManager.create("SceneManager0")
+        Camera0 = GraphicManager.addCamera("SceneManager0", "Camera0", 0, 0.0, 0.0, 1.0, 1.0)
+        Camera0.setPosition(Foundation.Vector3(0, 500, 0.01))
+        Camera0.setLookAt(Foundation.Vector3(0, 0, 0))
+        GraphicManager.addLine("SceneManager0", "SELECTION_LINELIST", [(0, 0, 0)], (0.0, 1.0, 0.0))
+
+        SelectionCallbackChannel.Channel_Join("GRAPHICS_SELECTION", onSelection)
+
+        Scheduler.AddTask(GraphicManager.getTaskRender(), 1, 0)
+        HTTPLogger().writeContent(LoggerError.NONE, "[GraphicManager] Success.")
+    else:
+        HTTPLogger().writeContent(LoggerError.ERROR, "[GraphicManager] Check ogre.log for more information.")
+        return False
+
+    # Init Input
+    print " - [InputManager] Initializing..."
+    nWindowHandle = GraphicManager.getWindowHandle()
+    InputManager.initialize(nWindowHandle)
+    Scheduler.AddTask(InputManager.getTaskCapture(), 1, 0)
+
+    # Init our mouse button event callback function
+    MouseEventChannel.Channel_Join("MOUSE_EVENTS", onMouseEvent)
+    print " - [InputManager] Success."
+
+    # Init GUI
+    print " - [GUIManager] Initializing..."
+    GUIManager.initialize(GraphicManager.getRenderWindow())
+    print " - [GUIManager] Success."
+
+    # Init EntityManager
+    print " - [EntityManager] Initializing..."
+    EntityManager = Entity.Manager.Manager("../../data/scarabEntityTypes.yaml", "../../data/scarabWeaponTypes.yaml")
+    #Scheduler.AddTask(EntityManager.Task, 1, 0)
+    print " - [EntityManager] Success."
+
+    return True
 
 
+# ------------------------------------------------
+# Cleanup Managers
+def cleanupManagers():
+    global TimeManager, Schdeuler, AudioManager, InputManager, GraphicManager, GUIManager
+
+    HTTPLogger().writeContent(LoggerError.NONE, "[Scheduler] Shutting down...")
+    if Scheduler:
+        if EntityManager:
+            HTTPLogger().writeContent(LoggerError.NONE, "[EntityManager] Shutting down...")
+            #Scheduler.RemoveTask(EntityManager.Task)
+            HTTPLogger().writeContent(LoggerError.NONE, "[EntityManager] Complete.")
+
+        if AudioManager:
+            HTTPLogger().writeContent(LoggerError.NONE, "[AudioManager] Shutting down...")
+            Scheduler.RemoveTask(AudioManager.getTaskUpdate())
+            AudioManager.destroy()
+            AudioManager = None
+            HTTPLogger().writeContent(LoggerError.NONE, "[AudioManager] Complete.")
+
+        if GUIManager:
+            HTTPLogger().writeContent(LoggerError.NONE, "[GUIManager] Shutting down...")
+            GUIManager.destroy()
+            GUIManager = None
+            HTTPLogger().writeContent(LoggerError.NONE, "[GUIManager] Complete.")
+
+        if InputManager:
+            HTTPLogger().writeContent(LoggerError.NONE, "[InputManager] Shutting down...")
+            Scheduler.RemoveTask(InputManager.getTaskCapture())
+            InputManager.destroy()
+            InputManager = None
+            HTTPLogger().writeContent(LoggerError.NONE, "[InputManager] Complete.")
+
+        if PhysicsManager:
+            HTTPLogger().writeContent(LoggerError.NONE, "[PhysicsManager] Shutting down...")
+            Scheduler.RemoveTask(PhysicsManager.getTaskUpdate())
+            HTTPLogger().writeContent(LoggerError.NONE, "[PhysicsManager] Complete.")
+
+        if GraphicManager:
+            HTTPLogger().writeContent(LoggerError.NONE, "[GraphicManager] Shutting down...")
+            GraphicManager.showCursor(True)
+            Scheduler.RemoveTask(GraphicManager.getTaskRender())
+            GraphicManager.destroy()
+            GraphicManager = None
+            HTTPLogger().writeContent(LoggerError.NONE, "[GraphicManager] Complete.")
+
+        HTTPLogger().writeContent(LoggerError.NONE, "[Scheduler] Complete.")
+    else:
+        HTTPLogger().writeContent(LoggerError.ERROR, "[Scheduler] Scheduler is already destroyed.")
 
 
+# --------------------------------------------------
+# MouseEventCallback
+def onMouseEvent(channel, header, data, size):
+
+    # Mouse move
+    sButton = data
+    if header == 2:
+        for i in range(0, 9):
+            if sButton == "Btn_Entity_Create" + str(i):
+                #print sButton, "pressed", "ENTITY =", SelectedEntityList[0].getCreationAbilities()[i]
+                sType = SelectedEntityList[0].getCreationAbilities()[i]
+                SelectedEntityList[0].createUnit(EntityManager.getEntityTypeFromName(sType))
+                print "+ GUI Selected Unit of Type %s From Unit %s" % (sType, SelectedEntityList[0])
 
 
+    elif header == 3:
+        pass
 
+# --------------------------------------------------
+# Selection Callback
+def onSelection(channel, header, data, size):
+    global SelectedEntityList
+
+    #print "Selection Channel Callback Received"
+
+    nObjectNameLen = len(data) - 13
+    nObjectPosition = struct.unpack("fff", data[nObjectNameLen:nObjectNameLen+12])
+    nObjectName = data[:nObjectNameLen]
+
+    HTTPLogger().writeContent(LoggerError.NONE, "Selected Object: " + nObjectName + " at " + str(nObjectPosition[0]) + "," + str(nObjectPosition[1]) + "," + str(nObjectPosition[2]))
+    #print "Name:", nObjectName, "Position:", nObjectPosition[0], nObjectPosition[1], nObjectPosition[2]
+
+    nEntityId = nObjectName[:len(nObjectName) - len("_GRAPHIC")]
+    uEntity = EntityManager.getEntityById(nEntityId)
+    SelectedEntityList.append(uEntity)
+
+# ------------------------------------------------
+# Main Tasklets
+def schedulerTasklet():
+    uMainTimer = Foundation.Timer()
+    nDeltaTime = 0
+    while True:
+        nDeltaTime = uMainTimer.getTime()
+        uMainTimer.reset()
+        nDeltaTime = Foundation.f_clamp(nDeltaTime, 0.0, 1.0)
+
+        # Update Input
+        if not doInput(nDeltaTime):
+            break
+
+        # Update GUI
+        '''
+        GUIHelper.updateGameUI(nDeltaTime, TimeManager.getTime(), GraphicManager.getAverageFPS())
+        if len(SelectedEntityList) > 0:
+            GUIHelper.updateEntityUI(nDeltaTime, SelectedEntityList[0])
+        '''
+
+        # Update internals
+        Scheduler.Step(1.0)
+
+        stackless.schedule()
 
 # ------------------------------------------------
 # Entry Point
 def main(argv):
-    print "Attrition"
-    
+    global EntityManager
+
+    try:
+        HTTPLogger("../attrition_log.html")
+        HTTPLogger().newTable("Foundation Engine (Project: Attrition)", "Description")
+        HTTPLogger().writeContent(LoggerError.SUCCESS, "Initialized (%s/%s)" % (sys.path[0], sys.argv[0]))
+
+        initManagers()
+
+        stackless.tasklet(schedulerTasklet)()
+
+        try:
+            stackless.run()
+        except TaskletExit:
+            pass
+
+    except KeyboardInterrupt:
+        print "\n"
+
+    # Cleanup
+    GUIHelper.cleanupGameUI()
+    cleanupManagers()
+
+    HTTPLogger().writeContent(LoggerError.SUCCESS, "Shutdown Complete")
+    HTTPLogger().endTable()
+    HTTPLogger().closeLog()
