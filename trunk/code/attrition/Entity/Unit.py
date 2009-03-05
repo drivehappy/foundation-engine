@@ -23,6 +23,9 @@ class Unit(Actor):
         self.velocity = velocity
         self.targetPosition = None
         self.graphic = None
+        self.weaponList = []
+
+        self.initGraphic()
 
     def __handleTasklet(self, channelData):
         print "Unit.__handleTasklet:", channelData
@@ -30,8 +33,8 @@ class Unit(Actor):
     def initGraphic(self):
         self.graphic = Foundation.EntityGraphic("SceneManager0", self.name + "_graphic")
 
-        if self.m_uType == None:
-            HTTPLogger().writeContent(LoggerError.WARNING, "[Entity] Warning: Entity Type not set when attempting to setup graphics.")
+        if self.type == None:
+            HTTPLogger().writeContent(LoggerError.WARNING, "Entity type not set when attempting to setup graphics.")
             return
 
         nScale      = self.type["Scale"]

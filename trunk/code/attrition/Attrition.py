@@ -2,6 +2,7 @@
 # Python Libs
 import stackless
 import sys
+import struct
 
 # --------------------------------------------------
 # Foundation Libs
@@ -11,7 +12,6 @@ import Entity.Actor
 import Entity.Manager
 import Entity.World
 import Entity.Unit
-import Entity.Building
 import GUI.Helper
 import Input.Manager
 
@@ -321,6 +321,8 @@ def onSelection(channel, header, data, size):
 # ------------------------------------------------
 # Main Tasklets
 def schedulerTasklet():
+    global EntityManager
+    
     uMainTimer = Foundation.Timer()
     nDeltaTime = 0
     while True:
@@ -330,19 +332,25 @@ def schedulerTasklet():
 
         # Update Input
         if not doInput(nDeltaTime):
-            break
+            EntityManager.shutdown()
+            shutdown()
 
         # Update GUI
-        '''
         GUIHelper.updateGameUI(nDeltaTime, TimeManager.getTime(), GraphicManager.getAverageFPS())
         if len(SelectedEntityList) > 0:
             GUIHelper.updateEntityUI(nDeltaTime, SelectedEntityList[0])
-        '''
 
         # Update internals
         Scheduler.Step(1.0)
 
         stackless.schedule()
+
+def buildingInitTasklet():
+    uUnitType = EntityManager.getEntityTypeFromName("CommandCenter")
+    CommandCenter = EntityManager.addEntity("CommandCenter0", uUnitType)
+    CommandCenter.createGraphic("SceneManager0")
+    CommandCenter.createCollision(Foundation.CollisionShapeId.BOX, Foundation.Vector3(4, 4, 4))
+    CommandCenter.setPosition(Foundation.Vector3(0, 20, 0))
 
 # ------------------------------------------------
 # Entry Point
@@ -355,17 +363,28 @@ def main(argv):
         HTTPLogger().writeContent(LoggerError.SUCCESS, "Initialized (%s/%s)" % (sys.path[0], sys.argv[0]))
 
         initManagers()
+        
+        GUIHelper.createGameUI()
+        GUIHelper.createEntityUI()
 
         stackless.tasklet(schedulerTasklet)()
+
+        # Spin up some units
+        EntityManager.addUnit("Scout")
 
         try:
             stackless.run()
         except TaskletExit:
-            pass
+            raise
 
     except KeyboardInterrupt:
         print "\n"
 
+    shutdown()
+
+# ------------------------------------------------
+# Shutdown
+def shutdown():
     # Cleanup
     GUIHelper.cleanupGameUI()
     cleanupManagers()
@@ -373,3 +392,5 @@ def main(argv):
     HTTPLogger().writeContent(LoggerError.SUCCESS, "Shutdown Complete")
     HTTPLogger().endTable()
     HTTPLogger().closeLog()
+
+    exit(0)
