@@ -13,11 +13,15 @@ class Actor:
         self.channel = stackless.channel()
         self.tasklet = self.__handleTasklet
         stackless.tasklet(self.__tasklet)()
+        stackless.schedule()
 
     def __tasklet(self):
         while True:
-            self.__handleTasklet(self.channel.receive())
+            self.tasklet(self.channel.receive())
+            stackless.schedule()
 
     def __handleTasklet(self, channelData):
         print "Actor.__handleTasklet:", channelData
 
+    def shutdown(self):
+        raise TaskletExit
