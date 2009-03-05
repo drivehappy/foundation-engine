@@ -21,7 +21,7 @@ class Manager():
     
     class __impl(Actor):
         def __init__(self, fileEntityTypes, fileWeaponTypes):
-            Actor.__init__(self)
+            Actor.__init__(self, self.__handleTasklet)
             
             HTTPLogger().writeContent(LoggerError.NONE, "UnitManager Initialized.")
             
@@ -37,18 +37,23 @@ class Manager():
         def __handleTasklet(self, channelData):
             sender, msg, msgdata = channelData[0], channelData[1], channelData[2:]
 
-            print "Manager Update"
+            #print "Manager Update"
 
-            if msg == Message.CREATE_UNIT:
-                HTTPLogger().writeContent(LoggerError.DEBUG, sender + " creating unit of type " + msgdata)
-                self.addUnit(msgdata)
+            if msg == Message.UNIT_STATE:
+                #print "UnitState Message Received"
+                pass
+            elif msg == Message.CREATE_UNIT:
+                unitType = msgdata[0]['Name']
+                HTTPLogger().writeContent(LoggerError.DEBUG, sender.name + " creating unit of type " + unitType)
+                newUnit = self.addUnit(unitType)
+
 
         # Tasklet
         def __sendWorldState(self):
-            print "Sending WorldState"
+            #print "Sending WorldState to %i Units" % (len(self.unitList))
             worldState = WorldState(1.0, Foundation.TimeManager().getTime())
             for unit in self.unitList:
-                self.channel.send((self.channel, worldState))
+                unit.channel.send((self.channel, Message.WORLD_STATE, worldState))
 
         def __runFrame(self):
             while True:
@@ -73,7 +78,16 @@ class Manager():
                 HTTPLogger().writeContent(LoggerError.NONE, "Created unit of type %s" % (uUnitType["Name"]))
                 self.unitList.append(unitNew)
 
+                return unitNew
+            return None
+
         # Unit API
+        def getEntityByName(self, name):
+            for entity in self.unitList:
+                if entity.name == name:
+                    return entity
+            return None
+
         def getEntityTypes(self):
             return self.entityTypes
 

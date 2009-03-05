@@ -292,7 +292,7 @@ def onMouseEvent(channel, header, data, size):
         for i in range(0, 9):
             if sButton == "Btn_Entity_Create" + str(i):
                 #print sButton, "pressed", "ENTITY =", SelectedEntityList[0].getCreationAbilities()[i]
-                sType = SelectedEntityList[0].getCreationAbilities()[i]
+                sType = SelectedEntityList[0].creationAbilities[i]
                 SelectedEntityList[0].createUnit(EntityManager.getEntityTypeFromName(sType))
                 print "+ GUI Selected Unit of Type %s From Unit %s" % (sType, SelectedEntityList[0])
 
@@ -315,8 +315,10 @@ def onSelection(channel, header, data, size):
     #print "Name:", nObjectName, "Position:", nObjectPosition[0], nObjectPosition[1], nObjectPosition[2]
 
     nEntityId = nObjectName[:len(nObjectName) - len("_GRAPHIC")]
-    uEntity = EntityManager.getEntityById(nEntityId)
-    SelectedEntityList.append(uEntity)
+    uEntity = EntityManager.getEntityByName(nEntityId)
+
+    if uEntity:
+        SelectedEntityList.append(uEntity)
 
 # ------------------------------------------------
 # Main Tasklets
@@ -370,7 +372,7 @@ def main(argv):
         stackless.tasklet(schedulerTasklet)()
 
         # Spin up some units
-        EntityManager.addUnit("Scout")
+        EntityManager.addUnit("CommandCenter")
 
         try:
             stackless.run()
