@@ -58,13 +58,16 @@ typedef unsigned int BitSize_t;
 struct RAK_DLL_EXPORT SocketDescriptor
 {
 	SocketDescriptor();
-	SocketDescriptor(unsigned short _port, const char *_hostAddress);
+	SocketDescriptor(unsigned short _port, const char *_hostAddress, bool _isPS3LobbySocket=false);
 
 	/// The local port to bind to.  Pass 0 to have the OS autoassign a port.
 	unsigned short port;
 
 	/// The local network card address to bind to, such as "127.0.0.1".  Pass an empty string to use INADDR_ANY.
 	char hostAddress[32];
+
+	/// \internal
+	bool isPS3LobbySocket;
 };
 
 /// \brief Network address for a system
@@ -142,7 +145,7 @@ struct RPCParameters
 /// Use RakPeer::GetGuidFromSystemAddress(UNASSIGNED_SYSTSEM_ADDRESS) to get your own GUID
 struct RAK_DLL_EXPORT RakNetGUID
 {
-	unsigned int g[4];
+	uint32_t g[4];
 
 	// Return the GUID as a string
 	// Returns a static string
@@ -169,23 +172,44 @@ struct RAK_DLL_EXPORT RakNetGUID
 	bool operator < ( const RakNetGUID& right ) const;
 };
 
+/// Index of an invalid SystemAddress
+const SystemAddress UNASSIGNED_SYSTEM_ADDRESS =
+{
+	0xFFFFFFFF, 0xFFFF
+};
+
+const RakNetGUID UNASSIGNED_RAKNET_GUID = 
+{
+	{0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF}
+};
+
 struct RAK_DLL_EXPORT NetworkID
 {
-	NetworkID();
-	~NetworkID();
+	NetworkID()
+	{
+#if defined NETWORK_ID_SUPPORTS_PEER_TO_PEER
+		guid = UNASSIGNED_RAKNET_GUID;
+		systemAddress=UNASSIGNED_SYSTEM_ADDRESS;
+#endif
+		localSystemAddress=65535;
+	}
+	~NetworkID() {}
 
+	/// \depreciated. Use NETWORK_ID_SUPPORTS_PEER_TO_PEER in RakNetDefines.h
 	// Set this to true to use peer to peer mode for NetworkIDs.
 	// Obviously the value of this must match on all systems.
 	// True, and this will write the systemAddress portion with network sends.  Takes more bandwidth, but NetworkIDs can be locally generated
 	// False, and only localSystemAddress is used.
-	static bool peerToPeerMode;
+//	static bool peerToPeerMode;
 
+#if defined NETWORK_ID_SUPPORTS_PEER_TO_PEER
 	// Depreciated: Use guid instead
 	// In peer to peer, we use both systemAddress and localSystemAddress
 	// In client / server, we only use localSystemAddress
 	SystemAddress systemAddress;
 
 	RakNetGUID guid;
+#endif
 	unsigned short localSystemAddress;
 
 	NetworkID& operator = ( const NetworkID& input );
@@ -227,19 +251,8 @@ struct Packet
 	bool deleteData;
 };
 
-const RakNetGUID UNASSIGNED_RAKNET_GUID = 
-{
-	0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF
-};
-
 ///  Index of an unassigned player
 const SystemIndex UNASSIGNED_PLAYER_INDEX = 65535;
-
-/// Index of an invalid SystemAddress
-const SystemAddress UNASSIGNED_SYSTEM_ADDRESS =
-{
-	0xFFFFFFFF, 0xFFFF
-};
 
 /// Unassigned object ID
 const NetworkID UNASSIGNED_NETWORK_ID;

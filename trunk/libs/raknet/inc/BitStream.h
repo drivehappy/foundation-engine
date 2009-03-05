@@ -28,7 +28,7 @@
 #include "Export.h"
 #include "RakNetTypes.h"
 #include "RakString.h"
-#include <assert.h>
+#include "RakAssert.h"
 #include <math.h>
 #include <float.h>
 
@@ -691,7 +691,7 @@ namespace RakNet
 
 		BitStream( const BitStream &invalid) {
 			(void) invalid;
-			assert(0);
+			RakAssert(0);
 		}
 
 		/// Assume the input source points to a native type, compress and write it.
@@ -900,8 +900,10 @@ namespace RakNet
 	template <>
 		inline void BitStream::Write(SystemAddress var)
 	{
-	//	Write(var.binaryAddress);
-		Write(var.binaryAddress);
+		// Hide the address so routers don't modify it
+		var.binaryAddress=~var.binaryAddress;
+		// Don't endian swap the address
+		WriteBits((unsigned char*)&var.binaryAddress, sizeof(var.binaryAddress)*8, true);
 		Write(var.port);
 	}
 
@@ -917,7 +919,9 @@ namespace RakNet
 	template <>
 		inline void BitStream::Write(NetworkID var)
 	{
-		if (NetworkID::IsPeerToPeerMode()) // Use the function rather than directly access the member or DLL users will get an undefined external error
+#if defined (NETWORK_ID_SUPPORTS_PEER_TO_PEER)
+		RakAssert(NetworkID::IsPeerToPeerMode());
+//		if (NetworkID::IsPeerToPeerMode()) // Use the function rather than directly access the member or DLL users will get an undefined external error
 		{
 			if (var.guid!=UNASSIGNED_RAKNET_GUID)
 			{
@@ -934,6 +938,7 @@ namespace RakNet
 			else
 				Write(false);
 		}
+#endif
 		/*
 		Write(var.guid);
 		Write(var.systemAddress);
@@ -1117,7 +1122,7 @@ namespace RakNet
 	template <>
 		inline void BitStream::WriteCompressed(float var)
 	{
-		assert(var > -1.01f && var < 1.01f);
+		RakAssert(var > -1.01f && var < 1.01f);
 		if (var < -1.0f)
 			var=-1.0f;
 		if (var > 1.0f)
@@ -1129,13 +1134,13 @@ namespace RakNet
 	template <>
 		inline void BitStream::WriteCompressed(double var)
 	{
-		assert(var > -1.01 && var < 1.01);
+		RakAssert(var > -1.01 && var < 1.01);
 		if (var < -1.0f)
 			var=-1.0f;
 		if (var > 1.0f)
 			var=1.0f;
 #ifdef _DEBUG
-		assert(sizeof(unsigned long)==4);
+		RakAssert(sizeof(unsigned long)==4);
 #endif
 		Write((unsigned long)((var+1.0)*2147483648.0));
 	}
@@ -1300,8 +1305,11 @@ namespace RakNet
 	template <>
 		inline bool BitStream::Read(SystemAddress &var)
 	{
-		// Read(var.binaryAddress);
+		//Read(var.binaryAddress);
+		// Don't endian swap the address
 		ReadBits( ( unsigned char* ) & var.binaryAddress, sizeof(var.binaryAddress) * 8, true );
+		// Unhide the IP address, done to prevent routers from changing it
+		var.binaryAddress=~var.binaryAddress;
 		return Read(var.port);
 	}
 
@@ -1319,7 +1327,9 @@ namespace RakNet
 	template <>
 		inline bool BitStream::Read(NetworkID &var)
 	{
-		if (NetworkID::IsPeerToPeerMode()) // Use the function rather than directly access the member or DLL users will get an undefined external error
+#if defined (NETWORK_ID_SUPPORTS_PEER_TO_PEER)
+		RakAssert(NetworkID::IsPeerToPeerMode());
+		//if (NetworkID::IsPeerToPeerMode()) // Use the function rather than directly access the member or DLL users will get an undefined external error
 		{
 			bool hasGuid, hasSystemAddress;
 			Read(hasGuid);
@@ -1333,6 +1343,7 @@ namespace RakNet
 			else
 				var.systemAddress=UNASSIGNED_SYSTEM_ADDRESS;
 		}
+#endif
 		/*
 		Read(var.guid);
 		Read(var.systemAddress);
@@ -1512,7 +1523,7 @@ namespace RakNet
 		void BitStream::WriteNormVector( templateType x, templateType y, templateType z )
 	{
 #ifdef _DEBUG
-		assert(x <= 1.01 && y <= 1.01 && z <= 1.01 && x >= -1.01 && y >= -1.01 && z >= -1.01);
+		RakAssert(x <= 1.01 && y <= 1.01 && z <= 1.01 && x >= -1.01 && y >= -1.01 && z >= -1.01);
 #endif
 		if (x>1.0)
 			x=1.0;
@@ -1771,7 +1782,7 @@ namespace RakNet
 	BitStream& operator>>(BitStream& in, templateType& c)
 	{
 		bool success = in.Read(c);
-		assert(success);
+		RakAssert(success);
 		return in;
 	}
 

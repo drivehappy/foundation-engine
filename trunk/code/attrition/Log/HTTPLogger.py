@@ -58,10 +58,22 @@ class HTTPLogger:
         def newTable(self, _sTitle, *_sHeader):
             self._checkOpen()
 
+            cpuInfo = Foundation.CPUInfo()
+            Foundation.Debug().getCPUInfo(cpuInfo)
+
             self.writeLog("<html>\n<head>\n<META HTTP-EQUIV='Content-Type' content='text/html; charset=utf-16'>\n</head>")
             self.writeLog("<pre><font face=arial size=+2>" + _sTitle + "</font></pre>\n")
             self.writeLog("<pre><font face=arial>Python " + sys.version + "</font></pre>\n")
             self.writeLog("<pre><font face=arial>Log Date: " + time.ctime() + "</font></pre>\n")
+            self.writeLog("<pre><font face=arial>CPU:" +
+                "\nVendor: " + cpuInfo.getVendorName() +
+                "\nStepping: " + str(cpuInfo.getStepping()) +
+                "\nModel: " + str(cpuInfo.getModel()) +
+                "\nFamily: " +  str(cpuInfo.getFamily()) +
+                "\nType: " +  str(cpuInfo.getType()) +
+                "\nExtModel: " +  str(cpuInfo.getExtendedModel()) +
+                "\nExtFamily: " +  str(cpuInfo.getExtendedFamily()) +
+                "</font></pre>\n")
             self.writeLog("<table border=0 width=1000>\n<tr bgcolor=#7e7e7e>\n")
             self.writeLog("  <td><font face=arial color=#EEEEEE><b>Time(s)</b></font></td>\n")
             self.writeLog("  <td><font face=arial color=#EEEEEE><b>TimeDiff(s)</b></font></td>\n")

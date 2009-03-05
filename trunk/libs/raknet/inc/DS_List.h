@@ -18,7 +18,7 @@
 #ifndef __LIST_H
 #define __LIST_H 
 
-#include <assert.h>
+#include "RakAssert.h"
 #include <string.h> // memmove
 #include "Export.h"
 #include "RakMemoryOverride.h"
@@ -210,7 +210,7 @@ namespace DataStructures
 		#ifdef _DEBUG
 			if (position>=list_size)
 			{
-				assert ( position < list_size );
+				RakAssert ( position < list_size );
 			}
 		#endif
 			return listArray[ position ];
@@ -233,7 +233,7 @@ namespace DataStructures
 		inline list_type& List<list_type>::Pop(void)
 		{
 #ifdef _DEBUG
-			assert(list_size>0);
+			RakAssert(list_size>0);
 #endif
 			--list_size;
 			return listArray[list_size];
@@ -245,7 +245,7 @@ namespace DataStructures
 #ifdef _DEBUG
 		if (position>list_size)
 		{
-			assert( position <= list_size );
+			RakAssert( position <= list_size );
 		}
 #endif
 
@@ -370,7 +370,7 @@ namespace DataStructures
 
 #ifdef _DEBUG
 
-			assert( list_size == position + 1 );
+			RakAssert( list_size == position + 1 );
 
 #endif
 
@@ -390,7 +390,7 @@ namespace DataStructures
 #ifdef _DEBUG
 		if (position >= list_size)
 		{
-			assert( position < list_size );
+			RakAssert( position < list_size );
 			return;
 		}
 #endif
@@ -413,7 +413,7 @@ namespace DataStructures
 #ifdef _DEBUG
 			if (position >= list_size)
 			{
-				assert( position < list_size );
+				RakAssert( position < list_size );
 				return;
 			}
 #endif
@@ -426,7 +426,7 @@ namespace DataStructures
 	{
 		// Delete the last elements on the list.  No compression needed
 #ifdef _DEBUG
-		assert(list_size>=num);
+		RakAssert(list_size>=num);
 #endif
 		list_size-=num;
 	}
@@ -470,7 +470,7 @@ namespace DataStructures
 		if ( allocation_size == 0 )
 			return ;
 
-		new_array = RakNet::OP_NEW<list_type >( allocation_size );
+		new_array = RakNet::OP_NEW_ARRAY<list_type >( allocation_size );
 
 		// copy old array over
 		for ( unsigned int counter = 0; counter < list_size; ++counter )
@@ -501,7 +501,7 @@ namespace DataStructures
 
 			allocation_size=amountToAllocate;
 
-			new_array = RakNet::OP_NEW<list_type >( allocation_size );
+			new_array = RakNet::OP_NEW_ARRAY< list_type >( allocation_size );
 
 			if (listArray)
 			{

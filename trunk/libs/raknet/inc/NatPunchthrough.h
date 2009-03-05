@@ -145,29 +145,29 @@ public:
 		// Used by sender and facilitator
 		bool facilitatingConnection;
 		SystemAddress receiverPublic;
-		SystemAddress receiverPrivate;
+		SystemAddress receiverPrivate[MAXIMUM_NUMBER_OF_INTERNAL_IDS];
 		// Used to remove old connection Requests
 		RakNetTime timeoutTime;
+		RakNetGUID receiverGuid;
 
 		// Used only by sender
 		SystemAddress facilitator;
 		char* passwordData;
 		int passwordDataLength;
-		// 0 for unset. Used to store the receiver's port if they can send to us but we (the sender) can't send to them.
-		// If this is set, we abandon the normal series of guesses and just use this directly since we now know it's open and valid.
-		unsigned short advertisedPort;
+		SystemAddress advertisedAddress;
+		SystemAddress lastAddressAttempted;
 
 		// Used only by facilitator
 		SystemAddress senderPublic;
-		SystemAddress senderPrivate;
+		SystemAddress senderPrivate[MAXIMUM_NUMBER_OF_INTERNAL_IDS];
 		unsigned char pingCount;
+		RakNetGUID senderGuid;
 
 		// Used by recipient
 		int recipientOfflineCount;
-
 		bool attemptedConnection;
 
-		void GetAddressList(RakPeerInterface *rakPeer, DataStructures::List<SystemAddress> &fallbackAddresses, SystemAddress publicAddress, SystemAddress privateAddress, bool excludeConnected);
+		void GetAddressList(RakPeerInterface *rakPeer, DataStructures::List<SystemAddress> &fallbackAddresses, SystemAddress publicAddress, SystemAddress privateAddress[MAXIMUM_NUMBER_OF_INTERNAL_IDS], bool excludeConnected);
 	};
 protected:
 	void OnPunchthroughRequest(RakPeerInterface *peer, Packet *packet);
@@ -177,7 +177,7 @@ protected:
 	void RemoveRequestByFacilitator(SystemAddress systemAddress);
 	void LogOut(const char *l);
 	PluginReceiveResult OnConnectionAttemptFailed(Packet *packet);
-	void RemoveFromConnectionRequestList(SystemAddress systemAddress);
+	void RemoveFromConnectionRequestList(SystemAddress systemAddress, RakNetGUID guid);
 	PluginReceiveResult OnNewIncomingConnection(Packet *packet);
 
 	bool allowFacilitation;

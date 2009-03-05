@@ -296,6 +296,11 @@ public:
 	/// \param[in] channel Which ordering channel to send the disconnection notification on, if any
 	void CloseConnection( const SystemAddress target, bool sendDisconnectionNotification, unsigned char orderingChannel=0 );
 
+	/// Cancel a pending connection attempt
+	/// If we are already connected, the connection stays open
+	/// \param[in] target Which system to cancel
+	void CancelConnectionAttempt( const SystemAddress target );
+
 	/// Returns if a particular systemAddress is connected to us (this also returns true if we are in the process of connecting)
 	/// \param[in] systemAddress The SystemAddress we are referring to
 	/// \param[in] includeInProgress If true, also return true for connections that are in progress but haven't completed
@@ -382,8 +387,9 @@ public:
 	//--------------------------------------------------------------------------------------------Network Functions - Functions dealing with the network in general--------------------------------------------------------------------------------------------
 	/// Return the unique address identifier that represents you or another system on the the network and is based on your local IP / port.
 	/// \param[in] systemAddress Use UNASSIGNED_SYSTEM_ADDRESS to get your behind-LAN address. Use a connected system to get their behind-LAN address
+	/// \param[in] index When you have multiple internal IDs, which index to return? Currently limited to MAXIMUM_NUMBER_OF_INTERNAL_IDS (so the maximum value of this variable is MAXIMUM_NUMBER_OF_INTERNAL_IDS-1)
 	/// \return the identifier of your system internally, which may not be how other systems see if you if you are behind a NAT or proxy
-	SystemAddress GetInternalID( const SystemAddress systemAddress=UNASSIGNED_SYSTEM_ADDRESS ) const;
+	SystemAddress GetInternalID( const SystemAddress systemAddress=UNASSIGNED_SYSTEM_ADDRESS, const int index=0 ) const;
 
 	/// Return the unique address identifier that represents you on the the network and is based on your externalIP / port
 	/// (the IP / port the specified player uses to communicate with you)
@@ -545,7 +551,7 @@ public:
 	// \param[in] routerInterface The router to use to route messages to systems not directly connected to this system.
 	void RemoveRouterInterface( RouterInterface *routerInterface );
 
-	/// \Returns a packet for you to write to if you want to create a Packet for some reason.
+	/// \returns a packet for you to write to if you want to create a Packet for some reason.
 	/// You can add it to the receive buffer with PushBackPacket
 	/// \param[in] dataSize How many bytes to allocate for the buffer
 	/// \return A packet you can write to
@@ -571,14 +577,30 @@ public:
 	/// \return If you previously called ApplyNetworkSimulator
 	bool IsNetworkSimulatorActive( void );
 
+	// -------------------------------------------------------------------------------------------- Socket Functions--------------------------------------------------------------------------------------------
+	/// Have RakNet use a socket you created yourself
+	/// The socket should not be in use - it is up to you to either shutdown or close the connections using it. Otherwise existing connections on that socket will eventually disconnect
+	/// This socket will be forgotten after calling Shutdown(), so rebind again if you need to.
+	/// \param[in] s The socket to rebind.
+	/// \param[in] haveRakNetCloseSocket If true, RakNet will call closeSocket on shutdown for this socket.
+	/// \param[in] connectionSocketIndex Index into the array of socket descriptors passed to socketDescriptors in RakPeer::Startup() to send on.
+	void UseUserSocket( int socket, bool haveRakNetCloseSocket, unsigned connectionSocketIndex);
+	
+	/// Have RakNet recreate a socket using a different port.
+	/// The socket should not be in use - it is up to you to either shutdown or close the connections using it. Otherwise existing connections on that socket will eventually disconnect
+	/// \param[in] connectionSocketIndex Index into the array of socket descriptors passed to socketDescriptors in RakPeer::Startup() to send on.
+	/// \param[in] sd Address to bind on
+	void RebindSocketAddress(unsigned connectionSocketIndex, SocketDescriptor &sd);
+
 	// --------------------------------------------------------------------------------------------Statistical Functions - Functions dealing with API performance--------------------------------------------------------------------------------------------
 
 	/// Returns a structure containing a large set of network statistics for the specified system.
 	/// You can map this data to a string using the C style StatisticsToString() function
 	/// \param[in] systemAddress: Which connected system to get statistics for
+	/// \param[in] rns If you supply this structure, it will be written to it. Otherwise it will use a static struct, which is not threadsafe
 	/// \return 0 on can't find the specified system.  A pointer to a set of data otherwise.
 	/// \sa RakNetStatistics.h
-	RakNetStatistics * const GetStatistics( const SystemAddress systemAddress );
+	RakNetStatistics * const GetStatistics( const SystemAddress systemAddress, RakNetStatistics *rns=0 );
 
 	// --------------------------------------------------------------------------------------------EVERYTHING AFTER THIS COMMENT IS FOR INTERNAL USE ONLY--------------------------------------------------------------------------------------------
 	/// \internal
@@ -602,7 +624,7 @@ public:
 		bool isActive; // Is this structure in use?
 		SystemAddress systemAddress;  /// Their external IP on the internet
 		SystemAddress myExternalSystemAddress;  /// Your external IP on the internet, from their perspective
-		SystemAddress theirInternalSystemAddress;  /// Their internal IP, behind the LAN
+		SystemAddress theirInternalSystemAddress[MAXIMUM_NUMBER_OF_INTERNAL_IDS];  /// Their internal IP, behind the LAN
 		ReliabilityLayer reliabilityLayer;  /// The reliability layer associated with this player
 		bool weInitiatedTheConnection; /// True if we started this connection via Connect.  False if someone else connected to us.
 		PingAndClockDifferential pingAndClockDifferential[ PING_TIMES_ARRAY_SIZE ];  /// last x ping times and calculated clock differentials with it
@@ -617,7 +639,7 @@ public:
 		RPCMap rpcMap; /// Mapping of RPC calls to single byte integers to save transmission bandwidth.
 		RakNetGUID guid;
 		int MTUSize;
-#if defined(_PS3)
+#if defined(_PS3) || defined(__PS3__) || defined(SN_TARGET_PS3)
 //		void *onlineServiceId;
 //		unsigned int connectionId;
 #endif
@@ -700,7 +722,7 @@ protected:
 	unsigned short maximumIncomingConnections;
 	RakNet::BitStream offlinePingResponse;
 	///Local Player ID
-	SystemAddress mySystemAddress;
+	SystemAddress mySystemAddress[MAXIMUM_NUMBER_OF_INTERNAL_IDS];
 	char incomingPassword[256];
 	unsigned char incomingPasswordLength;
 
@@ -806,7 +828,12 @@ protected:
 		NetworkID networkID;
 		bool blockingCommand; // Only used for RPC
 		char *data;
-		enum {BCS_SEND, BCS_CLOSE_CONNECTION, BCS_CANCEL_CONNECTION_ATTEMPT, /*BCS_RPC, BCS_RPC_SHIFT,*/ BCS_DO_NOTHING} command;
+		bool haveRakNetCloseSocket;
+		unsigned connectionSocketIndex;
+		bool isPS3LobbySocket;
+		SOCKET socket;
+		unsigned short port;
+		enum {BCS_SEND, BCS_CLOSE_CONNECTION, BCS_USE_USER_SOCKET, BCS_REBIND_SOCKET_ADDRESS, /*BCS_RPC, BCS_RPC_SHIFT,*/ BCS_DO_NOTHING} command;
 	};
 
 	// Single producer single consumer queue using a linked list
@@ -826,6 +853,7 @@ protected:
 	void ClearBufferedCommands(void);
 	void ClearRequestedConnectionList(void);
 	void AddPacketToProducer(Packet *p);
+	unsigned int GenerateSeedFromGuid(void);
 	SimpleMutex securityExceptionMutex;
 
 	//DataStructures::AVLBalancedBinarySearchTree<RPCNode> rpcTree;
@@ -834,7 +862,15 @@ protected:
 	bool trackFrequencyTable;
 	int threadSleepTimer;
 
-	SOCKET *connectionSockets;
+	struct RakNetSocket
+	{
+		SOCKET s;
+		bool isPS3LobbySocket;
+		bool haveRakNetCloseSocket;
+	} *connectionSockets;
+
+//	SOCKET *connectionSockets;
+//	bool *haveRakNetCloseSocket; // array of bools, to dealloc connectionSockets into the same index
 	unsigned connectionSocketsLength;
 
 #if defined (_WIN32) && defined(USE_WAIT_FOR_MULTIPLE_EVENTS)
@@ -897,7 +933,7 @@ protected:
 	SystemAddress firstExternalID;
 	int splitMessageProgressInterval;
 	RakNetTime unreliableTimeout;
-#if defined(_PS3)
+#if defined(_PS3) || defined(__PS3__) || defined(SN_TARGET_PS3)
 //	unsigned int console2ContextId;
 #endif
 

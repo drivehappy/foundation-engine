@@ -21,7 +21,7 @@
 #include "RakMemoryOverride.h"
 #include "DS_List.h"
 #include "Export.h"
-#include <assert.h>
+#include "RakAssert.h"
 
 #ifdef _MSC_VER
 #pragma warning( push )
@@ -229,7 +229,7 @@ namespace DataStructures
 	unsigned Heap<weight_type, data_type, isMaxHeap>::Parent(const unsigned i) const
 	{
 #ifdef _DEBUG
-		assert(i!=0);
+		RakAssert(i!=0);
 #endif
 		return (i-1)/2;
 	}

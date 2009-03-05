@@ -23,7 +23,7 @@
 #include <new>
 
 #if defined(_XBOX) || defined(X360)
-#elif defined (_PS3)
+#elif defined(_PS3) || defined(__PS3__) || defined(SN_TARGET_PS3)
 // Causes linker errors
 // #include <stdlib.h>
 typedef unsigned int size_t;
@@ -48,10 +48,12 @@ typedef unsigned int size_t;
 
 // These pointers are statically and globally defined in RakMemoryOverride.cpp
 // Change them to point to your own allocators if you want.
+extern "C" {
 extern void* (*rakMalloc) (size_t size);
 extern void* (*rakRealloc) (void *p, size_t size);
 extern void (*rakFree) (void *p);
 extern void (*notifyOutOfMemory) (const char *file, const long line);
+}
 
 namespace RakNet
 {
