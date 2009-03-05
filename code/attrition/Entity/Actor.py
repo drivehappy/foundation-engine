@@ -9,10 +9,10 @@ class Actor:
     Actor class handles stackless tasklets, base class
     """
     
-    def __init__(self):
+    def __init__(self, handleTaskletFunction):
         self.shutdownFlag = False
         self.channel = stackless.channel()
-        self.tasklet = self.__handleTasklet
+        self.tasklet = handleTaskletFunction
         stackless.tasklet(self.__tasklet)()
         stackless.schedule()
 
@@ -23,9 +23,6 @@ class Actor:
 
             self.tasklet(self.channel.receive())
             stackless.schedule()
-
-    def __handleTasklet(self, channelData):
-        print "Actor.__handleTasklet:", channelData
-
+            
     def shutdown(self):
         self.shutdownFlag = True

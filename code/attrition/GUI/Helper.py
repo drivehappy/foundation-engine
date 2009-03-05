@@ -66,11 +66,11 @@ class Helper:
 
     def updateEntityUI(self, _nDeltaTime, _uEntity):
         if _uEntity:
-            GUIManager.setWidgetCaption("Text_Entity_Name", ("Name: %s" % _uEntity.getName()))
+            GUIManager.setWidgetCaption("Text_Entity_Name", ("Name: %s" % _uEntity.name))
 
             # Update creation ability text, and update our buttons accordingly
-            GUIManager.setWidgetCaption("Text_Entity_CreationList", ("Creates: %s" % _uEntity.getCreationAbilities()))
-            sUnitList = _uEntity.getCreationAbilities()
+            GUIManager.setWidgetCaption("Text_Entity_CreationList", ("Creates: %s" % _uEntity.creationAbilities))
+            sUnitList = _uEntity.creationAbilities
             nIndex = 0
             if sUnitList:
                 for nIndex, sEntity in enumerate(sUnitList):
@@ -82,22 +82,22 @@ class Helper:
 
             # Update build queue
             sBuildQueue = ""
-            for uEntityType in _uEntity.getUnitQueue():
+            for uEntityType in _uEntity.creationQueue:
                 sBuildQueue += uEntityType["Name"] + " "
             GUIManager.setWidgetCaption("Text_Entity_BuildQueue", ("Build Queue: %s" % sBuildQueue))
 
             # Update build progress
             nProgress = 0.0
             nTimeRemaining = 0.0
-            if _uEntity.m_bCreating:
-                nProgress = _uEntity.m_uCreationTimer.getTime() / _uEntity.m_nCreationTime * 100.0
-                nTimeRemaining = _uEntity.m_nCreationTime - _uEntity.m_uCreationTimer.getTime()
+            if _uEntity.creatingUnit and _uEntity.creationTime > 0.0:
+                nProgress = _uEntity.creationTimer.getTime() / _uEntity.creationTime * 100.0
+                nTimeRemaining = _uEntity.creationTime - _uEntity.creationTimer.getTime()
             GUIManager.setWidgetCaption("Text_Entity_BuildProgress", ("Build Progress: %i%% (%2.1fs)" % (nProgress, nTimeRemaining)))
 
             # Update current weapos on the entity
             sWeaponList = ""
-            for uWeapon in _uEntity.getWeaponList():
-                sWeaponList += uWeapon.getName() + " "
+            for uWeapon in _uEntity.weaponList:
+                sWeaponList += uWeapon.name + " "
             GUIManager.setWidgetCaption("Text_Entity_WeaponList", "Weapons: " + (sWeaponList))
 
         else:
