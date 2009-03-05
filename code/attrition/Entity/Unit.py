@@ -9,7 +9,8 @@ import FoundationPython as Foundation
 from Log.HTTPLogger import *
 from Entity.Actor import Actor
 from Entity.Properties import Property
-from Common.Common import Message, WorldState, UnitState
+from Entity.UnitPhysics import UnitPhysics
+from Common.Common import Message, Team, WorldState, UnitState
 
 # --------------------------------------------------
 # Unit
@@ -18,16 +19,19 @@ class Unit(Actor):
     Docstring.
     """
 
-    def __init__(self, type = None, name = '', position = (0,0,0), velocity = (0,0,0)):
+    def __init__(self, type = None, name = '', team = Team.UNKNOWN, position = Foundation.Vector3(0,20,0)):
         Actor.__init__(self, self.__handleTasklet)
 
         # Basic Attributes
         self.type = type
         self.name = name
-        self.position = position
-        self.velocity = velocity
+        self.team = team
+        self.physics = UnitPhysics()
         self.targetPosition = None
         self.graphic = None
+
+        self.physics.setPosition(position)
+        self.timer = Foundation.Timer()
 
         # Weapon
         self.weaponList = []
@@ -43,22 +47,51 @@ class Unit(Actor):
         # Setup our creation abilities
         if type:
             self.creationAbilities = type["Creations"]
+            self.physics.setVelocity(type["Speed"])
 
         # And finally, initialize our Unit graphics
         self.initGraphic()
 
+        # Add a non-blocking tasklet to quickly update our physics/graphics
+        stackless.tasklet(self.__handleNonblockingTasklet)()
+        stackless.schedule()
+
     def __handleTasklet(self, channelData):
-        channel, msg, worldState = channelData[0], channelData[1], channelData[2]
+        channel, msg, msgdata = channelData[0], channelData[1], channelData[2:]
 
         if msg == Message.WORLD_STATE:
-            #print "Unit received world state:", worldState
-
+            worldstate = msgdata[0]
             unitState = UnitState()
             channel.send((self, Message.UNIT_STATE, unitState))
 
-            newUnitType = self.__updateUnitCreation(worldState.deltaTime)
+            # Do housekeeping tasks
+            newUnitType = self.__updateUnitCreation(worldstate.deltaTime)
             if newUnitType:
-                channel.send((self, Message.CREATE_UNIT, newUnitType))
+                channel.send((self, Message.CREATE_UNIT, newUnitType, self.team))
+
+        elif msg == Message.UNIT_MOVE:
+            targetPosition = msgdata[0]
+            self.physics.moveTo(targetPosition)
+            print "UnitMove"
+
+        elif msg == Message.UNIT_SETTEAM:
+            HTTPLogger().writeContent(LoggerError.SUCCESS, "Team set to %i" % (msgdata[0]))
+            self.team = msgdata[0]
+            print "UnitSetTeam"
+
+    def __handleNonblockingTasklet(self):
+        while True:
+            deltaTime = self.timer.getTime()
+            self.timer.reset()
+            deltaTime = Foundation.f_clamp(deltaTime, 0, 1)
+
+            self.physics.doTask(deltaTime)
+            self.graphic.setPosition(self.physics.getPosition())
+
+            if self.shutdownFlag:
+                raise TaskletExit
+            stackless.schedule()
+
 
     # ------------------------------------------
     # Unit Creation

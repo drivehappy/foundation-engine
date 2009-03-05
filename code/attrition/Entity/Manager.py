@@ -2,6 +2,7 @@
 # Python Libs
 import stackless
 import yaml
+import random
 
 # --------------------------------------------------
 # Foundation Libs
@@ -24,12 +25,15 @@ class Manager():
             Actor.__init__(self, self.__handleTasklet)
             
             HTTPLogger().writeContent(LoggerError.NONE, "UnitManager Initialized.")
-            
+
+            self.deltaTime = Foundation.Timer()
             self.entityTypes = None
             self.weaponTypes = None
             self.__readEntityTypesFromYaml(fileEntityTypes)
             self.__readWeaponTypesFromYaml(fileWeaponTypes)
             self.unitList = []
+            self.deltaTime = 0.0
+            self.unitTypeCount = {}
 
             stackless.tasklet(self.__runFrame)()
 
@@ -44,14 +48,22 @@ class Manager():
                 pass
             elif msg == Message.CREATE_UNIT:
                 unitType = msgdata[0]['Name']
+                unitTeam = msgdata[1]
                 HTTPLogger().writeContent(LoggerError.DEBUG, sender.name + " creating unit of type " + unitType)
                 newUnit = self.addUnit(unitType)
 
 
+                print "Channel Send"
+                newUnit.channel.send((self.channel, Message.UNIT_SETTEAM, unitTeam))
+                newUnit.channel.send((self.channel, Message.UNIT_MOVE, Foundation.Vector3(random.randrange(-500, 500, 1), 20, random.randrange(-500, 500, 1))))
+                print "Done send"
+                # Do a test move
+                #newUnit.channel.send()
+
         # Tasklet
         def __sendWorldState(self):
-            #print "Sending WorldState to %i Units" % (len(self.unitList))
-            worldState = WorldState(1.0, Foundation.TimeManager().getTime())
+            worldState = WorldState(self.deltaTime, Foundation.TimeManager().getTime())
+
             for unit in self.unitList:
                 unit.channel.send((self.channel, Message.WORLD_STATE, worldState))
 
@@ -73,8 +85,14 @@ class Manager():
                 HTTPLogger().writeContent(LoggerError.ERROR, "EntityType " + unitType + " doesn't exist.")
                 return None
             else:
-                unitNew = Unit(uUnitType, "NewUnit")
-                
+                typename = uUnitType['Name']
+                if self.unitTypeCount.has_key(typename):
+                    self.unitTypeCount[typename] += 1
+                else:
+                    self.unitTypeCount[typename] = 0
+
+                unitNew = Unit(uUnitType, uUnitType['Name'] + str(self.unitTypeCount[typename]))
+
                 HTTPLogger().writeContent(LoggerError.NONE, "Created unit of type %s" % (uUnitType["Name"]))
                 self.unitList.append(unitNew)
 

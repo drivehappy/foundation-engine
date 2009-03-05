@@ -12,6 +12,7 @@ import Entity.Actor
 import Entity.Manager
 import Entity.World
 import Entity.Unit
+from Common.Common import Team
 import GUI.Helper
 import Input.Manager
 
@@ -345,6 +346,10 @@ def schedulerTasklet():
         # Update internals
         Scheduler.Step(1.0)
 
+        EntityManager.deltaTime = nDeltaTime
+
+        TimeManager.sleep(1)
+
         stackless.schedule()
 
 def buildingInitTasklet():
@@ -372,7 +377,8 @@ def main(argv):
         stackless.tasklet(schedulerTasklet)()
 
         # Spin up some units
-        EntityManager.addUnit("CommandCenter")
+        CommandCenter = EntityManager.addUnit("CommandCenter")
+        CommandCenter.team = Team.RED
 
         try:
             stackless.run()
