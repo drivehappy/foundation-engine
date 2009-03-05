@@ -10,7 +10,7 @@ EntityTypes:
     Size:       1
     Cost_Gold:  30
     Cost_Wood:  5
-    BuildTime:  2.0
+    BuildTime:  0.5
 
     # Graphic Options
     Mesh:       cube.mesh

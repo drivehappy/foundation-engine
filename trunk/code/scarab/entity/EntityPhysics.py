@@ -66,6 +66,3 @@ class EntityPhysics:
                 nDeltaPosDirection = self.m_nDirection * nDeltaPos
                 self.m_nPosition += nDeltaPosDirection
 
-
-            
-

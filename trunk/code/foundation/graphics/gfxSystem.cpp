@@ -528,7 +528,7 @@ void GraphicManager::addMesh(const char *_sSceneManagerName, const char *_sID, c
             pEntity->setQueryFlags(_nQueryFlags);
             pNode = pSceneManager->getRootSceneNode()->createChildSceneNode();
             pNode->attachObject(pEntity);
-            pNode->showBoundingBox(true);
+            pNode->showBoundingBox(false);
         } else {
             f_printf("[GraphicManager] Error: Could not find SceneManager: %s\n", _sSceneManagerName);
         }
