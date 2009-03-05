@@ -23,7 +23,7 @@
 #include "DS_Heap.h"
 #include "DS_Queue.h"
 #include "DS_Tree.h"
-#include <assert.h>
+#include "RakAssert.h"
 #include "RakMemoryOverride.h"
 #ifdef _DEBUG
 #include <stdio.h>
@@ -137,7 +137,7 @@ namespace DataStructures
 	template <class node_type, class weight_type, bool allow_unlinkedNodes>
 		void WeightedGraph<node_type, weight_type, allow_unlinkedNodes>::AddNode(const node_type &node)
 	{
-		adjacencyLists.SetNew(node, new DataStructures::Map<node_type, weight_type>);
+		adjacencyLists.SetNew(node, RakNet::OP_NEW<DataStructures::Map<node_type, weight_type> >());
 	}
 
 	template <class node_type, class weight_type, bool allow_unlinkedNodes>
@@ -362,7 +362,7 @@ namespace DataStructures
 
 		for (i=0; i < adjacencyList->Size(); i++)
 		{
-			nap2.node=new DataStructures::Tree<node_type>;
+			nap2.node=RakNet::OP_NEW<DataStructures::Tree<node_type> >();
 			nap2.node->data=adjacencyList->GetKeyAtIndex(i);
 			nap2.parent=current;
 			nodesToProcess.Push(nap2);
@@ -380,7 +380,7 @@ namespace DataStructures
 				key=adjacencyList->GetKeyAtIndex(i);
 				if (key!=nap.parent->data)
 				{
-					nap2.node=new DataStructures::Tree<node_type>;
+					nap2.node=RakNet::OP_NEW<DataStructures::Tree<node_type> >();
 					nap2.node->data=key;
 					nap2.parent=current;
 					nodesToProcess.Push(nap2);

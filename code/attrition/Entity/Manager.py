@@ -56,9 +56,10 @@ class Manager():
                 stackless.schedule()
 
         # Attempt a clean shutdown by killing all actors
-        def shutdown(self):
+        def shutdownUnits(self):
             for unit in self.unitList:
                 unit.shutdown()
+            self.shutdown()
 
         # addUnit
         def addUnit(self, unitType):
@@ -114,6 +115,7 @@ class Manager():
     def __getattr__(self, attr):
         attr = getattr(self.__instance, attr)
         if (not attr):
+            print "Attribute not found:", attr
             raise AttributeError
         else:
             return attr

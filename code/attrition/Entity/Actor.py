@@ -10,6 +10,7 @@ class Actor:
     """
     
     def __init__(self):
+        self.shutdownFlag = False
         self.channel = stackless.channel()
         self.tasklet = self.__handleTasklet
         stackless.tasklet(self.__tasklet)()
@@ -17,6 +18,9 @@ class Actor:
 
     def __tasklet(self):
         while True:
+            if self.shutdownFlag:
+                raise TaskletExit
+
             self.tasklet(self.channel.receive())
             stackless.schedule()
 
@@ -24,4 +28,4 @@ class Actor:
         print "Actor.__handleTasklet:", channelData
 
     def shutdown(self):
-        raise TaskletExit
+        self.shutdownFlag = True

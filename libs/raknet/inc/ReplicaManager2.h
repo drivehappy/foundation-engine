@@ -127,7 +127,7 @@ enum
 /// \pre Call RakPeer::SetNetworkIDManager()
 /// \pre This system is a server or peer: Call NetworkIDManager::SetIsNetworkIDAuthority(true).
 /// \pre This system is a client:  Call NetworkIDManager::SetIsNetworkIDAuthority(false).
-/// \pre If peer to peer, set NetworkID::peerToPeerMode=true, and comment out NETWORK_ID_USE_PTR_TABLE in NetworkIDManager.h
+/// \pre If peer to peer, NETWORK_ID_SUPPORTS_PEER_TO_PEER should be defined in RakNetDefines.h
 /// \ingroup REPLICA_MANAGER_2_GROUP
 class RAK_DLL_EXPORT ReplicaManager2 : public PluginInterface
 {
@@ -187,7 +187,7 @@ public:
 	/// Sends a construction command to one or more systems, which will be relayed throughout the network.
 	/// Recipient(s) will allocate the connection via Connection_RM2Factory::AllocConnection() if it does not already exist.
 	/// Will trigger a call on the remote system(s) to Connection_RM2::Construct()
-	/// \note If using peer-to-peer, don't forget to set NetworkID::peerToPeerMode=true and comment out NETWORK_ID_USE_PTR_TABLE in NetworkIDManager.h.
+	/// \note If using peer-to-peer, NETWORK_ID_SUPPORTS_PEER_TO_PEER should be defined in RakNetDefines.h.
 	/// \note This is a low level function. Beginners may wish to use Replica2::SendConstruction() or Replica2::BroadcastConstruction(). You can also override Replica2::QueryConstruction()
 	/// \param[in] replica The class to construct remotely
 	/// \param[in] replicaData User-defined serialized data representing how to construct the class. Could be the name of the class, a unique identifier, or other methods
@@ -471,7 +471,7 @@ public:
 
 	/// Construct this object on other systems
 	/// Triggers a call to SerializeConstruction()
-	/// \note If using peer-to-peer, don't forget to set NetworkID::peerToPeerMode=true and comment out NETWORK_ID_USE_PTR_TABLE in NetworkIDManager.h
+	/// \note If using peer-to-peer, NETWORK_ID_SUPPORTS_PEER_TO_PEER should be defined in RakNetDefines.h
 	/// \param[in] recipientAddress Which system to send to
 	/// \param[in] serializationType What type of command this is. Use UNDEFINED_REASON to have a type chosen automatically
 	virtual void SendConstruction(SystemAddress recipientAddress, SerializationType serializationType=UNDEFINED_REASON);
@@ -824,6 +824,11 @@ public:
 	/// Get the system address associated with this class instance.
 	SystemAddress GetSystemAddress(void) const;
 
+	/// Set the guid to use with this class instance. This is set internally when the object is created
+	void SetGuid(RakNetGUID guid);
+
+	/// Get the guid associated with this class instance.
+	RakNetGUID GetGuid(void) const;
 	
 protected:
 	void Deref(Replica2* replica);
@@ -842,6 +847,7 @@ protected:
 
 	// Address of this participant
 	SystemAddress systemAddress;
+	RakNetGUID rakNetGuid;
 
 	DataStructures::OrderedList<Replica2*, Replica2*, ReplicaManager2::Replica2ObjectComp> lastConstructionList;
 	DataStructures::OrderedList<Replica2*, Replica2*, ReplicaManager2::Replica2ObjectComp> lastSerializationList;

@@ -70,6 +70,23 @@ public:
 		(void) fileName;
 		(void) fileSize;
 	}
+
+	/// This function is called when we are sending a file to a remote system
+	/// \param[in] fileName The name of the file being sent
+	/// \param[in] fileLengthBytes How long the file is
+	/// \param[in] offset The offset in bytes into the file that we are sending
+	/// \param[in] bytesBeingSent How many bytes we are sending this push
+	/// \param[in] done If this file is now done with this push
+	/// \param[in] targetSystem Who we are sending to
+	virtual void OnFilePush(const char *fileName, unsigned int fileLengthBytes, unsigned int offset, unsigned int bytesBeingSent, bool done, SystemAddress targetSystem)
+	{
+		(void) fileName;
+		(void) fileLengthBytes;
+		(void) offset;
+		(void) bytesBeingSent;
+		(void) done;
+		(void) targetSystem;
+	}
 };
 
 /// Implementation of FileListProgress to use RAKNET_DEBUG_PRINTF
@@ -133,6 +150,10 @@ public:
 	/// \param[in] writeFileHash True to read and store the hash of the file data. The first SHA1_LENGTH bytes will contain the hash if \a writeFileHash is true
 	/// \param[in] removeUnknownFiles If a file does not exist on disk but is in the file list, remove it from the file list?
 	void PopulateDataFromDisk(const char *applicationDirectory, bool writeFileData, bool writeFileHash, bool removeUnknownFiles);
+
+	/// By default, GetDeltaToCurrent tags files as non-references, meaning they are assumed to be populated later
+	/// This tags all files as references, required for IncrementalReadInterface to process them incrementally
+	void FlagFilesAsReferences(void);
 
 	/// Write all files to disk, prefixing the paths with applicationDirectory
 	/// \param[in] applicationDirectory path prefix

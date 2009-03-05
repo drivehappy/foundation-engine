@@ -70,12 +70,6 @@ public:
 	/// \param[in] _chunkSize How large of a block of a file to send at once
 	void Send(FileList *fileList, RakPeerInterface *rakPeer, SystemAddress recipient, unsigned short setID, PacketPriority priority, char orderingChannel, bool compressData, IncrementalReadInterface *_incrementalReadInterface=0, unsigned int _chunkSize=8388608);
 
-	/// In order to support sending files that are references (See FileList::AddFile), incrementalReadInterface must be set.
-	/// Referenced files are sent in chunks, rather than the complete file at a time.
-	/// \param[in] _incrementalReadInterface If a file in \a fileList has no data, filePullInterface will be used to read the file in chunks of size \a chunkSize
-	/// \param[in] _chunkSize How large of a block of a file to send at once
-	void SetIncrementalReadInterface(IncrementalReadInterface *_incrementalReadInterface, unsigned int _chunkSize);
-
 	/// Stop a download.
 	void CancelReceive(unsigned short setId);
 
@@ -89,7 +83,7 @@ public:
 	/// \param[in] cb A pointer to an externally defined instance of FileListProgress. This pointer is held internally, so should remain valid as long as this class is valid.
 	void SetCallback(FileListProgress *cb);
 
-	/// \Returns what was sent to SetCallback
+	/// \returns what was sent to SetCallback
 	/// \return What was sent to SetCallback
 	FileListProgress *GetCallback(void) const;
 

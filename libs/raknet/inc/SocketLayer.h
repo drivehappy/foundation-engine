@@ -22,8 +22,8 @@
 #include "RakMemoryOverride.h"
 #if defined(_XBOX) || defined(X360)
 #include "XBOX360Includes.h"
-#elif defined(_PS3)
-#include "Console2Includes.h"
+#elif defined(_PS3) || defined(__PS3__) || defined(SN_TARGET_PS3)
+#include "PS3Includes.h"
 typedef int SOCKET;
 #elif defined(_XBOX) || defined(X360)
 #elif defined(_WIN32)
@@ -76,6 +76,7 @@ public:
 	/// \param[in] blockingSocket 
 	/// \return A new socket used for accepting clients 
 	SOCKET CreateBoundSocket( unsigned short port, bool blockingSocket, const char *forceHostAddress );
+	SOCKET CreateBoundSocket_PS3Lobby( unsigned short port, bool blockingSocket, const char *forceHostAddress );
 
 	/// Returns if this specified port is in use, for UDP
 	/// \param[in] port the port number 
@@ -103,13 +104,13 @@ public:
 	/// \param[in] errorCode An error code if an error occured .
 	/// \param[in] connectionSocketIndex Which of the sockets in RakPeer we are using
 	/// \return Returns true if you successfully read data, false on error.
-	int RecvFrom( const SOCKET s, RakPeer *rakPeer, int *errorCode, unsigned connectionSocketIndex );
+	int RecvFrom( const SOCKET s, RakPeer *rakPeer, int *errorCode, unsigned connectionSocketIndex, bool isPs3LobbySocket );
 	
 #if !defined(_XBOX) && !defined(_X360)
 	/// Retrieve all local IP address in a string format.
 	/// \param[in] s The socket whose port we are referring to
 	/// \param[in] ipList An array of ip address in dotted notation.
-	void GetMyIP( char ipList[ 10 ][ 16 ] );
+	void GetMyIP( char ipList[ MAXIMUM_NUMBER_OF_INTERNAL_IDS ][ 16 ] );
 #endif
 	
 	/// Call sendto (UDP obviously)
@@ -119,7 +120,7 @@ public:
 	/// \param[in] ip The address of the remote host in dotted notation.
 	/// \param[in] port The port number to send to.
 	/// \return 0 on success, nonzero on failure.
-	int SendTo( SOCKET s, const char *data, int length, const char ip[ 16 ], unsigned short port );
+	int SendTo( SOCKET s, const char *data, int length, const char ip[ 16 ], unsigned short port, bool isPs3LobbySocket );
 
 	/// Call sendto (UDP obviously)
 	/// It won't reach the recipient, except on a LAN
@@ -140,7 +141,7 @@ public:
 	/// \param[in] binaryAddress The address of the remote host in binary format.
 	/// \param[in] port The port number to send to.
 	/// \return 0 on success, nonzero on failure.
-	int SendTo( SOCKET s, const char *data, int length, unsigned int binaryAddress, unsigned short port );
+	int SendTo( SOCKET s, const char *data, int length, unsigned int binaryAddress, unsigned short port, bool isPs3LobbySocket );
 
 	/// Returns the local port, useful when passing 0 as the startup port.
 	/// \param[in] s The socket whose port we are referring to

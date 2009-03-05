@@ -22,7 +22,7 @@
 #include "DS_Map.h"
 #include "DS_Queue.h"
 #include "Export.h"
-#include <assert.h>
+#include "RakAssert.h"
 #include "Rand.h"
 
 /// The namespace DataStructures was only added to avoid compiler errors for commonly named data structures
@@ -139,7 +139,7 @@ namespace DataStructures
 		}
 		
 #ifdef _DEBUG
-		assert(maxRange!=0.0);
+		RakAssert(maxRange!=0.0);
 #endif
 		rnd=frandomMT() * (maxRange - minRange);
 		if (rnd==0.0)
@@ -156,7 +156,7 @@ namespace DataStructures
 	template <class channel_key_type, class heap_data_type, int (*channel_key_comparison_func)(const channel_key_type&, const channel_key_type&)>
 	heap_data_type OrderedChannelHeap<channel_key_type, heap_data_type, channel_key_comparison_func>::Pop(const unsigned startingIndex)
 	{
-		assert(startingIndex < heap.Size());
+		RakAssert(startingIndex < heap.Size());
 
 		QueueAndWeight *queueAndWeight=map.Get(heap[startingIndex].channel);
 		if (startingIndex!=0)

@@ -23,10 +23,6 @@
 #include "RakMemoryOverride.h"
 #include "NetworkIDObject.h"
 
-
-// O(1) instead of O(log2n) but takes more memory if less than 1/3 of the mappings are used.
-// #define NETWORK_ID_USE_PTR_TABLE
-
 /// \internal
 /// \brief A node in the AVL tree that holds the mapping between NetworkID and pointers.
 struct RAK_DLL_EXPORT NetworkIDNode
@@ -54,7 +50,7 @@ public:
 	/// This way, systems can send that id in packets to refer to objects (you can't send pointers because the memory allocations may be different).
 	/// In a client/server environment, the system that creates unique IDs would be the server.
 	/// If you are using peer to peer or other situations where you don't have a single system to assign ids, 
-	/// set this to true, and set NetworkID::peerToPeerMode to true
+	/// set this to true, and be sure NETWORK_ID_SUPPORTS_PEER_TO_PEER is defined in RakNetDefines.h
 	void SetIsNetworkIDAuthority(bool isAuthority);
 
 	/// \return Returns what was passed to SetIsNetworkIDAuthority()

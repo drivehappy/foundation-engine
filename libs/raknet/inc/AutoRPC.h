@@ -243,7 +243,7 @@ public:
 
 	/// Returns the currently running RPC call identifier, set from RegisterFunction::uniqueIdentifier
 	/// Returns an empty string "" if none
-	/// \Return which RPC call is currently running
+	/// \return which RPC call is currently running
 	const char *GetCurrentExecution(void) const;
 
 	/// Gets the bitstream written to via SetOutgoingExtraData().

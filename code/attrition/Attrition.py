@@ -332,8 +332,8 @@ def schedulerTasklet():
 
         # Update Input
         if not doInput(nDeltaTime):
-            EntityManager.shutdown()
-            shutdown()
+            EntityManager.shutdownUnits()
+            break
 
         # Update GUI
         GUIHelper.updateGameUI(nDeltaTime, TimeManager.getTime(), GraphicManager.getAverageFPS())
@@ -393,4 +393,3 @@ def shutdown():
     HTTPLogger().endTable()
     HTTPLogger().closeLog()
 
-    exit(0)

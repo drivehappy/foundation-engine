@@ -18,7 +18,7 @@
 #ifndef __SINGLE_PRODUCER_CONSUMER_H
 #define __SINGLE_PRODUCER_CONSUMER_H
 
-#include <assert.h>
+#include "RakAssert.h"
 
 static const int MINIMUM_LIST_SIZE=8;
 
@@ -106,7 +106,7 @@ namespace DataStructures
 		readPointer->next = RakNet::OP_NEW<DataPlusPtr>();
 		int listSize;
 #ifdef _DEBUG
-		assert(MINIMUM_LIST_SIZE>=3);
+		RakAssert(MINIMUM_LIST_SIZE>=3);
 #endif
 		for (listSize=2; listSize < MINIMUM_LIST_SIZE; listSize++)
 		{
@@ -142,7 +142,7 @@ namespace DataStructures
 		{
 			volatile DataPlusPtr *originalNext=writeAheadPointer->next;
 			writeAheadPointer->next=new DataPlusPtr;
-			assert(writeAheadPointer->next);
+			RakAssert(writeAheadPointer->next);
 			writeAheadPointer->next->next=originalNext;
 		}
 
@@ -165,8 +165,8 @@ namespace DataStructures
 		//	DataPlusPtr *dataContainer = (DataPlusPtr *)structure;
 
 #ifdef _DEBUG
-		assert(writePointer->next!=readPointer);
-		assert(writePointer!=writeAheadPointer);
+		RakAssert(writePointer->next!=readPointer);
+		RakAssert(writePointer!=writeAheadPointer);
 #endif
 
 		writeCount++;
@@ -194,7 +194,7 @@ namespace DataStructures
 		void SingleProducerConsumer<SingleProducerConsumerType>::CancelReadLock( SingleProducerConsumerType* cancelToLocation )
 	{
 #ifdef _DEBUG
-		assert(readPointer!=writePointer);
+		RakAssert(readPointer!=writePointer);
 #endif
 		readAheadPointer=(DataPlusPtr *)cancelToLocation;
 	}
@@ -203,8 +203,8 @@ namespace DataStructures
 		void SingleProducerConsumer<SingleProducerConsumerType>::ReadUnlock( void )
 	{
 #ifdef _DEBUG
-		assert(readAheadPointer!=readPointer); // If hits, then called ReadUnlock before ReadLock
-		assert(readPointer!=writePointer); // If hits, then called ReadUnlock when Read returns 0
+		RakAssert(readAheadPointer!=readPointer); // If hits, then called ReadUnlock before ReadLock
+		RakAssert(readPointer!=writePointer); // If hits, then called ReadUnlock when Read returns 0
 #endif
 		readCount++;
 
@@ -232,7 +232,7 @@ namespace DataStructures
 		{
 			next=writePointer->next;
 #ifdef _DEBUG
-			assert(writePointer!=readPointer);
+			RakAssert(writePointer!=readPointer);
 #endif
 			RakNet::OP_DELETE((char*) writePointer);
 			writePointer=next;
@@ -270,10 +270,10 @@ namespace DataStructures
 /*
 #include "SingleProducerConsumer.h"
 #include <process.h>
-#include <assert.h>
+#include "RakAssert.h"
 #include <stdio.h>
 #include <windows.h>
-#if defined(_PS3)
+#if defined(_PS3) || defined(__PS3__) || defined(SN_TARGET_PS3)
 #include <math.h>
 #else
 #include <cmath>
@@ -316,7 +316,7 @@ if (*readBlock!=readCount)
 {
 RAKNET_DEBUG_PRINTF("Test failed! Expected %i got %i!\n", readCount, *readBlock);
 readCount = READ_COUNT_ITERATIONS;
-assert(0);
+RakAssert(0);
 }
 spc.ReadUnlock();
 readCount++;

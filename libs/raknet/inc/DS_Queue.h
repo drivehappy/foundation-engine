@@ -19,8 +19,9 @@
 #define __QUEUE_H
 
 // Template classes have to have all the code in the header file
-#include <assert.h>
+#include "RakAssert.h"
 #include "Export.h"
+#include "RakMemoryOverride.h"
 
 /// The namespace DataStructures was only added to avoid compiler errors for commonly named data structures
 /// As these data structures are stand-alone, you can use them outside of RakNet for your own projects if you wish.
@@ -100,7 +101,7 @@ namespace DataStructures
 		inline queue_type Queue<queue_type>::Pop( void )
 	{
 #ifdef _DEBUG
-		assert( allocation_size > 0 && Size() >= 0 && head != tail);
+		RakAssert( allocation_size > 0 && Size() >= 0 && head != tail);
 #endif
 		//head=(head+1) % allocation_size;
 
@@ -116,7 +117,7 @@ namespace DataStructures
 	template <class queue_type>
 		void Queue<queue_type>::PushAtHead( const queue_type& input, unsigned index )
 	{
-		assert(index <= Size());
+		RakAssert(index <= Size());
 
 		// Just force a reallocation, will be overwritten
 		Push(input);
@@ -160,8 +161,8 @@ namespace DataStructures
 		inline queue_type Queue<queue_type>::Peek( void ) const
 	{
 #ifdef _DEBUG
-		assert( head != tail );
-		assert( allocation_size > 0 && Size() >= 0 );
+		RakAssert( head != tail );
+		RakAssert( allocation_size > 0 && Size() >= 0 );
 #endif
 
 		return ( queue_type ) array[ head ];
@@ -171,8 +172,8 @@ namespace DataStructures
 		inline queue_type Queue<queue_type>::PeekTail( void ) const
 		{
 #ifdef _DEBUG
-			assert( head != tail );
-			assert( allocation_size > 0 && Size() >= 0 );
+			RakAssert( head != tail );
+			RakAssert( allocation_size > 0 && Size() >= 0 );
 #endif
 			if (tail!=0)
 				return ( queue_type ) array[ tail-1 ];
@@ -206,7 +207,7 @@ namespace DataStructures
 			queue_type * new_array;
 			new_array = RakNet::OP_NEW_ARRAY<queue_type>(allocation_size * 2);
 #ifdef _DEBUG
-			assert( new_array );
+			RakAssert( new_array );
 #endif
 			if (new_array==0)
 				return;
@@ -359,7 +360,7 @@ namespace DataStructures
 		inline queue_type& Queue<queue_type>::operator[] ( unsigned int position ) const
 	{
 #ifdef _DEBUG
-		assert( position < Size() );
+		RakAssert( position < Size() );
 #endif
 		//return array[(head + position) % allocation_size];
 
@@ -373,8 +374,8 @@ namespace DataStructures
 	void Queue<queue_type>::RemoveAtIndex( unsigned int position )
 	{
 #ifdef _DEBUG
-		assert( position < Size() );
-		assert( head != tail );
+		RakAssert( position < Size() );
+		RakAssert( head != tail );
 #endif
 
 		if ( head == tail || position >= Size() )

@@ -287,6 +287,11 @@ public:
 	/// \param[in] channel Which ordering channel to send the disconnection notification on, if any
 	virtual void CloseConnection( const SystemAddress target, bool sendDisconnectionNotification, unsigned char orderingChannel=0 )=0;
 
+	/// Cancel a pending connection attempt
+	/// If we are already connected, the connection stays open
+	/// \param[in] target Which system to cancel
+	virtual void CancelConnectionAttempt( const SystemAddress target )=0;
+
 	/// Returns if a particular systemAddress is connected to us (this also returns true if we are in the process of connecting)
 	/// \param[in] systemAddress The SystemAddress we are referring to
 	/// \param[in] includeInProgress If true, also return true for connections that are in progress but haven't completed
@@ -370,9 +375,11 @@ public:
 	virtual void GetOfflinePingResponse( char **data, unsigned int *length )=0;
 
 	//--------------------------------------------------------------------------------------------Network Functions - Functions dealing with the network in general--------------------------------------------------------------------------------------------
-	/// Return the unique address identifier that represents you on the the network and is based on your local IP / port.
+	/// Return the unique address identifier that represents you or another system on the the network and is based on your local IP / port.
+	/// \param[in] systemAddress Use UNASSIGNED_SYSTEM_ADDRESS to get your behind-LAN address. Use a connected system to get their behind-LAN address
+	/// \param[in] index When you have multiple internal IDs, which index to return? Currently limited to MAXIMUM_NUMBER_OF_INTERNAL_IDS (so the maximum value of this variable is MAXIMUM_NUMBER_OF_INTERNAL_IDS-1)
 	/// \return the identifier of your system internally, which may not be how other systems see if you if you are behind a NAT or proxy
-	virtual SystemAddress GetInternalID( const SystemAddress systemAddress=UNASSIGNED_SYSTEM_ADDRESS ) const=0;
+	virtual SystemAddress GetInternalID( const SystemAddress systemAddress=UNASSIGNED_SYSTEM_ADDRESS, const int index=0 ) const=0;
 
 	/// Return the unique address identifier that represents you on the the network and is based on your externalIP / port
 	/// (the IP / port the specified player uses to communicate with you)
@@ -533,7 +540,7 @@ public:
 	// \param[in] routerInterface The router to use to route messages to systems not directly connected to this system.
 	virtual void RemoveRouterInterface( RouterInterface *routerInterface )=0;
 
-	/// \Returns a packet for you to write to if you want to create a Packet for some reason.
+	/// \returns a packet for you to write to if you want to create a Packet for some reason.
 	/// You can add it to the receive buffer with PushBackPacket
 	/// \param[in] dataSize How many bytes to allocate for the buffer
 	/// \return A packet you can write to
@@ -559,14 +566,30 @@ public:
 	/// \return If you previously called ApplyNetworkSimulator
 	virtual bool IsNetworkSimulatorActive( void )=0;
 
+	// -------------------------------------------------------------------------------------------- Socket Functions--------------------------------------------------------------------------------------------
+	/// Have RakNet use a socket you created yourself
+	/// The socket should not be in use - it is up to you to either shutdown or close the connections using it. Otherwise existing connections on that socket will eventually disconnect
+	/// This socket will be forgotten after calling Shutdown(), so rebind again if you need to.
+	/// \param[in] s The socket to rebind.
+	/// \param[in] haveRakNetCloseSocket If true, RakNet will call closeSocket on shutdown for this socket.
+	/// \param[in] connectionSocketIndex Index into the array of socket descriptors passed to socketDescriptors in RakPeer::Startup() to send on.
+	virtual void UseUserSocket( int socket, bool haveRakNetCloseSocket, unsigned connectionSocketIndex)=0;
+
+	/// Have RakNet recreate a socket using a different port.
+	/// The socket should not be in use - it is up to you to either shutdown or close the connections using it. Otherwise existing connections on that socket will eventually disconnect
+	/// \param[in] connectionSocketIndex Index into the array of socket descriptors passed to socketDescriptors in RakPeer::Startup() to send on.
+	/// \param[in] sd Address to bind on
+	virtual void RebindSocketAddress(unsigned connectionSocketIndex, SocketDescriptor &sd)=0;
+
 	// --------------------------------------------------------------------------------------------Statistical Functions - Functions dealing with API performance--------------------------------------------------------------------------------------------
 
 	/// Returns a structure containing a large set of network statistics for the specified system.
 	/// You can map this data to a string using the C style StatisticsToString() function
 	/// \param[in] systemAddress: Which connected system to get statistics for
+	/// \param[in] rns If you supply this structure, it will be written to it.  Otherwise it will use a static struct, which is not threadsafe
 	/// \return 0 on can't find the specified system.  A pointer to a set of data otherwise.
 	/// \sa RakNetStatistics.h
-	virtual RakNetStatistics * const GetStatistics( const SystemAddress systemAddress )=0;
+	virtual RakNetStatistics * const GetStatistics( const SystemAddress systemAddress, RakNetStatistics *rns=0 )=0;
 
 	// --------------------------------------------------------------------------------------------EVERYTHING AFTER THIS COMMENT IS FOR INTERNAL USE ONLY--------------------------------------------------------------------------------------------
 	/// \internal
