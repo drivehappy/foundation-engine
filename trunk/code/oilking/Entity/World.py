@@ -1,0 +1,115 @@
+# --------------------------------------------------
+# Python Libs
+import stackless
+import random
+
+# --------------------------------------------------
+# Foundation Libs
+import FoundationPython as Foundation
+
+from Log.HTTPLogger import HTTPLogger
+
+from Common.Common import Message
+from Entity.Actor import Actor
+from Entity.Player import *
+from Entity.Property import *
+from Entity.Card import *
+from AI.AI import AIPlayer
+
+# --------------------------------------------------
+# Unit
+class World(Actor):
+
+    def __init__(self, propertyCount, playerCount):
+        Actor.__init__(self, self.__handleTasklet)
+
+        self.properties = []
+        self.players = []
+        self.bank = None
+        self.playerTurnIndex = 0
+        self.cardDeck = Deck()
+        self.readyCheck = {}
+        self.aiplayers = []
+
+        # Shuffle deck
+        self.cardDeck.shuffle()
+
+        # Populate properties
+        for k in range(0, propertyCount):
+            newProperty = Property(random.randint(7, 13), "Property" + str(k))
+            self.properties.append(newProperty)
+
+        # Create the bank
+        self.bank = Player("Bank").channel
+        self.bank.send((self.channel, Message.PLAYER_CASH_DELTA, 1000000, False))
+
+        # Populate players
+        for k in range(0, playerCount):
+            newPlayer = Player("Player" + str(k), self.bank).channel
+            newPlayer.send((self.channel, Message.PLAYER_CASH_DELTA, 80000, False))
+            self.players.append(newPlayer)
+            self.readyCheck[newPlayer] = False
+
+            # For each player, test an AI out
+            aiPlayer = AIPlayer(newPlayer)
+            self.aiplayers.append(aiPlayer)
+
+        # Give properties to the bank
+        for property in self.properties:
+            self.bank.send((self.channel, Message.PLAYER_PURCHASE, True, property))
+
+        # Send our players that the world is ready
+        for player in self.players:
+            player.send((self.channel, Message.WORLD_GAMEREADY, self.properties))
+
+        stackless.tasklet(self.__handleNonblockingTasklet)()
+
+    def __handleNonblockingTasklet(self):
+        while True:
+            if self.shutdownFlag:
+                raise TaskletExit
+
+            #print "World.update", Foundation.TimeManager().getTime()
+            stackless.schedule()
+
+    def __handleTasklet(self, channelData):
+        channel, msg, msgdata = channelData[0], channelData[1], channelData[2:]
+
+        if msg == Message.PLAYER_GAMEREADY:
+            HTTPLogger().writeContent(LoggerError.NONE, "World Received Player is Ready")
+            self.readyCheck[channel] = True
+            
+            if self.__checkAllPlayersReady():
+                HTTPLogger().writeContent(LoggerError.SUCCESS, "All players ready")
+                self.__handleGameStart()
+
+        elif msg == Message.REQUEST_CARD:
+            requestedCard = self.cardDeck.pop()
+
+            channel.send((self.channel, Message.RECEIVE_CARD, requestedCard))
+
+        elif msg == Message.PLAYER_TURN_DONE:
+            self.playerTurnIndex += 1
+            if self.playerTurnIndex >= len(self.players):
+                self.playerTurnIndex = 0
+
+            self.__handlePlayerTurn()
+
+    def __handleGameStart(self):
+        for player in self.players:
+            player.send((self.channel, Message.GAME_START))
+        self.__handlePlayerTurn()
+
+    def __handlePlayerTurn(self):
+        for player in self.players:
+            player.send((self.channel, Message.PLAYER_TURN, self.players[self.playerTurnIndex]))
+
+    def __checkAllPlayersReady(self):
+        ready = True
+        for player in self.players:
+            if self.readyCheck.has_key(player):
+                if not self.readyCheck[player]:
+                    ready = False
+                    break
+
+        return ready
