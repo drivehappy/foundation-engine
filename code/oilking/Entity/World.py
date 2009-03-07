@@ -39,19 +39,27 @@ class World(Actor):
             newProperty = Property(random.randint(7, 13), "Property" + str(k))
             self.properties.append(newProperty)
 
+        # Create some random neighbors for testing
+        for property in self.properties:
+            randProperty = property
+            while randProperty == property:
+                randProperty = self.properties[random.randint(0, len(self.properties) - 1)]
+            property.addNeighbor(randProperty)
+
         # Create the bank
         self.bank = Player("Bank").channel
         self.bank.send((self.channel, Message.PLAYER_CASH_DELTA, 1000000, False))
 
         # Populate players
         for k in range(0, playerCount):
-            newPlayer = Player("Player" + str(k), self.bank).channel
-            newPlayer.send((self.channel, Message.PLAYER_CASH_DELTA, 80000, False))
-            self.players.append(newPlayer)
-            self.readyCheck[newPlayer] = False
+            newPlayer = Player("Player" + str(k), self.bank)
+            newPlayerChannel = newPlayer.channel
+            newPlayerChannel.send((self.channel, Message.PLAYER_CASH_DELTA, 80000, False))
+            self.players.append(newPlayerChannel)
+            self.readyCheck[newPlayerChannel] = False
 
             # For each player, test an AI out
-            aiPlayer = AIPlayer(newPlayer)
+            aiPlayer = AIPlayer(newPlayer, self.channel)
             self.aiplayers.append(aiPlayer)
 
         # Give properties to the bank
@@ -89,6 +97,8 @@ class World(Actor):
             channel.send((self.channel, Message.RECEIVE_CARD, requestedCard))
 
         elif msg == Message.PLAYER_TURN_DONE:
+            HTTPLogger().writeContent(LoggerError.SUCCESS, "Player ended turn")
+
             self.playerTurnIndex += 1
             if self.playerTurnIndex >= len(self.players):
                 self.playerTurnIndex = 0

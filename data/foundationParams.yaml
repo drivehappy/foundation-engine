@@ -25,3 +25,8 @@ program:
         folder: attrition
         script: Attrition
         profiling: False
+
+    oilking:
+        folder: oilking
+        script: OilKing
+        profiling: False
