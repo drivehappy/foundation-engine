@@ -8,7 +8,7 @@ import random
 import FoundationPython as Foundation
 from Common.Common import Message, GameState
 from Entity.Actor import Actor
-from Entity.Card import Card
+from Entity.Card import Card, Disaster
 from AI.AI import AIPlayer
 from Log.HTTPLogger import HTTPLogger, LoggerError
 
@@ -27,6 +27,7 @@ class Player(Actor):
         self.world = None
         self.currentPlayerTurn = None
         self.aiplayer = None
+        self.card = None
         
         stackless.tasklet(self.__handleNonblockingTasklet)()
 
@@ -47,8 +48,8 @@ class Player(Actor):
             properties = msgdata[0]
             self.world = channel
 
-            # Choose 4th property (will be random)
-            self.bank.send((self.channel, Message.REQUEST_PURCHASE, properties[4]))
+            if self.aiplayer:
+                self.aiplayer.onGameReady(properties)
 
         elif msg == Message.PLAYER_TURN:
             self.currentPlayerTurn = msgdata[0]
@@ -56,17 +57,25 @@ class Player(Actor):
             if self.currentPlayerTurn == self.channel:
                 HTTPLogger().writeContent(LoggerError.NONE, self.name + " Taking My Turn")
 
+                # Run AI if we have it
+                if self.aiplayer:
+                    self.aiplayer.onTurn()
+
                 # Request a card
                 channel.send((self.channel, Message.REQUEST_CARD))
-
-                if (self.aiplayer)
-                    self.aiplayer.onTurn()
             else:
                 # Check to see if this player owes us money from pipelines
                 cashOwed = self.getPipelineCountIntoPlayer(self.currentPlayerTurn)
                 self.currentPlayerTurn.send((self.channel, Message.PLAYER_CASH_DELTA, -cashOwed, True))
 
-                HTTPLogger().writeContent(LoggerError.DEBUG, self.name + ": Other player owes me %i for my pipelines" % (cashOwed))
+                HTTPLogger().writeContent(LoggerError.DEBUG, self.name + ": Other player owed me %i for my pipelines" % (cashOwed))
+
+        elif msg == Message.REQUEST_PROPERTIES:
+            channel.send((self.channel, Message.RECEIVE_PROPERTIES, self.properties))
+
+        elif msg == Message.RECEIVE_PROPERTIES:
+            if self.aiplayer:
+                self.aiplayer.onReceivedProperties(msgdata[0])
 
         elif msg == Message.PLAYER_CASH_DELTA:
             cashDelta = msgdata[0]
@@ -113,20 +122,32 @@ class Player(Actor):
                 newPurchaseProperty = Property[random.randint(0, len(Property) - 1)]
                 self.bank.send((self.channel, Message.REQUEST_PURCHASE, newPurchaseProperty))
 
+            # Send it off to the AI
+            if self.aiplayer:
+                self.aiplayer.onPurchaseReply(Success, Property)
+
         elif msg == Message.GAME_START:
             HTTPLogger().writeContent(LoggerError.NONE, self.name + ": Received Game Start")
             self.gameState.state = "GAMESTART"
 
         elif msg == Message.RECEIVE_CARD:
-            requestedCard = msgdata[0]
+            self.card = msgdata[0]
 
-            HTTPLogger().writeContent(LoggerError.NONE, self.name + " Received card, monetary value of %i, disaster value of %i" % (requestedCard.monetaryValue, requestedCard.disaster))
+            HTTPLogger().writeContent(LoggerError.NONE, self.name + " Received card, monetary value of %i, disaster value of %i" % (self.card.monetaryValue, self.card.disaster))
+
+            # Determine what we're owed
+            cashValue = 0
+            if self.card.disaster == Disaster.NONE:
+                cashValue = self.card.monetaryValue * self.getDerrickCount()
+            elif self.card.disaster == Disaster.DEPLETION:
+                cashValue = self.card.monetaryValue
 
             # Request funds from bank
-            self.bank.send((self.channel, Message.PLAYER_CASH_DELTA, -requestedCard.monetaryValue, True))
+            self.bank.send((self.channel, Message.PLAYER_CASH_DELTA, -cashValue, True))
 
-        elif msg == Message.RECEIVE_PROPERTIES:
-            channel.send((self, Message.RECEIVE_PROPERTIES, self.properties))
+            # Run AI if we have it
+            if self.aiplayer:
+                self.aiplayer.onReceiveCard()
 
         else:
             HTTPLogger().writeContent(LoggerError.DEBUG, self.name + " Received unhandled message: 0x%x" % (msg))

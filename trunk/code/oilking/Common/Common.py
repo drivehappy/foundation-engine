@@ -10,6 +10,9 @@ class Message:
                                 # [Index 1: if i0 false: Available Properties, else Successful property]
     REQUEST_PURCHASE    = 0x06
 
+    REQUEST_PROPERTIES  = 0x08
+    RECEIVE_PROPERTIES  = 0x09
+
     REQUEST_CARD        = 0x0A
     RECEIVE_CARD        = 0x0B
 

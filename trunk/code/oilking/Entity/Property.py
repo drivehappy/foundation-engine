@@ -47,6 +47,13 @@ class Property():
         else:
             HTTPLogger().writeContent(LoggerError.ERROR, self.name + ": Pipelines maxed out, cannot place.")
 
+    def getUntappedWellCount(self):
+        count = 0
+        for wellIndex in self.wells:
+            if not self.wells[wellIndex].isTapped():
+                count += 1
+        return count
+
     def getPipelineCountIntoPlayer(self, player):
         count = 0
         for pipeline in self.pipelines:

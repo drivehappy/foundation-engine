@@ -1,5 +1,5 @@
 /* ========================================================================================== */
-/* FMOD Ex - C++ header file. Copyright (c), Firelight Technologies Pty, Ltd. 2004-2008.      */
+/* FMOD Ex - C++ header file. Copyright (c), Firelight Technologies Pty, Ltd. 2004-2009.      */
 /*                                                                                            */
 /* Use this header in conjunction with fmod.h (which contains all the constants / callbacks)  */
 /* to develop using C++ classes.                                                              */
@@ -154,22 +154,21 @@ namespace FMOD
         FMOD_RESULT F_API getDSPClock            (unsigned int *hi, unsigned int *lo);
                                                
         // Recording API.
-        FMOD_RESULT F_API setRecordDriver        (int driver);
-        FMOD_RESULT F_API getRecordDriver        (int *driver);
         FMOD_RESULT F_API getRecordNumDrivers    (int *numdrivers);
         FMOD_RESULT F_API getRecordDriverInfo    (int id, char *name, int namelen, FMOD_GUID *guid);
         FMOD_RESULT F_API getRecordDriverCaps    (int id, FMOD_CAPS *caps, int *minfrequency, int *maxfrequency);
-        FMOD_RESULT F_API getRecordPosition      (unsigned int *position);  
+        FMOD_RESULT F_API getRecordPosition      (int id, unsigned int *position);  
 
-        FMOD_RESULT F_API recordStart            (Sound *sound, bool loop);
-        FMOD_RESULT F_API recordStop             ();
-        FMOD_RESULT F_API isRecording            (bool *recording);
+        FMOD_RESULT F_API recordStart            (int id, Sound *sound, bool loop);
+        FMOD_RESULT F_API recordStop             (int id);
+        FMOD_RESULT F_API isRecording            (int id, bool *recording);
 
         // Geometry API.
         FMOD_RESULT F_API createGeometry         (int maxpolygons, int maxvertices, Geometry **geometry);
         FMOD_RESULT F_API setGeometrySettings    (float maxworldsize);
         FMOD_RESULT F_API getGeometrySettings    (float *maxworldsize);
         FMOD_RESULT F_API loadGeometry           (const void *data, int datasize, Geometry **geometry);
+        FMOD_RESULT F_API getGeometryOcclusion   (const FMOD_VECTOR *listener, const FMOD_VECTOR *source, float *direct, float *reverb);
 
         // Network functions.
         FMOD_RESULT F_API setNetworkProxy        (const char *proxy);
