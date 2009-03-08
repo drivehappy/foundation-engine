@@ -99,11 +99,18 @@ class World(Actor):
         elif msg == Message.PLAYER_TURN_DONE:
             HTTPLogger().writeContent(LoggerError.SUCCESS, "Player ended turn")
 
-            self.playerTurnIndex += 1
-            if self.playerTurnIndex >= len(self.players):
-                self.playerTurnIndex = 0
+            self.__doPlayerTurn()
 
-            self.__handlePlayerTurn()
+        elif msg == Message.RQ_FORFEIT_GAME:
+            self.__handlePlayerForfeit(channel)
+
+            if len(self.players) == 1:
+                self.__handleGameDone(self.players[0])
+                self.shutdownFlag = True
+                print "Game Done"
+                raise KeyboardInterrupt
+            else:
+                print "%i Players Remaining" % len(self.players)
 
     def __handleGameStart(self):
         for player in self.players:
@@ -123,3 +130,18 @@ class World(Actor):
                     break
 
         return ready
+
+    def __handlePlayerForfeit(self, playerForfeited):
+        self.players.remove(playerForfeited)
+        for player in self.players:
+            player.send((self.channel, Message.RP_FORFEIT_GAME, playerForfeited))
+
+    def __handleGameDone(self, playerWinner):
+        playerWinner.send((self.channel, Message.GAME_DONE, playerWinner))
+
+    def __doPlayerTurn(self):
+        self.playerTurnIndex += 1
+        if self.playerTurnIndex >= len(self.players):
+            self.playerTurnIndex = 0
+
+        self.__handlePlayerTurn()

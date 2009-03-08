@@ -65,10 +65,27 @@ class Player(Actor):
                 channel.send((self.channel, Message.REQUEST_CARD))
             else:
                 # Check to see if this player owes us money from pipelines
-                cashOwed = self.getPipelineCountIntoPlayer(self.currentPlayerTurn)
-                self.currentPlayerTurn.send((self.channel, Message.PLAYER_CASH_DELTA, -cashOwed, True))
+                pipelineCash = 0
+                propertyPipelineCount = self.getPipelineCountIntoPlayer(self.currentPlayerTurn)
 
-                HTTPLogger().writeContent(LoggerError.DEBUG, self.name + ": Other player owed me %i for my pipelines" % (cashOwed))
+                for property in propertyPipelineCount:
+                    for propertyTarget in propertyPipelineCount[property]:
+                        pipelineCount = propertyPipelineCount[property][propertyTarget]
+                        targetDerrickCount = propertyTarget.getDerrickCount()
+                        if pipelineCount == 1:
+                            pipelineCash += targetDerrickCount * 1000
+                        elif pipelineCount == 2:
+                            pipelineCash += targetDerrickCount * 3000
+                        elif pipelineCount == 3:
+                            pipelineCash += targetDerrickCount * 5000
+                        else:
+                            HTTPLogger().writeContent(LoggerError.ERROR, self.name + ": Pipeline count must be off, I received that I have %i on property" % (pipelineCount))
+                        HTTPLogger().writeContent(LoggerError.ERROR, self.name + ": Target had %i derricks, I had %i pipelines, I gained a total of %i cash" % (targetDerrickCount, pipelineCount, pipelineCash))
+
+                if pipelineCash > 0:
+                    self.currentPlayerTurn.send((self.channel, Message.PLAYER_CASH_DELTA, -pipelineCash, True))
+
+                    HTTPLogger().writeContent(LoggerError.DEBUG, self.name + ": Other player owed me a total of %i for my pipelines" % (pipelineCash))
 
         elif msg == Message.REQUEST_PROPERTIES:
             channel.send((self.channel, Message.RECEIVE_PROPERTIES, self.properties))
@@ -99,6 +116,15 @@ class Player(Actor):
             else:
                 # Send available properties that can be purchased from me instead
                 channel.send((self.channel, Message.PLAYER_PURCHASE, False, self.properties))
+
+        elif msg == Message.RP_FORFEIT_GAME:
+            playerForfeited = msgdata[0]
+
+            if playerForfeited == self.channel:
+                HTTPLogger().writeContent(LoggerError.NONE, self.name + ": I successfully forfeited the game. Do auction here.")
+                self.shutdownFlag = True
+            else:
+                HTTPLogger().writeContent(LoggerError.NONE, self.name + ": Player forfeited from game.")
 
         elif msg == Message.PLAYER_PURCHASE:
             Success = msgdata[0]
@@ -142,12 +168,44 @@ class Player(Actor):
             elif self.card.disaster == Disaster.DEPLETION:
                 cashValue = self.card.monetaryValue
 
+            # Check if we have wells available to drill in or not, if not
+            wellCount = 0
+            for property in self.properties:
+                for wellIndex in property.wells:
+                    if not property.wells[wellIndex].isTapped():
+                        wellCount += 1
+
+            if wellCount == 0:
+                HTTPLogger().writeContent(LoggerError.DEBUG, self.name + ": I have no wells available to drill. I'm paying the $10,000 fine.")
+                cashValue -= 10000
+
             # Request funds from bank
             self.bank.send((self.channel, Message.PLAYER_CASH_DELTA, -cashValue, True))
+
+            # Check if we have wells available to drill in or not, if not
+            wellCount = 0
+            for property in self.properties:
+                for wellIndex in property.wells:
+                    if not property.wells[wellIndex].isTapped():
+                        wellCount += 1
+
+            # Insure we have cash (plus expected cash value) to operate
+            if self.cash + cashValue <= 0:
+                HTTPLogger().writeContent(LoggerError.DEBUG, self.name + ": I'm out of cash, I've lost")
+                self.world.send((self.channel, Message.RQ_FORFEIT_GAME))
+
+                if self.aiplayer:
+                    self.aiplayer.onForfeitGameRequested()
 
             # Run AI if we have it
             if self.aiplayer:
                 self.aiplayer.onReceiveCard()
+
+        elif msg == Message.GAME_DONE:
+            HTTPLogger().writeContent(LoggerError.DEBUG, self.name + ": I've won the game with %i cash left" % (self.cash))
+
+            # Shut me down
+            self.shutdownFlag = True
 
         else:
             HTTPLogger().writeContent(LoggerError.DEBUG, self.name + " Received unhandled message: 0x%x" % (msg))
@@ -179,9 +237,12 @@ class Player(Actor):
         return derrickCount
 
     def getPipelineCountIntoPlayer(self, player):
-        count = 0
+        propertyPipelineCount = {}
         for property in self.properties:
-            count += property.getPipelineCountIntoPlayer(player)
+            propertyPipelineCount[property] = property.getPipelineCountIntoPlayer(player)
 
-        return count
+        return propertyPipelineCount
+
+    def payBank(self, amount):
+        self.bank.send((self.channel, Message.PLAYER_CASH_DELTA, amount, True))
     

@@ -9,7 +9,7 @@ import FoundationPython as Foundation
 from Entity.Actor import Actor
 from Entity.Well import Well
 from Entity.Pipeline import Pipeline
-from Log.HTTPLogger import HTTPLogger
+from Log.HTTPLogger import *
 
 # --------------------------------------------------
 # Property
@@ -42,8 +42,9 @@ class Property():
             if len(self.pipelines) < (self.getDerrickCount() - 3):
                 newPipeline = Pipeline(self, neighbor)
                 self.pipelines.append(newPipeline)
+                HTTPLogger().writeContent(LoggerError.SUCCESS, self.name + ": I pipelined successfully to %s" % (neighbor.name))
             else:
-                HTTPLogger().writeContent(LoggerError.ERROR, self.name + ": Not enough derricks to support another pipeline.")
+                HTTPLogger().writeContent(LoggerError.ERROR, self.name + ": Not enough derricks to support another pipeline (I have %i derricks and %i pipelines)" % (self.getDerrickCount(), len(self.pipelines)))
         else:
             HTTPLogger().writeContent(LoggerError.ERROR, self.name + ": Pipelines maxed out, cannot place.")
 
@@ -55,10 +56,14 @@ class Property():
         return count
 
     def getPipelineCountIntoPlayer(self, player):
-        count = 0
+        propertyPipelineCount = {}
         for pipeline in self.pipelines:
             targetProperty = pipeline.target
+            
             if targetProperty.owner == player:
-                count += 1
+                if not propertyPipelineCount.has_key(targetProperty):
+                    propertyPipelineCount[targetProperty] = 0
 
-        return count
+                propertyPipelineCount[targetProperty] += 1
+
+        return propertyPipelineCount
