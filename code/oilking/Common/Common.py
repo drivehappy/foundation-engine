@@ -29,6 +29,11 @@ class Message:
 
     RQ_PIPELINES_INTOME = 0x70
 
+    RQ_FORFEIT_GAME     = 0x80
+    RP_FORFEIT_GAME     = 0x80
+
+    GAME_DONE           = 0x90
+
 # --------------------------------------------------
 # Tracks world state updates
 class GameState:

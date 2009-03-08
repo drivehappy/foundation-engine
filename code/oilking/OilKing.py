@@ -91,7 +91,7 @@ def main(argv):
         stackless.tasklet(schedulerTasklet)()
 
         # Spin up some units
-        Game = World(18, 4)
+        Game = World(8, 8)
 
         try:
             stackless.run()

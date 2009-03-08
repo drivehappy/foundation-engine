@@ -41,15 +41,13 @@ class AIPlayer(Actor):
 
             if self.myturn:
                 while not self.receivedCard:
-                    print "AI: Waiting on my card"
+                    #print "AI: Waiting on my card"
                     stackless.schedule()
 
                 HTTPLogger().writeContent(LoggerError.DEBUG, self.player.name + ": I have %i drills remaining and %i properties to purchase" % (self.drillsRemaining, self.propertyRemaining))
 
                 while self.drillsRemaining > 0:
                     if not self.drillRandomWell():
-                        HTTPLogger().writeContent(LoggerError.DEBUG, self.player.name + ": I can't drill anymore wells, I'm %i short of my goal. I'm paying the $10,000 fine." %(self.drillsRemaining))
-                        self.payBank(10000)
                         break
 
                 if self.propertyRemaining:
@@ -60,8 +58,10 @@ class AIPlayer(Actor):
                         print "AI: Waiting on bank to reply with available properties"
                         stackless.schedule()
 
-                    print "Done. Purchasing property from bank..."
+                    #print "Done. Purchasing property from bank..."
                     self.purchaseRandomProperty(self.bankProperties)
+
+                self.pipelineRandomProperty()
 
                 # End my turn I'm done
                 self.endTurn()
@@ -79,6 +79,30 @@ class AIPlayer(Actor):
         if len(properties):
             randProperty = properties[random.randint(0, len(properties) - 1)]
             self.player.bank.send((self.player.channel, Message.REQUEST_PURCHASE, randProperty))
+
+    def pipelineRandomProperty(self):
+        if self.player.cash > 35000:
+            HTTPLogger().writeContent(LoggerError.DEBUG, "AI Player looking for best property to pipeline")
+
+            # Acceptable amount of cash, check for the best property
+            bestProperty = None
+            bestPropertyTarget = None
+            for property in self.player.properties:
+                for neighbor in property.neighbors:
+                    if bestProperty:
+                        if neighbor.getDerrickCount() > property.getDerrickCount():
+                            bestPropertyTarget = neighbor
+                            bestProperty = property
+                    elif neighbor != self.player.bank:
+                        if neighbor.getDerrickCount() > 0:
+                            bestPropertyTarget = neighbor
+                            bestProperty = property
+
+            # Pipeline from our best property to the best target
+            if bestProperty:
+                if bestProperty.getDerrickCount() >= 4:
+                    HTTPLogger().writeContent(LoggerError.DEBUG, "AI Player found best property pipeline: %s to %s" % (bestProperty.name, bestPropertyTarget.name))
+                    bestProperty.pipelineNeighbor(bestPropertyTarget)
 
     def drillRandomWell(self):
         wellToDrill = None
@@ -117,6 +141,12 @@ class AIPlayer(Actor):
 
         self.myturn = True
 
+    def onForfeitGameRequested(self):
+        HTTPLogger().writeContent(LoggerError.DEBUG, "AI Player has been informed of forfeit request.")
+
+    def onForfeitGameComplete(self):
+        HTTPLogger().writeContent(LoggerError.DEBUG, "AI Player has been informed of forfeit completed.")
+
     def onReceiveCard(self):
         HTTPLogger().writeContent(LoggerError.DEBUG, "AI Player received card")
 
@@ -129,12 +159,9 @@ class AIPlayer(Actor):
             pass
 
     def endTurn(self):
-        HTTPLogger().writeContent(LoggerError.DEBUG, self.player.name + ": Ending my turn...")
+        HTTPLogger().writeContent(LoggerError.DEBUG, self.player.name + ": Ending my turn... (cash = %i)" % (self.player.cash))
 
         self.world.send((self.player.channel, Message.PLAYER_TURN_DONE))
         self.myturn = False
         self.receivedCard = None
         self.receivedBankProperties = False
-
-    def payBank(self, amount):
-        self.player.bank.send((self.player.channel, Message.PLAYER_CASH_DELTA, amount, True))
