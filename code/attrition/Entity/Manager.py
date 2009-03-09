@@ -52,13 +52,8 @@ class Manager():
                 HTTPLogger().writeContent(LoggerError.DEBUG, sender.name + " creating unit of type " + unitType)
                 newUnit = self.addUnit(unitType)
 
-
-                print "Channel Send"
                 newUnit.channel.send((self.channel, Message.UNIT_SETTEAM, unitTeam))
                 newUnit.channel.send((self.channel, Message.UNIT_MOVE, Foundation.Vector3(random.randrange(-500, 500, 1), 20, random.randrange(-500, 500, 1))))
-                print "Done send"
-                # Do a test move
-                #newUnit.channel.send()
 
         # Tasklet
         def __sendWorldState(self):

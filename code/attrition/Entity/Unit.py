@@ -59,10 +59,12 @@ class Unit(Actor):
     def __handleTasklet(self, channelData):
         channel, msg, msgdata = channelData[0], channelData[1], channelData[2:]
 
+        #print "Unit Update msg=", msg
+
         if msg == Message.WORLD_STATE:
             worldstate = msgdata[0]
             unitState = UnitState()
-            channel.send((self, Message.UNIT_STATE, unitState))
+            #channel.send((self, Message.UNIT_STATE, unitState))
 
             # Do housekeeping tasks
             newUnitType = self.__updateUnitCreation(worldstate.deltaTime)
@@ -72,12 +74,10 @@ class Unit(Actor):
         elif msg == Message.UNIT_MOVE:
             targetPosition = msgdata[0]
             self.physics.moveTo(targetPosition)
-            print "UnitMove"
 
         elif msg == Message.UNIT_SETTEAM:
             HTTPLogger().writeContent(LoggerError.SUCCESS, "Team set to %i" % (msgdata[0]))
             self.team = msgdata[0]
-            print "UnitSetTeam"
 
     def __handleNonblockingTasklet(self):
         while True:
@@ -139,7 +139,7 @@ class Unit(Actor):
 
         # If we cancelled our 1 unit in creation progress...
         if bRemovedCreationUnit and (len(self.creationQueue) == 0):
-            self.creationType = ""
+            self.creationType = None
             self.creatingUnit = False
             self.creationTime = 0
         elif bRemovedCreationUnit and (len(self.creationQueue) > 0):
@@ -193,7 +193,6 @@ class Unit(Actor):
         self.graphic.setMesh(sMesh)
         self.graphic.setScale(nScale)
         self.graphic.setPosition(nPosition)
+        self.physics.setPosition(nPosition)
         self.graphic.setRotation(nRotation)
         self.graphic.setMaterial(sMaterial)
-
-    

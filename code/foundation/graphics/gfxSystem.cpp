@@ -572,8 +572,7 @@ void GraphicManager::setMeshPosition(const char *_sSceneManagerName, const char 
         if (pSceneManager) {
             pEntity = pSceneManager->getEntity(_sID);
             pNode = pEntity->getParentSceneNode();
-
-            pNode->setPosition(Ogre::Vector3(_nPosition[0], _nPosition[1], _nPosition[2]));
+            pNode->setPosition(Ogre::Vector3(_nPosition[0], _nPosition[1], _nPosition[2]) - pEntity->getBoundingBox().getCenter());
         } else {
             f_printf("[GraphicManager] Error: Could not find SceneManager: %s\n", _sSceneManagerName);
         }
