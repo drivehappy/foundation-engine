@@ -19,6 +19,7 @@ class Actor:
     def __tasklet(self):
         while True:
             if self.shutdownFlag:
+                #print "Actor shutting down..."
                 raise TaskletExit
 
             self.tasklet(self.channel.receive())

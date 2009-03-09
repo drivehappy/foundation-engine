@@ -14,7 +14,7 @@ EntityTypes:
 
     # Graphic Options
     Mesh:       cube.mesh
-    Scale:      [0.1, 0.1, 0.1]
+    Scale:      [2.0, 2.0, 2.0]
     Rotation:   [0, 0, 0, 1]
     Position:   [0, 20.0, 0]
     Material:   Scarab/EntityTestMaterial
@@ -43,7 +43,7 @@ EntityTypes:
     Mesh:       cube.mesh
     Scale:      [10.0, 10.0, 10.0]
     Rotation:   [0, 0, 0, 1]
-    Position:   [0, 60.0, 0]
+    Position:   [0, 15, 00]
     Material:   Scarab/EntityTestMaterial2
 
     # Collision Options

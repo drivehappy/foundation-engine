@@ -79,6 +79,9 @@ def doInput(_nDeltaTime):
                 if KeyIndex == Foundation.Keycode.ESCAPE:
                     return False
 
+                if KeyIndex == Foundation.Keycode.NUMPAD_8:
+                    Camera0.setLookAt(Foundation.Vector3(0, 0, 10))
+                    
                 nCamSpeed = _nDeltaTime * CAMERA_SPEED
                 if KeyIndex == Foundation.Keycode.A:
                     Camera0.moveRelative(Foundation.Vector3(-nCamSpeed, 0, 0))
@@ -94,9 +97,6 @@ def doInput(_nDeltaTime):
                     Camera0.moveRelative(Foundation.Vector3(0, 0, -nCamSpeed))
                 elif KeyIndex == Foundation.Keycode.X:
                     Camera0.moveRelative(Foundation.Vector3(0, 0, nCamSpeed))
-
-                if KeyIndex == Foundation.Keycode.NUMPAD_8:
-                    Camera0.setLookAt(Foundation.Vector3(0, 0, 10))
 
         KeyboardStateChange.assign(keyboardState)
         TimerKeyDelay.reset()
