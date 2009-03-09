@@ -91,7 +91,7 @@ def doInput(_nDeltaTime):
                     Camera0.moveRelative(Foundation.Vector3(nCamSpeed, 0, 0))
 
                 if KeyIndex == Foundation.Keycode.Z:
-                    Camera0.moveRelative(Foundation.Vector3(0, 0.0, -nCamSpeed))
+                    Camera0.moveRelative(Foundation.Vector3(0, 0, -nCamSpeed))
                 elif KeyIndex == Foundation.Keycode.X:
                     Camera0.moveRelative(Foundation.Vector3(0, 0, nCamSpeed))
 
