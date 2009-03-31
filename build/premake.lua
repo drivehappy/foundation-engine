@@ -36,10 +36,10 @@ end
 
 --- 32bit Library paths
 if (linux) then
-    GRAPHIC_LIB_BINDIR_32BIT    = "."
-    INPUT_LIB_BINDIR_32BIT      = "."
-    PHYSIC_LIB_BINDIR_32BIT     = "."
-    AUDIO_LIB_BINDIR_32BIT      = "."
+    GRAPHIC_LIB_BINDIR_32BIT    = "../../libs/ogre/lib"
+    INPUT_LIB_BINDIR_32BIT      = "../../libs/ois/lib"
+    PHYSIC_LIB_BINDIR_32BIT     = "../../libs/bullet/lib"
+    AUDIO_LIB_BINDIR_32BIT      = "../../libs/fmod/lib"
 elseif (windows) then
     GRAPHIC_LIB_BINDIR_32BIT    = "../../libs/ogre/lib"
     INPUT_LIB_BINDIR_32BIT      = "../../libs/ois/lib"
@@ -55,14 +55,14 @@ AUDIO_LIB_BINDIR_64BIT          = "."
 
 --- Library names
 if (linux) then
-    GRAPHIC_LIB_NAME_DEBUG      = "OgreMain-1.4.9"
+    GRAPHIC_LIB_NAME_DEBUG      = "OgreMain-1.6.1"
     INPUT_LIB_NAME_DEBUG        = "OIS"
     GUI_LIB_NAME_DEBUG          = "mygui"
     NETWORK_LIB_NAME_DEBUG      = "raknet"
     PHYSIC_LIB_NAME_DEBUG       = { "bulletcollision", "bulletmath" }
     AUDIO_LIB_NAME_DEBUG        = "fmodex"
 
-    GRAPHIC_LIB_NAME            = "OgreMain-1.4.9"
+    GRAPHIC_LIB_NAME            = "OgreMain-1.6.1"
     GUI_LIB_NAME                = "mygui"
     NETWORK_LIB_NAME            = "raknet"
     PHYSIC_LIB_NAME             = { "bulletcollision", "bulletmath" }
@@ -95,8 +95,8 @@ end
 
 -- Foundation: Generate proper include paths depending upon what is enabled from above
 if (linux) then
-    incpathExternalLibs = { "/usr/include/python2.6",
-                            "/usr/include/boost-1_35",
+    incpathExternalLibs = { "/usr/local/include/python2.6",
+                            "../../libs/boost/inc", 
                             "../../libs" }
 elseif (windows) then
     incpathExternalLibs = { "../../libs/python/inc",
@@ -110,14 +110,12 @@ end
 -- FoundationPython: Generate proper include paths depending upon what is enabled from above
 if (linux) then
     LIBDIR_FOUNDATION_DEBUG = { 
-                            "/usr/include/python2.6",
-                            "/usr/include/boost-1_35", 
+                            "/usr/local/include/python2.6",
                             "../../libs", 
                             PHYSIC_LIB_BINDIR_32BIT,
                             AUDIO_LIB_BINDIR_32BIT }
     LIBDIR_FOUNDATION_RELEASE = { 
-                            "/usr/include/python2.6",
-                            "/usr/include/boost-1_35", 
+                            "/usr/local/include/python2.6",
                             "../../libs", 
                             PHYSIC_LIB_BINDIR_32BIT,
                             AUDIO_LIB_BINDIR_32BIT }
@@ -125,7 +123,6 @@ if (linux) then
     LIBDIR_FOUNDATIONPYTHON_DEBUG = { 
                             "../../bin/debug",
                             "/usr/include/python2.6",
-                            "../../libs/boost/lib",
                             "../../libs/ogre/lib",
                             "../../libs/bullet/out/debug8/libs",
                             "../../libs/mygui/MyGUIEngine/lib/Debug",
@@ -136,7 +133,6 @@ if (linux) then
     LIBDIR_FOUNDATIONPYTHON_RELEASE = { 
                             "../../bin/release",
                             "/usr/include/python2.6",
-                            "../../libs/boost/lib",
                             "../../libs/ogre/lib",
                             "../../libs/bullet/out/release8/libs",
                             "../../libs/raknet/lib",
