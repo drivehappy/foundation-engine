@@ -19,7 +19,7 @@ Entity::Entity(EntityIdType _nId, const char *_sName)
     m_uGraphics = NULL;
 }
 
-unsigned int Entity::getId()
+EntityIdType Entity::getId()
 {
 	return m_nId;
 }

@@ -104,7 +104,7 @@ BOOST_PYTHON_MODULE(FoundationPython)
         .def_readwrite("_dTime", &Task::_dTime)
         .def_readwrite("_dLastTime", &Task::_dLastTime)
     ;
-    class_<Task_PythonWrapper, bases<Task>>("Task", init<PyObject*>())
+    class_< Task_PythonWrapper, bases<Task> >("Task", init<PyObject*>())
         .def(init<PyObject*, const char *>())
 
         .def_readwrite("_kill", &Task_PythonWrapper::_kill)

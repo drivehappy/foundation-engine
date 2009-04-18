@@ -459,7 +459,7 @@ void GraphicManager::setCameraDirection(const char *_sSceneManagerName, const ch
 void GraphicManager::setCameraTracking(const char *_sSceneManagerName, const char *_sCameraName, const bool _bEnabled, const char *_sObjectTrack = "", const gmtl::Vec3f _nOffset = gmtl::Vec3f(0,0,0))
 {
     Ogre::SceneManager *pSceneManager = m_pRoot->getSceneManager(_sSceneManagerName);
-    Ogre::Camera *pCamera = pSceneManager->getCamera(_sCameraName);
+    //Ogre::Camera *pCamera = pSceneManager->getCamera(_sCameraName);
     Ogre::SceneNode *pNodeAttach;
     Ogre::Entity *pEntity;
 
