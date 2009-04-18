@@ -1,6 +1,6 @@
 // Taken from ETL Sample
 
-#include "TerrainMaterial.h"
+#include "terrainMaterial.h"
 #include <OgreMaterialManager.h>
 #include <OgreTechnique.h>
 #include <OgrePass.h>

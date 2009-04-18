@@ -20,10 +20,10 @@ ENABLE_AUDIO    = true
 
 if (linux) then
     GRAPHIC_LIB_INCDIR  = "/usr/local/include/OGRE"
-    GUI_LIB_INCDIR      = "/usr/local/include/MYGUI"
-    NETWORK_LIB_INCDIR  = "/usr/local/include/raknet"
-    INPUT_LIB_INCDIR    = "/usr/local/include/OIS"
-    PHYSIC_LIB_INCDIR   = "../../libs/bullet/src"
+    GUI_LIB_INCDIR      = "../../libs/mygui/inc"
+    NETWORK_LIB_INCDIR  = "../../libs/raknet/inc"
+    INPUT_LIB_INCDIR    = "../../libs/ois/inc"
+    PHYSIC_LIB_INCDIR   = "/usr/local/include"
     AUDIO_LIB_INCDIR    = "/usr/local/include/fmodex"
 elseif (windows) then
     GRAPHIC_LIB_INCDIR  = "../../libs/ogre/inc"
@@ -36,7 +36,7 @@ end
 
 --- 32bit Library paths
 if (linux) then
-    GRAPHIC_LIB_BINDIR_32BIT    = "../../libs/ogre/lib"
+    GRAPHIC_LIB_BINDIR_32BIT    = "/usr/local/lib"
     INPUT_LIB_BINDIR_32BIT      = "../../libs/ois/lib"
     PHYSIC_LIB_BINDIR_32BIT     = "../../libs/bullet/lib"
     AUDIO_LIB_BINDIR_32BIT      = "../../libs/fmod/lib"
@@ -55,17 +55,17 @@ AUDIO_LIB_BINDIR_64BIT          = "."
 
 --- Library names
 if (linux) then
-    GRAPHIC_LIB_NAME_DEBUG      = "OgreMain-1.6.1"
+    GRAPHIC_LIB_NAME_DEBUG      = "OgreMain"
     INPUT_LIB_NAME_DEBUG        = "OIS"
     GUI_LIB_NAME_DEBUG          = "mygui"
     NETWORK_LIB_NAME_DEBUG      = "raknet"
-    PHYSIC_LIB_NAME_DEBUG       = { "bulletcollision", "bulletmath" }
+    PHYSIC_LIB_NAME_DEBUG       = { "BulletCollision", "LinearMath" }
     AUDIO_LIB_NAME_DEBUG        = "fmodex"
 
-    GRAPHIC_LIB_NAME            = "OgreMain-1.6.1"
+    GRAPHIC_LIB_NAME            = "OgreMain"
     GUI_LIB_NAME                = "mygui"
     NETWORK_LIB_NAME            = "raknet"
-    PHYSIC_LIB_NAME             = { "bulletcollision", "bulletmath" }
+    PHYSIC_LIB_NAME             = { "BulletCollision", "LinearMath" }
     AUDIO_LIB_NAME              = "fmodex"
     INPUT_LIB_NAME              = "OIS"
 elseif (windows) then
@@ -95,8 +95,9 @@ end
 
 -- Foundation: Generate proper include paths depending upon what is enabled from above
 if (linux) then
-    incpathExternalLibs = { "/usr/local/include/python2.6",
+    incpathExternalLibs = { "/usr/include/python2.5",
                             "../../libs/boost/inc", 
+                            "../../libs/etl/inc",
                             "../../libs" }
 elseif (windows) then
     incpathExternalLibs = { "../../libs/python/inc",
@@ -110,33 +111,35 @@ end
 -- FoundationPython: Generate proper include paths depending upon what is enabled from above
 if (linux) then
     LIBDIR_FOUNDATION_DEBUG = { 
-                            "/usr/local/include/python2.6",
+                            "/usr/local/include/python2.5",
                             "../../libs", 
                             PHYSIC_LIB_BINDIR_32BIT,
                             AUDIO_LIB_BINDIR_32BIT }
     LIBDIR_FOUNDATION_RELEASE = { 
-                            "/usr/local/include/python2.6",
+                            "/usr/local/include/python2.5",
                             "../../libs", 
                             PHYSIC_LIB_BINDIR_32BIT,
                             AUDIO_LIB_BINDIR_32BIT }
                             
     LIBDIR_FOUNDATIONPYTHON_DEBUG = { 
                             "../../bin/debug",
-                            "/usr/include/python2.6",
-                            "../../libs/ogre/lib",
-                            "../../libs/bullet/out/debug8/libs",
+                            "/usr/include/python2.5",
+                            GRAPHIC_LIB_BINDIR_32BIT,
+                            "/usr/local/",
                             "../../libs/mygui/MyGUIEngine/lib/Debug",
                             "../../libs/raknet/Lib",
                             "../../libs/ois/lib",
+                            "../../libs/etl/lib",
                             PHYSIC_LIB_BINDIR_32BIT,
                             AUDIO_LIB_BINDIR_32BIT }
     LIBDIR_FOUNDATIONPYTHON_RELEASE = { 
                             "../../bin/release",
-                            "/usr/include/python2.6",
-                            "../../libs/ogre/lib",
+                            "/usr/include/python2.5",
+                            GRAPHIC_LIB_BINDIR_32BIT,
                             "../../libs/bullet/out/release8/libs",
                             "../../libs/raknet/lib",
                             "../../libs/ois/lib",
+                            "../../libs/etl/lib",
                             PHYSIC_LIB_BINDIR_32BIT,
                             AUDIO_LIB_BINDIR_32BIT }
 elseif (windows) then
@@ -212,7 +215,7 @@ if (windows) then
     
     libfileRaknet_DEBUG = "RakNetLibStaticDebug"
     libfileRaknet       = "RakNetLibStatic"
-    libfilePython       = "python26"
+    libfilePython       = "python25"
     libfileETL_DEBUG    = "etl_d"
     libfileETL          = "etl"
     libfileBtOgre_DEBUG = "btogre_d"
@@ -223,12 +226,12 @@ if (windows) then
 elseif (linux) then
     project.path = "./gnuc"
     libfileYAML = "yaml"
-    libfilePython = "python2.6"
-    libfileBoost = "boost_python"
+    libfilePython = "python2.5"
+    -- libfileBoost = "boost_python"
     libfileUUID = "uuid"
 
-    libfileAllDebug = { libfilePython_DEBUG, libfileBoost, libfileUUID }
-    libfileAllRelease = { libfilePython, libfileBoost, libfileUUID }
+    libfileAllDebug = { libfilePython_DEBUG, libfileUUID } 	--, libfileBoost, libfileUUID }
+    libfileAllRelease = { libfilePython, libfileUUID } 		--, libfileBoost, libfileUUID }
 end
 
 if (ENABLE_GRAPHIC) then
