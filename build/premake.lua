@@ -111,12 +111,10 @@ end
 -- FoundationPython: Generate proper include paths depending upon what is enabled from above
 if (linux) then
     LIBDIR_FOUNDATION_DEBUG = { 
-                            "/usr/local/lib/python2.5",
                             "../../libs", 
                             PHYSIC_LIB_BINDIR_32BIT,
                             AUDIO_LIB_BINDIR_32BIT }
     LIBDIR_FOUNDATION_RELEASE = { 
-                            "/usr/local/lib/python2.5",
                             "../../libs", 
                             PHYSIC_LIB_BINDIR_32BIT,
                             AUDIO_LIB_BINDIR_32BIT }
@@ -216,14 +214,12 @@ if (windows) then
     libfileAllRelease = { libfilePython, libfileETL, libfileBtOgre, libfilePython }
 elseif (linux) then
     project.path = "./gnuc"
-    libfileYAML = "yaml"
     libfilePython = "python2.5"
-    -- libfileBoost = "boost_python"
     libfileUUID = "uuid"
     libfileTerrain = "EditableTerrain";
 
-    libfileAllDebug = { libfilePython_DEBUG, libfileUUID, libfileTerrain } 	--, libfileBoost, libfileUUID }
-    libfileAllRelease = { libfilePython, libfileUUID, libfileTerrain } 		--, libfileBoost, libfileUUID }
+    libfileAllDebug = { libfilePython, libfileUUID, libfileTerrain }
+    libfileAllRelease = { libfilePython, libfileUUID, libfileTerrain }
 end
 
 if (ENABLE_GRAPHIC) then
@@ -272,9 +268,9 @@ package = newpackage()
     }
 
     if (windows) then
-        package.targetextension = "pyd"
-        package.defines = { "WIN32" }
-        package.links = { "ws2_32" }
+        package.targetextension                 = "pyd"
+        package.defines                         = { "WIN32" }
+        package.links                           = { "ws2_32" }
         
         package.config["Debug"].buildoptions    = { "/D_CRT_SECURE_NO_DEPRECATE" } 
         package.config["Release"].buildoptions  = { "/D_CRT_SECURE_NO_DEPRECATE", "/MP" }
