@@ -399,6 +399,10 @@ def main(argv):
     CommandCenter.setPosition(Foundation.Vector3(0, 20, 0))
     #Scheduler.AddTask(CommandCenter.Task, 1, 0)
     # -----------------------------------
+    
+    # TEST CIRCLE RENDERING
+    GraphicManager.addCircle("SceneManager0", "CIRCLETEST", Foundation.Vector2(20.0, 20.0), 50.0)
+    # -----------------------------------
 
     uMainTimer = Foundation.Timer()
     nDeltaTime = 0
