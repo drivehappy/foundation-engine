@@ -155,6 +155,11 @@ BOOST_PYTHON_MODULE(FoundationPython)
 	;
 
     // GMTL
+    enum_<gmtl::VectorIndex>("VectorIndex")
+        .value("Xelt", gmtl::Xelt)
+        .value("Yelt", gmtl::Yelt)
+        .value("Zelt", gmtl::Zelt)
+    ;
     class_<gmtl::Vec2f>("Vec2f", init<float, float>())
         .def(init<gmtl::Vec2f &>())
     ;

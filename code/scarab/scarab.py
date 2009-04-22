@@ -401,7 +401,11 @@ def main(argv):
     # -----------------------------------
     
     # TEST CIRCLE RENDERING
-    GraphicManager.addCircle("SceneManager0", "CIRCLETEST", Foundation.Vector2(20.0, 20.0), 50.0)
+    for x in range(0, 100):
+        nX = random.randint(-100, 100)
+        nZ = random.randint(-100, 100)
+        nRadius = random.random() * 50
+        GraphicManager.addCircle("SceneManager0", "CIRCLETEST" + str(x), Foundation.Vector3(nX, 13.0, nZ), nRadius, Foundation.VectorIndex.Yelt, .5, .5, 1)
     # -----------------------------------
 
     uMainTimer = Foundation.Timer()
