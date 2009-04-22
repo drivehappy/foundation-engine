@@ -121,11 +121,11 @@ namespace Foundation {
 
 			/**
 			 */
-			void addCircle(const char *_sSceneManagerName, const char *_sID, gmtlVector2_PythonWrapper _nPosition, float _nRadius);
+			void addCircle(const char *_sSceneManagerName, const char *_sID, gmtlVector3_PythonWrapper _nPosition, float _nRadius, gmtl::VectorIndex _nPlane, float _nRed, float _nGreen, float _nBlue);
 
 			/**
 			 */
-			void updateCircle(const char *_sSceneManagerName, const char *_sID, gmtlVector2_PythonWrapper _nPosition, float _nRadius);
+			void updateCircle(const char *_sSceneManagerName, const char *_sID, gmtlVector3_PythonWrapper _nPosition, float _nRadius, gmtl::VectorIndex _nPlane);
 
             /**
             */

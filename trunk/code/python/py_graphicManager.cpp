@@ -171,14 +171,14 @@ void GraphicManager_PythonWrapper::updateLine(const char *_sSceneManagerName, co
     GraphicManager::getSingleton().updateLine(_sSceneManagerName, _sID, nNewPointList);
 }
 
-void GraphicManager_PythonWrapper::addCircle(const char *_sSceneManagerName, const char *_sID, gmtlVector2_PythonWrapper _nPosition, float _nRadius)
+void GraphicManager_PythonWrapper::addCircle(const char *_sSceneManagerName, const char *_sID, gmtlVector3_PythonWrapper _nPosition, float _nRadius, gmtl::VectorIndex _nPlane, float _nRed, float _nGreen, float _nBlue)
 {
-	GraphicManager::getSingleton().addCircle(_sSceneManagerName, _sID, _nPosition, _nRadius);
+	GraphicManager::getSingleton().addCircle(_sSceneManagerName, _sID, _nPosition, _nRadius, _nPlane, _nRed, _nGreen, _nBlue);
 }
 
-void GraphicManager_PythonWrapper::updateCircle(const char *_sSceneManagerName, const char *_sID, gmtlVector2_PythonWrapper _nPosition, float _nRadius)
+void GraphicManager_PythonWrapper::updateCircle(const char *_sSceneManagerName, const char *_sID, gmtlVector3_PythonWrapper _nPosition, float _nRadius, gmtl::VectorIndex _nPlane)
 {
-	GraphicManager::getSingleton().updateCircle(_sSceneManagerName, _sID, _nPosition, _nRadius);
+	GraphicManager::getSingleton().updateCircle(_sSceneManagerName, _sID, _nPosition, _nRadius, _nPlane);
 }
 
 void GraphicManager_PythonWrapper::doPicking(const char *sSceneManagerName, const char *sCameraName, const unsigned int _nQueryMask, gmtlVector4_PythonWrapper _nWorldRect, gmtlVector2_PythonWrapper _nScreenWidth)

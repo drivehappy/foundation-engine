@@ -438,7 +438,7 @@ namespace Foundation
 				// Circles
 				/** 
 				 */
-				void addCircle(const char *_sSceneManagerName, const char *_sID, gmtl::Vec2f _nPosition, float _nRadius);
+				void addCircle(const char *_sSceneManagerName, const char *_sID, gmtl::Vec3f _nPosition, float _nRadius, gmtl::VectorIndex _nPlane, float _nRed, float _nGreen, float _nBlue);
 
 				/**
 				 */
@@ -446,7 +446,7 @@ namespace Foundation
 
 				/**
 				 */
-				void updateCircle(const char *_sSceneManagerName, const char *_sID, gmtl::Vec2f _nPosition, float _nRadius);
+				void updateCircle(const char *_sSceneManagerName, const char *_sID, gmtl::Vec3f _nPosition, float _nRadius, gmtl::VectorIndex _nPlane);
 
                 /** Create a plane object.
                 */
