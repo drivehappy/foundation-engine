@@ -435,6 +435,19 @@ namespace Foundation
                 */
                 void updateLine(const char *_sSceneManagerName, const char *_sID, vector<gmtl::Vec3f> _nPoints);
 
+				// Circles
+				/** 
+				 */
+				void addCircle(const char *_sSceneManagerName, const char *_sID, gmtl::Vec2f _nPosition, float _nRadius);
+
+				/**
+				 */
+				void destroyCircle(const char *_sSceneManagerName, const char *_sID);
+
+				/**
+				 */
+				void updateCircle(const char *_sSceneManagerName, const char *_sID, gmtl::Vec2f _nPosition, float _nRadius);
+
                 /** Create a plane object.
                 */
                 void addPlane(const char *_sSceneManagerName, const char *_sID, float _nWidth, float _nHeight, unsigned int _nSegmentsX, unsigned int _nSegmentsY);

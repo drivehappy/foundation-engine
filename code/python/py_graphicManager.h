@@ -119,6 +119,14 @@ namespace Foundation {
             */
             void updateLine(const char *_sSceneManagerName, const char *_sID, list _nPoints);
 
+			/**
+			 */
+			void addCircle(const char *_sSceneManagerName, const char *_sID, gmtlVector2_PythonWrapper _nPosition, float _nRadius);
+
+			/**
+			 */
+			void updateCircle(const char *_sSceneManagerName, const char *_sID, gmtlVector2_PythonWrapper _nPosition, float _nRadius);
+
             /**
             */
             void doPicking(const char *sSceneManagerName, const char *sCameraName, const unsigned int _nQueryMask, gmtlVector4_PythonWrapper _nWorldRect, gmtlVector2_PythonWrapper _nScreenWidth);

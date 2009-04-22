@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sphereData.h"
+#include "sphereNode.h"
 #include "sphereTreeIterator.h"
 
 namespace Foundation {

@@ -204,7 +204,7 @@ if (windows) then
     
     libfileRaknet_DEBUG = "RakNetLibStaticDebug"
     libfileRaknet       = "RakNetLibStatic"
-    libfilePython       = "python25"
+    libfilePython       = "python26"
     libfileETL_DEBUG    = "etl_d"
     libfileETL          = "etl"
     libfileBtOgre_DEBUG = "btogre_d"

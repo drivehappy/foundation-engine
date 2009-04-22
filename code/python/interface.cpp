@@ -420,6 +420,10 @@ BOOST_PYTHON_MODULE(FoundationPython)
         .def("destroyLine", &Graphic::GraphicManager_PythonWrapper::destroyLine)
         .def("updateLine", &Graphic::GraphicManager_PythonWrapper::updateLine)
 
+		.def("addCircle", &Graphic::GraphicManager_PythonWrapper::addCircle)
+        .def("destroyCircle", &Graphic::GraphicManager_PythonWrapper::destroyCircle)
+        .def("updateCircle", &Graphic::GraphicManager_PythonWrapper::updateCircle)
+
         .def("addPlane", &Graphic::GraphicManager_PythonWrapper::addPlane)
 
         .def("addSceneManager", &Graphic::GraphicManager_PythonWrapper::addSceneManager)

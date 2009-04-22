@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gmtl.h"
+#include "gmtl/gmtl.h"
 
 namespace Foundation {
     namespace Entity {
