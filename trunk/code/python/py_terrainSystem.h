@@ -14,7 +14,7 @@ namespace Foundation
         class TerrainManager_PythonWrapper
         {
         public:
-            void create(const char *_sSceneManagerName);
+            void create(const char *_sSceneManagerName, const char *_sCameraName);
 
             gmtlVector3_PythonWrapper getRayIntersection(const char *sSceneManagerName, const char *sCameraName, gmtlVector2_PythonWrapper _nWorldRect, gmtlVector2_PythonWrapper _nScreenWidth);
         };

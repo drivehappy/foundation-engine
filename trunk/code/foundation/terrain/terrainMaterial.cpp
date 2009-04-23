@@ -1,3 +1,4 @@
+/*
 // Taken from ETL Sample
 
 #include "terrainMaterial.h"
@@ -114,4 +115,4 @@ ET::SplattingMaterial* TerrainMaterial::getSplattingMaterial() const
 {
   return mSplattingMaterial;
 }
-
+*/

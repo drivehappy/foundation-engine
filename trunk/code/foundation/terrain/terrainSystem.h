@@ -4,9 +4,10 @@
 // Foundation
 #include "graphics/gfxSystem.h"
 
-#include "terrain/terrainMaterial.h"
+//#include "terrain/terrainMaterial.h"
 
 // ETL
+/*
 #include <ETFlatTerrain.h>
 #include <ETTerrainDescription.h>
 #include <ETBrush.h>
@@ -16,6 +17,13 @@
 #include <ETSplattingLayout.h>
 #include <ETSplattingMaterial.h>
 #include <ETPage.h>
+*/
+
+// ETM
+#include "ETTerrainManager.h"
+#include "ETTerrainInfo.h"
+#include "ETBrush.h"
+#include "ETSplattingManager.h"
 
 
 namespace Foundation
@@ -29,7 +37,7 @@ namespace Foundation
         public:
             static TerrainManager& getSingleton();
 
-            void create(Ogre::SceneManager *_pSceneMgr);
+            void create(Ogre::SceneManager *_pSceneMgr, Ogre::Camera *_pCamera);
 
             gmtl::Vec3f getRayIntersection(const char *sSceneManagerName, const char *sCameraName, gmtl::Vec2f _nWorldRect, gmtl::Vec2f _nScreenWidth);
 
@@ -40,7 +48,9 @@ namespace Foundation
             ~TerrainManager();
 
         private:
-            Ogre::SceneManager* m_pSceneMgr;
+            ET::TerrainManager      *mTerrainMgr;
+            ET::SplattingManager    *mSplatMgr;
+            Ogre::SceneManager      *m_pSceneMgr;
         };
 	};
 };
