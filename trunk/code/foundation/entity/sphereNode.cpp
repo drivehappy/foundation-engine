@@ -5,6 +5,12 @@ using namespace Foundation::Entity;
 
 SphereNode::SphereNode()
 {
+    m_nMaxBucketSize = 10;
+}
+
+SphereNode::SphereNode(unsigned int _nMaxBucketSize)
+{
+    m_nMaxBucketSize = _nMaxBucketSize;
 }
 
 SphereNode::~SphereNode()
@@ -12,15 +18,72 @@ SphereNode::~SphereNode()
 }
 
 
+void SphereNode::update()
+{
+    vector<SphereNode *>::iterator itr;
+    float nDistanceSq;
+    float nRadiiSumDistSq, nRadiiSubDistSq;
+
+    // Move through our children vector and determine if any lie outside our radius
+    for (itr = m_uChildren.begin(); itr != m_uChildren.end(); itr++) {
+        nDistanceSq = gmtl::lengthSquared<float, 3>((*itr)->getPosition() - m_nPosition);
+        nRadiiSumDistSq = pow((*itr)->getRadius() + m_nRadius, 2.0f);
+        nRadiiSubDistSq = pow((*itr)->getRadius() - m_nRadius, 2.0f);
+
+        if (nDistanceSq > nRadiiSumDistSq) {
+            // (*itr) child (including radius) is completely outside of us, move into the parent
+        }
+
+        if (nDistanceSq > m_nRadius) {
+            // (*itr) child (center) is completely outside of us, move into the parent
+        }
+
+        if (nDistanceSq > nRadiiSubDistSq) {
+            // (*itr) child (center + radius) is somewhat outside of us
+        }
+    }
+}
+
+SphereNode* SphereNode::getBestFitNode(const SphereData & _uData)
+{
+    // Determine if this point fits within us
+    gmtl::Vec3f nPoint = _uData.getPosition();
+    float nRadiusSq = pow(m_nRadius, 2.0f);
+    float nDistanceSq;
+    SphereNode *bestNode;
+    vector<SphereNode *>::iterator itr;
+
+    nDistanceSq = gmtl::lengthSquared<float, 3>(nPoint - m_nPosition);
+    
+    if (nDistanceSq < nRadiusSq) {
+        // Yay it fits, try out the children now, somehow determine which is best
+        //  perhaps recurse through it find any non null nodes and check against each?
+        for (itr = m_uChildren.begin(); itr != m_uChildren.end(); itr++) {
+            
+        }
+
+        //bestNode = ??
+    } else {
+        // Nay it doesn't
+        bestNode = NULL;
+    }
+
+    return bestNode;
+}
 
 void SphereNode::debugRender()
 {
-    // Do Render
+    // Do Render Circle
 }
 
 gmtl::Vec3f SphereNode::getPosition()
 {
     return m_nPosition;
+}
+
+float SphereNode::getRadius() const
+{
+    return m_nRadius;
 }
 
 unsigned int SphereNode::getChildCount()

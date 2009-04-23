@@ -12,7 +12,11 @@ namespace Foundation {
             /** Pure virtual function for derived classes to implement returning position of their data.
                 @return Position
              */
-            gmtl::Vec3f virtual getPosition(void) = 0; 
+            gmtl::Vec3f virtual getPosition(void) = 0;
+
+            /**
+             */
+            float virtual getRadius(void) = 0;
         };
 
     };
