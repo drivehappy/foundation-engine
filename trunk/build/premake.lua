@@ -97,6 +97,7 @@ end
 if (linux) then
     incpathExternalLibs = { "/usr/local/include/python2.5",
                             "../../libs/boost/inc",
+                            "../../libs/etm/inc",
                             "/usr/local/include/ET",
                             "../../libs" }
 elseif (windows) then
