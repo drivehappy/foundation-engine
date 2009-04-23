@@ -33,6 +33,7 @@ namespace Foundation {
 
         private:
             SphereNode *m_pRoot;
+            unsigned int m_nMinRadius, m_nMaxRadius;
         };      
 
     };
