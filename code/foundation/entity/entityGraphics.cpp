@@ -21,7 +21,7 @@ EntityGraphic::EntityGraphic(const char *_sSceneManager, const char *_sMeshId)
 
     strcpy((char *)m_sSceneManager, _sSceneManager);
     strcpy((char *)m_sMeshId, _sMeshId);
-    m_pGraphicManager->addMesh(m_sSceneManager, m_sMeshId, "cube.mesh", 1);
+    m_pGraphicManager->addMesh(m_sSceneManager, m_sMeshId, "Cube.003.mesh", 1);
 }
 
 EntityGraphic::~EntityGraphic()
