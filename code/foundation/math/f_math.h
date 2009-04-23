@@ -17,6 +17,7 @@ namespace Foundation
             else
                 return _uSecond;
         }
+
         /** Return the lowest argument passed in.
         */
         template<class T>
@@ -27,6 +28,7 @@ namespace Foundation
             else
                 return _uSecond;
         }
+
         /** Return Value within the exclusive range of LowerBound and UpperBound.
         */
         template<class T>

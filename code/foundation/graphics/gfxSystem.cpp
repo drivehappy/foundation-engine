@@ -127,15 +127,7 @@ bool GraphicManager::configure(const char *_sWindowTitle)
 {
     // Create a new window
     bool bRestored = true;
-
-    /*
-    Ogre::RenderSystem *rs = m_pRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
-    rs->setConfigOption("Full Screen", "Yes");
-    rs->setConfigOption("Video Mode", "1280 x 1024 @ 32-bit colour");
-    rs->setConfigOption("RTT Preferred Mode", "PBuffer");
-    m_pRoot->setRenderSystem(rs);
-    */
-
+    
     bRestored = m_pRoot->restoreConfig();
 
     if (!bRestored) {
@@ -927,12 +919,11 @@ void GraphicManager::addCircle(const char *_sSceneManagerName, const char *_sID,
         nPoint1[nPlaneY] = _nPosition[nPlaneY] + (_nRadius * gmtl::Math::sin(nRadianDiff * (nLineIndex + 1)));
 
         // Add the line
-        nPoints.clear();
         nPoints.push_back(nPoint0);
         nPoints.push_back(nPoint1);
-
-        addLine(_sSceneManagerName, sCircleID.c_str(), nPoints, _nRed, _nGreen, _nBlue);
     }
+
+    addLine(_sSceneManagerName, sCircleID.c_str(), nPoints, _nRed, _nGreen, _nBlue);
 }
 
 void GraphicManager::destroyCircle(const char *_sSceneManagerName, const char *_sID)

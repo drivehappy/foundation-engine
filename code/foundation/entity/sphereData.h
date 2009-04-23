@@ -14,5 +14,6 @@ namespace Foundation {
              */
             gmtl::Vec3f virtual getPosition(void) = 0; 
         };
+
     };
 };

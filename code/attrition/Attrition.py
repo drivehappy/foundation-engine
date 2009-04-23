@@ -3,6 +3,7 @@
 import stackless
 import sys
 import struct
+import random
 
 # --------------------------------------------------
 # Foundation Libs
@@ -195,12 +196,12 @@ def initManagers():
     if bResult:
         GraphicManager.showCursor(False)
         GraphicManager.addSceneManager("SceneManager0")
-        TerrainManager.create("SceneManager0")
         Camera0 = GraphicManager.addCamera("SceneManager0", "Camera0", 0, 0.0, 0.0, 1.0, 1.0)
         Camera0.setPosition(Foundation.Vector3(0, 500, 0.01))
         Camera0.setLookAt(Foundation.Vector3(0, 0, 0))
         GraphicManager.addLine("SceneManager0", "SELECTION_LINELIST", [(0, 0, 0)], (0.0, 1.0, 0.0))
 
+        TerrainManager.create("SceneManager0", "Camera0")
         SelectionCallbackChannel.Channel_Join("GRAPHICS_SELECTION", onSelection)
 
         Scheduler.AddTask(GraphicManager.getTaskRender(), 1, 0)
@@ -373,6 +374,14 @@ def main(argv):
         
         GUIHelper.createGameUI()
         GUIHelper.createEntityUI()
+
+        # TEST CIRCLE RENDERING
+        for x in range(0, 1000):
+            nX = random.randint(-500, 500)
+            nZ = random.randint(-500, 500)
+            nRadius = random.random() * 50
+            GraphicManager.addCircle("SceneManager0", "CIRCLETEST" + str(x), Foundation.Vector3(nX, 13.0, nZ), nRadius, Foundation.VectorIndex.Yelt, 1, 0, 0)
+        # -----------------------------------
 
         stackless.tasklet(schedulerTasklet)()
 

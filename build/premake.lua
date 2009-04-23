@@ -96,14 +96,14 @@ end
 -- Foundation: Generate proper include paths depending upon what is enabled from above
 if (linux) then
     incpathExternalLibs = { "/usr/local/include/python2.5",
-                            "../../libs/boost/inc", 
+                            "../../libs/boost/inc",
                             "/usr/local/include/ET",
                             "../../libs" }
 elseif (windows) then
     incpathExternalLibs = { "../../libs/python/inc",
                             "../../libs/python/inc/stackless",
                             "../../libs/boost/inc",
-                            "../../libs/etl/inc",
+                            "../../libs/etm/inc",
                             "../../libs/btogre/inc",
                             "../../libs" }
 end
@@ -149,7 +149,7 @@ elseif (windows) then
                             "../../libs/mygui/lib/",
                             "../../libs/raknet/Lib",
                             "../../libs/ois/lib",
-                            "../../libs/etl/lib",
+                            "../../libs/etm/lib",
                             "../../libs/btogre/lib",
                             PHYSIC_LIB_BINDIR_32BIT,
                             AUDIO_LIB_BINDIR_32BIT }
@@ -161,7 +161,7 @@ elseif (windows) then
                             "../../libs/mygui/lib/",
                             "../../libs/raknet/lib",
                             "../../libs/ois/lib",
-                            "../../libs/etl/lib",
+                            "../../libs/etm/lib",
                             "../../libs/btogre/lib",
                             PHYSIC_LIB_BINDIR_32BIT,
                             AUDIO_LIB_BINDIR_32BIT }
@@ -205,13 +205,13 @@ if (windows) then
     libfileRaknet_DEBUG = "RakNetLibStaticDebug"
     libfileRaknet       = "RakNetLibStatic"
     libfilePython       = "python26"
-    libfileETL_DEBUG    = "etl_d"
-    libfileETL          = "etl"
+    -- libfileETL_DEBUG    = "EditableTerrainManager_d"
+    -- libfileETL          = "EditableTerrainManager"
     libfileBtOgre_DEBUG = "btogre_d"
     libfileBtOgre       = "btogre"
     
-    libfileAllDebug = { libfileRaknet_DEBUG, libfileETL_DEBUG, libfileBtOgre_DEBUG, libfilePython }
-    libfileAllRelease = { libfilePython, libfileETL, libfileBtOgre, libfilePython }
+    libfileAllDebug = { libfileRaknet_DEBUG, libfileBtOgre_DEBUG, libfilePython }
+    libfileAllRelease = { libfilePython, libfileBtOgre, libfilePython }
 elseif (linux) then
     project.path = "./gnuc"
     libfilePython = "python2.5"

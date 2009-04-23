@@ -6,61 +6,48 @@ using namespace Foundation::Terrain;
 using namespace ET;
 
 
-TerrainManager& TerrainManager::getSingleton()
+Terrain::TerrainManager& Terrain::TerrainManager::getSingleton()
 {
-    static TerrainManager m_Singleton;
+    static Terrain::TerrainManager m_Singleton;
 
     return m_Singleton;
 }
 
-void TerrainManager::create(Ogre::SceneManager *_pSceneMgr)
+void Terrain::TerrainManager::create(Ogre::SceneManager *_pSceneMgr, Ogre::Camera *_pCamera)
 {
-    size_t width = 257;
-    size_t height = 257;
-    Ogre::Vector2 grainSize(20, 20);
-    ET::RealArray2D heights(width, height, 0.5f);
-    const char mTexture[] = "jungle_0.jpg";
-
     m_pSceneMgr = _pSceneMgr;
 
-    Ogre::SceneNode *mTerrainNode = _pSceneMgr->getRootSceneNode()->createChildSceneNode("TerrainSystem_Node");
-    TerrainMaterial *mMaterial = new TerrainMaterial("TerrainMaterial", mTerrainNode);
-    ET::ArrayBrush *mBrush = new ET::ArrayBrush(ET::RealArray2D(2,2), grainSize);
+    // create terrain manager
+    mTerrainMgr = new ET::TerrainManager(_pSceneMgr);
+    mTerrainMgr->setLODErrorMargin(1, _pCamera->getViewport()->getActualHeight());
+    mTerrainMgr->setUseLODMorphing(true, 0.1, "morphFactor");
 
-    ET::FlatTerrain *mTerrain = new ET::FlatTerrain(heights, grainSize, 20);
+    // create a fresh, mid-high terrain for editing
+    ET::TerrainInfo terrainInfo(129, 129, vector<float>(129*129, 0.5f));
+    // set position and size of the terrain
+    terrainInfo.setExtents(Ogre::AxisAlignedBox(-750, 0, -750, 750, 0, 750));
+    // now render it
+    mTerrainMgr->createTerrain(terrainInfo);
 
-    ET::DynamicTexture *mColourMap = new ET::DynamicTexture("ETColourMap", "General", heights.sizeX()-1,
-        heights.sizeY()-1, Ogre::PF_BYTE_RGB, grainSize);
+    // create the splatting manager
+    mSplatMgr = new ET::SplattingManager("ETSplatting", "ET", 128, 128, 3);
+    // specify number of splatting textures we need to handle
+    mSplatMgr->setNumTextures(6);
 
-    ET::DynamicTexture *mLightMap = new ET::DynamicTexture("ETLightMap", "General", 128, 128,
-        Ogre::PF_BYTE_RGB, grainSize);
+    // create a manual lightmap texture
+    Ogre::TexturePtr lightmapTex = Ogre::TextureManager::getSingleton().createManual(
+    "ETLightmap", "ET", Ogre::TEX_TYPE_2D, 128, 128, 1, Ogre::PF_BYTE_RGB);
+    Ogre::Image lightmap;
+    ET::createTerrainLightmap(terrainInfo, lightmap, 128, 128, Ogre::Vector3(1, -1, 1), Ogre::ColourValue::White,
+    Ogre::ColourValue(0.3, 0.3, 0.3));
+    lightmapTex->getBuffer(0, 0)->blitFromMemory(lightmap.getPixelBox(0, 0));
 
-    ET::SplattingManager *mSplattingManager = new ET::SplattingManager("ETSplattingMap", "General",
-        128, 128, Ogre::PF_BYTE_RGB, grainSize, mTexture);
-
-    ET::Page* page = new ET::Page("ETTerrain", mTerrain, 33, 33, true, 1);
-
-    mMaterial->createMaterial();
-
-    mSplattingManager->addListener(mMaterial->getSplattingMaterial());
-
-    page->setMaterial(mMaterial->getMaterial());
-
-    page->setQueryFlags(TERRAIN_MASK);
-    mTerrainNode->attachObject(page);
-    mTerrainNode->setPosition((width * grainSize[0]) / -2.0, 0, (height * grainSize[1]) / -2.0);
-    mTerrainNode->showBoundingBox(true);
-
-    //try some splat
-    mTerrain->deform(50, 50, mBrush, 10);
-    mTerrain->update();
-                           
-    //and deform
-    mSplattingManager->splat(50, 50, mBrush, "jungle_2.jpg", 10);
-    mSplattingManager->getSplattingLayout()->update();
+    // load the terrain material and assign it
+    Ogre::MaterialPtr material (Ogre::MaterialManager::getSingleton().getByName("ETTerrainMaterial"));
+    mTerrainMgr->setMaterial(material);
 }
 
-gmtl::Vec3f TerrainManager::getRayIntersection(const char *sSceneManagerName, const char *sCameraName, gmtl::Vec2f _nWorldPoint, gmtl::Vec2f _nScreenWidth)
+gmtl::Vec3f Terrain::TerrainManager::getRayIntersection(const char *sSceneManagerName, const char *sCameraName, gmtl::Vec2f _nWorldPoint, gmtl::Vec2f _nScreenWidth)
 {
     Ogre::Camera*                       pCamera;
     Ogre::Ray                           uRayIntersection;
@@ -100,10 +87,10 @@ gmtl::Vec3f TerrainManager::getRayIntersection(const char *sSceneManagerName, co
     return gmtl::Vec3f(0, 0, 0);
 }
 
-TerrainManager::TerrainManager()
+Terrain::TerrainManager::TerrainManager()
 {
 }
 
-TerrainManager::~TerrainManager()
+Terrain::TerrainManager::~TerrainManager()
 {
 }

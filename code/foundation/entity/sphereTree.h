@@ -16,7 +16,7 @@ namespace Foundation {
                 @param _data Data to add
                 @return Node in which data resides
              */
-            SphereNode& addData(const SphereData & _data);
+            SphereNode addData(const SphereData & _data);
 
             /** Remove data from the tree.
                 @param _iterator Iterator to the data to remove

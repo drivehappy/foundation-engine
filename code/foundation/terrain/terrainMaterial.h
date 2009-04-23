@@ -1,3 +1,4 @@
+/*
 // Entirity taken from ETL Sample
 
 #ifndef __TERRAINMATERIAL_H__
@@ -47,4 +48,4 @@ private:
 };
 
 #endif
-
+*/
