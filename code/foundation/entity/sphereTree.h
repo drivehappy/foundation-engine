@@ -2,10 +2,9 @@
 
 #include "sphereData.h"
 #include "sphereNode.h"
-#include "sphereTreeIterator.h"
 
 namespace Foundation {
-    namespace Entity {
+    namespace Entities {
   
         class SphereTree {
         public:
@@ -16,12 +15,12 @@ namespace Foundation {
                 @param _data Data to add
                 @return Node in which data resides
              */
-            void addData(const SphereData & _data);
+            vector<SphereData *>::iterator& addData(const SphereData & _data);
 
             /** Remove data from the tree.
                 @param _iterator Iterator to the data to remove
              */
-            void removeData(SphereNode* _iterator);
+            void removeData(vector<SphereData *>::iterator& _iterator);
 
             /**
              */
@@ -32,8 +31,9 @@ namespace Foundation {
             unsigned int getMaxDepth();
 
         private:
-            SphereNode *m_pRoot;
-            unsigned int m_nMinRadius, m_nMaxRadius;
+            SphereNode             *m_pRoot;
+            unsigned int            m_nMinRadius, m_nMaxRadius;
+            vector<SphereData *>    m_uDataStore;
         };      
 
     };
