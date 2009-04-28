@@ -32,6 +32,8 @@ class Unit(Actor):
 
         self.physics.setPosition(position)
         self.timer = Foundation.Timer()
+        
+        self.sphereData = Foundation.SphereData()
 
         # Weapon
         self.weaponList = []

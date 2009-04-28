@@ -376,13 +376,15 @@ def main(argv):
         GUIHelper.createEntityUI()
 
         # TEST CIRCLE RENDERING
+        '''
         for x in range(0, 1000):
             nX = random.randint(-500, 500)
             nZ = random.randint(-500, 500)
             nRadius = random.random() * 50
             GraphicManager.addCircle("SceneManager0", "CIRCLETEST" + str(x), Foundation.Vector3(nX, 13.0, nZ), nRadius, Foundation.VectorIndex.Yelt, 1, 0, 0)
+        '''
         # -----------------------------------
-
+        
         stackless.tasklet(schedulerTasklet)()
 
         # Spin up some units

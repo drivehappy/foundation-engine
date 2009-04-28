@@ -599,5 +599,12 @@ BOOST_PYTHON_MODULE(FoundationPython)
     // Sphere Tree
     class_<Entities::SphereTree_PythonWrapper, boost::noncopyable>("SphereTree")
         .def("addData", &Entities::SphereTree_PythonWrapper::addData)
+        .def("update", &Entities::SphereTree_PythonWrapper::update)
+        .def("debugRender", &Entities::SphereTree_PythonWrapper::debugRender)
+    ;
+
+    class_<Entities::SphereData_PythonWrapper, boost::noncopyable>("SphereData")
+        .def("getPosition", &Entities::SphereData_PythonWrapper::getPosition)
+        .def("getRadius", &Entities::SphereData_PythonWrapper::getRadius)
     ;
 }

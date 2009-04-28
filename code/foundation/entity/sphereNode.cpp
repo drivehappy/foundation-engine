@@ -8,6 +8,9 @@ SphereNode::SphereNode()
     m_nMaxBucketSize = 10;
     m_bDataNode = false;
     m_pData = NULL;
+
+    m_sGraphicID = new char[12];
+    sprintf(m_sGraphicID, "%p", this);
 }
 
 SphereNode::SphereNode(bool _bDataNode, unsigned int _nMaxBucketSize)
@@ -15,6 +18,9 @@ SphereNode::SphereNode(bool _bDataNode, unsigned int _nMaxBucketSize)
     m_nMaxBucketSize = _nMaxBucketSize;
     m_bDataNode = _bDataNode;
     m_pData = NULL;
+
+    m_sGraphicID = new char[12];
+    sprintf(m_sGraphicID, "%p", this);
 }
 
 SphereNode::~SphereNode()
@@ -76,9 +82,10 @@ SphereNode* SphereNode::getBestFitNode(SphereData* _uItr)
     return bestNode;
 }
 
-void SphereNode::debugRender()
+void SphereNode::debugRender(const char* _sSceneManagerName)
 {
     // Do Render Circle
+    Graphic::GraphicManager::getSingleton().updateCircle(_sSceneManagerName, m_sGraphicID, m_nPosition, m_nRadius, gmtl::Yelt);
 }
 
 gmtl::Vec3f SphereNode::getPosition()

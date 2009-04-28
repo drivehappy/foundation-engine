@@ -45,3 +45,12 @@ unsigned int SphereTree::getMaxDepth()
 {
     return m_pRoot->getMaxDepth();
 }
+
+void SphereTree::update()
+{
+}
+
+void SphereTree::debugRender(const char* _sSceneManagerName)
+{
+
+}

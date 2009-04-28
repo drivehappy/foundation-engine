@@ -30,6 +30,14 @@ namespace Foundation {
              */
             unsigned int getMaxDepth();
 
+            /**
+             */
+            void update();
+
+            /**
+             */
+            void debugRender(const char* _sSceneManagerName);
+
         private:
             SphereNode             *m_pRoot;
             unsigned int            m_nMinRadius, m_nMaxRadius;

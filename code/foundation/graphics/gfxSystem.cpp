@@ -879,7 +879,6 @@ void GraphicManager::addCircle(const char *_sSceneManagerName, const char *_sID,
         return;
     }
 
-    char sBuf[8];
     Ogre::String sCircleID;
     unsigned int nLineCount = 24;
     float nRadianDiff = gmtl::Math::TWO_PI / nLineCount;
@@ -903,12 +902,10 @@ void GraphicManager::addCircle(const char *_sSceneManagerName, const char *_sID,
         break;
     }
 
+    sCircleID = Ogre::String("_CIRCLE_") + _sID;
+
     // Create each line of the circle
     for (unsigned int nLineIndex = 0; nLineIndex < nLineCount; nLineIndex++) {
-        // Generate each line
-        sprintf(sBuf, "%d", nLineIndex);
-        sCircleID = Ogre::String("_CIRCLE_") + sBuf + _sID;
-
         // Generate the two points
         nPoint0[nPlaneX] = _nPosition[nPlaneX] + (_nRadius * gmtl::Math::cos(nRadianDiff * nLineIndex));
         nPoint0[_nPlane] = _nPosition[_nPlane];
@@ -928,10 +925,71 @@ void GraphicManager::addCircle(const char *_sSceneManagerName, const char *_sID,
 
 void GraphicManager::destroyCircle(const char *_sSceneManagerName, const char *_sID)
 {
+    if (!m_pRoot) {
+        f_printf("[GraphicManager] Error: Adding circle when not initialized.\n");
+        return;
+    }
+
+    Ogre::String sCircleID;
+
+    sCircleID = Ogre::String("_CIRCLE_") + _sID;
+
+    destroyLine(_sSceneManagerName, sCircleID.c_str());
 }
 
 void GraphicManager::updateCircle(const char *_sSceneManagerName, const char *_sID, gmtl::Vec3f _nPosition, float _nRadius, gmtl::VectorIndex _nPlane)
 {
+    if (!m_pRoot) {
+        f_printf("[GraphicManager] Error: Adding circle when not initialized.\n");
+        return;
+    }
+
+    Ogre::String sCircleID;
+    unsigned int nLineCount = 24;
+    float nRadianDiff = gmtl::Math::TWO_PI / nLineCount;
+    vector<gmtl::Vec3f> nPoints;
+    gmtl::Vec3f nPoint0, nPoint1;
+    gmtl::VectorIndex nPlaneX, nPlaneY;	    // Planes on which to place the X and Y of circle
+
+    // Determine what plane the circle lies on
+    switch (_nPlane) {
+    case gmtl::Xelt:
+        nPlaneX = gmtl::Zelt;
+        nPlaneY = gmtl::Yelt;
+        break;
+    case gmtl::Yelt:
+        nPlaneX = gmtl::Xelt;
+        nPlaneY = gmtl::Zelt;
+        break;
+    case gmtl::Zelt:
+        nPlaneX = gmtl::Xelt;
+        nPlaneY = gmtl::Yelt;
+        break;
+    }
+
+    sCircleID = Ogre::String("_CIRCLE_") + _sID;
+
+    // Create each line of the circle
+    for (unsigned int nLineIndex = 0; nLineIndex < nLineCount; nLineIndex++) {
+        // Generate the two points
+        nPoint0[nPlaneX] = _nPosition[nPlaneX] + (_nRadius * gmtl::Math::cos(nRadianDiff * nLineIndex));
+        nPoint0[_nPlane] = _nPosition[_nPlane];
+        nPoint0[nPlaneY] = _nPosition[nPlaneY] + (_nRadius * gmtl::Math::sin(nRadianDiff * nLineIndex));
+
+        nPoint1[nPlaneX] = _nPosition[nPlaneX] + (_nRadius * gmtl::Math::cos(nRadianDiff * (nLineIndex + 1)));
+        nPoint1[_nPlane] = _nPosition[_nPlane];
+        nPoint1[nPlaneY] = _nPosition[nPlaneY] + (_nRadius * gmtl::Math::sin(nRadianDiff * (nLineIndex + 1)));
+
+        // Add the line
+        nPoints.push_back(nPoint0);
+        nPoints.push_back(nPoint1);
+    }
+
+    if (m_pRoot->getSceneManager(_sSceneManagerName)->hasManualObject(sCircleID)) {
+        updateLine(_sSceneManagerName, sCircleID.c_str(), nPoints);
+    } else {
+        addLine(_sSceneManagerName, sCircleID.c_str(), nPoints, 1, 1, 1);
+    }
 }
 
 void GraphicManager::addPlane(const char *_sSceneManagerName, const char *_sID, float _nWidth, float _nHeight, unsigned int _nSegmentsX, unsigned int _nSegmentsY)
