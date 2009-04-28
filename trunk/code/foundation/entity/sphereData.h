@@ -3,20 +3,26 @@
 #include "gmtl/gmtl.h"
 
 namespace Foundation {
-    namespace Entity {
+    namespace Entities {
         
-        /** Abstract class that grabs data positions.
+        /** 
          */
         class SphereData {
         public:
+            SphereData();
+
             /** Pure virtual function for derived classes to implement returning position of their data.
                 @return Position
              */
-            gmtl::Vec3f virtual getPosition(void) = 0;
+            gmtl::Vec3f getPosition();
 
             /**
              */
-            float virtual getRadius(void) = 0;
+            float getRadius();
+
+        protected:
+            float           m_nRadius;
+            gmtl::Vec3f     m_nPosition;
         };
 
     };

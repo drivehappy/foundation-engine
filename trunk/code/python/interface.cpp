@@ -13,6 +13,7 @@ using namespace Foundation;
 #include "py_debug.hpp"
 #include "py_audioSystem.h"
 #include "py_entitySystem.h"
+#include "py_sphereTree.h"
 #include "py_terrainSystem.h"
 #include "py_scheduler.h"
 
@@ -593,5 +594,10 @@ BOOST_PYTHON_MODULE(FoundationPython)
         .def("getMouseEvent", &Input::InputManager_PythonWrap::getMouseEvent, return_internal_reference<>())
         .def("getKeyboardEvent", &Input::InputManager_PythonWrap::getKeyboardEvent, return_internal_reference<>())
         .def("getJoystickEvent", &Input::InputManager_PythonWrap::getJoystickEvent, return_internal_reference<>())
+    ;
+
+    // Sphere Tree
+    class_<Entities::SphereTree_PythonWrapper, boost::noncopyable>("SphereTree")
+        .def("addData", &Entities::SphereTree_PythonWrapper::addData)
     ;
 }

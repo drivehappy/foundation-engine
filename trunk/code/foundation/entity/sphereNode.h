@@ -10,7 +10,7 @@ using std::vector;
 
 
 namespace Foundation {
-    namespace Entity {
+    namespace Entities {
         
         class SphereTree;
 
@@ -45,11 +45,13 @@ namespace Foundation {
 
             /**
              */
-            SphereNode* getBestFitNode(const SphereData & _uData);
+            SphereNode* getBestFitNode(SphereData* _uItr);
 
             /**
              */
             void debugRender();
+
+             
 
         // Constructor Guard
         protected:
@@ -59,11 +61,13 @@ namespace Foundation {
 
             /**
              */
-            SphereNode(unsigned int _nMaxBucketSize);
+            SphereNode(bool _bDataNode, unsigned int _nMaxBucketSize = 1);
             
 
         private:
-            vector<SphereNode *>    m_uChildren;
+            bool                    m_bDataNode;
+            vector<SphereNode *>    m_uNodeChildren;
+            SphereData             *m_pData;
             gmtl::Vec3f             m_nPosition;
             float                   m_nRadius;
             float                   m_nElasticity;
