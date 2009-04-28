@@ -34,6 +34,7 @@ class Manager():
             self.unitList = []
             self.deltaTime = 0.0
             self.unitTypeCount = {}
+            self.sphereTree = Foundation.SphereTree()
 
             stackless.tasklet(self.__runFrame)()
 
@@ -58,7 +59,10 @@ class Manager():
         # Tasklet
         def __sendWorldState(self):
             worldState = WorldState(self.deltaTime, Foundation.TimeManager().getTime())
-
+            
+            # Update the sphere tree, determine any data movements
+            self.sphereTree.update()
+            
             for unit in self.unitList:
                 unit.channel.send((self.channel, Message.WORLD_STATE, worldState))
 
@@ -90,6 +94,9 @@ class Manager():
 
                 HTTPLogger().writeContent(LoggerError.NONE, "Created unit of type %s" % (uUnitType["Name"]))
                 self.unitList.append(unitNew)
+                
+                # Add the unit to the sphere tree structure
+                self.sphereTree.addData(unitNew.sphereData)
 
                 return unitNew
             return None

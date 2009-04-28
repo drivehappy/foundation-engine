@@ -2,6 +2,7 @@
 
 #include "sphereData.h"
 
+#include "graphics/gfxSystem.h"
 #include "gmtl/gmtl.h"
 
 // STL Includes
@@ -49,7 +50,7 @@ namespace Foundation {
 
             /**
              */
-            void debugRender();
+            void debugRender(const char* _sSceneManagerName);
 
              
 
@@ -72,6 +73,7 @@ namespace Foundation {
             float                   m_nRadius;
             float                   m_nElasticity;
             unsigned int            m_nMaxBucketSize;
+            char                   *m_sGraphicID;
 
             /**
              */
