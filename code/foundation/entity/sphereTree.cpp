@@ -18,16 +18,12 @@ SphereTree::~SphereTree()
 vector<SphereData *>::iterator& SphereTree::addData(const SphereData & _data)
 {
     vector<SphereData *>::iterator *itr = new vector<SphereData *>::iterator();
-    SphereData *dataCopy = new SphereData(_data);
+    //SphereData *dataCopy = new SphereData(_data);
 
     // Insert at the end, retrieve the iterator to the data
-    (*itr) = m_uDataStore.insert(m_uDataStore.end(), dataCopy);
-
-    // Determine if there's an existing sphere to place this data
-    /// If so, determine if any of the children are best to contain it
-    /// If not, create a new node to hold this data
-
+    m_uDataStore.insert(m_uDataStore.end(), _data);
     
+    m_pRoot->addSphereData(_data);
     
     return (*itr);
 }

@@ -13,6 +13,11 @@ SphereNode::SphereNode()
     sprintf(m_sGraphicID, "%p", this);
 }
 
+SphereNode::SphereNode(const SphereData & _pData)
+{
+    m_pData = new SphereData(_pData);
+}
+
 SphereNode::SphereNode(bool _bDataNode, unsigned int _nMaxBucketSize)
 {
     m_nMaxBucketSize = _nMaxBucketSize;
@@ -55,10 +60,24 @@ void SphereNode::update()
     }
 }
 
-SphereNode* SphereNode::getBestFitNode(SphereData* _uItr)
+void SphereNode::addSphereData(const SphereData & _data)
+{
+    SphereNode* pBestNode = getBestFitNode(_data);
+    
+    // Greedy search the child nodes
+    while ( (pBestNode = pBestNode->getBestFitNode(_data)) );
+
+    // Take the node if we're the best parent for it
+    SphereNode *pNewNode = new SphereNode(_data);
+    if (pBestNode == this) {
+        m_uNodeChildren.push_back(pNewNode);
+    }
+}
+
+SphereNode* SphereNode::getBestFitNode(const SphereData & _uData)
 {
     // Determine if this point fits within us
-    gmtl::Vec3f nPoint = (*_uItr).getPosition();
+    gmtl::Vec3f nPoint = _uData.getPosition();
     float nRadiusSq = pow(m_nRadius, 2.0f);
     float nDistanceSq;
     SphereNode *bestNode;

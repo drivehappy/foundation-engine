@@ -13,7 +13,7 @@ EntityTypes:
     BuildTime:  0.5
 
     # Graphic Options
-    Mesh:       Plane.002.mesh
+    Mesh:       cube.mesh
     Scale:      [2.0, 2.0, 2.0]
     Rotation:   [0, 0, 0, 1]
     Position:   [0, 20.0, 0]

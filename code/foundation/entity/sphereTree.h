@@ -41,7 +41,7 @@ namespace Foundation {
         private:
             SphereNode             *m_pRoot;
             unsigned int            m_nMinRadius, m_nMaxRadius;
-            vector<SphereData *>    m_uDataStore;
+            vector<SphereData>      m_uDataStore;
         };      
 
     };
