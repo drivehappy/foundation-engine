@@ -14,7 +14,7 @@ namespace Foundation {
             /** Pure virtual function for derived classes to implement returning position of their data.
                 @return Position
              */
-            gmtl::Vec3f getPosition();
+            gmtl::Vec3f getPosition() const;
 
             /**
              */

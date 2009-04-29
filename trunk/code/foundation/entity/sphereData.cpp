@@ -8,12 +8,12 @@ SphereData::SphereData()
 {
 }
 
-gmtl::Vec3f SphereData::getPosition(void)
+gmtl::Vec3f SphereData::getPosition() const
 {
     return m_nPosition;
 }
 
-float SphereData::getRadius(void)
+float SphereData::getRadius()
 {
     return m_nRadius;
 }

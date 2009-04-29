@@ -33,6 +33,8 @@ namespace Foundation
 			SphereTree_PythonWrapper();
 
 			void addData(SphereData_PythonWrapper _uData);
+
+            void debugRender(const char* _sSceneManagerName);
 		};
 	}
 };

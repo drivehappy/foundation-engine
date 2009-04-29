@@ -46,7 +46,11 @@ namespace Foundation {
 
             /**
              */
-            SphereNode* getBestFitNode(SphereData* _uItr);
+            void addSphereData(const SphereData & _data);
+
+            /**
+             */
+            SphereNode* getBestFitNode(const SphereData & _uData);
 
             /**
              */
@@ -59,6 +63,10 @@ namespace Foundation {
             /** Default Constructor.
              */
             SphereNode();
+
+            /**
+             */
+            SphereNode(const SphereData & _pData);
 
             /**
              */
