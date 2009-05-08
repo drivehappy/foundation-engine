@@ -80,7 +80,7 @@ SphereNode* SphereNode::getBestFitNode(const SphereData & _uData)
     gmtl::Vec3f nPoint = _uData.getPosition();
     float nRadiusSq = pow(m_nRadius, 2.0f);
     float nDistanceSq;
-    SphereNode *bestNode;
+    SphereNode *bestNode = NULL;
     vector<SphereNode *>::iterator itr;
 
     nDistanceSq = gmtl::lengthSquared<float, 3>(nPoint - m_nPosition);
@@ -93,9 +93,6 @@ SphereNode* SphereNode::getBestFitNode(const SphereData & _uData)
         }
 
         //bestNode = ??
-    } else {
-        // Nay it doesn't
-        bestNode = NULL;
     }
 
     return bestNode;
