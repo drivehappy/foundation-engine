@@ -69,6 +69,7 @@ class Manager():
         def __runFrame(self):
             while True:
                 self.__sendWorldState()
+                self.sphereTree.debugRender("SceneManager0");
                 stackless.schedule()
 
         # Attempt a clean shutdown by killing all actors

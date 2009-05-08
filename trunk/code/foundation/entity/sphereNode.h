@@ -31,6 +31,9 @@ namespace Foundation {
             /**
              */
             float getRadius() const;
+            /**
+             */
+            void setRadius(float _nRadius);
 
             /**
              */
@@ -54,7 +57,7 @@ namespace Foundation {
 
             /**
              */
-            void debugRender(const char* _sSceneManagerName);
+            void debugRender(const char* _sSceneManagerName, bool _bRecursive);
 
              
 
