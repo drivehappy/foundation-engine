@@ -11,14 +11,19 @@ namespace Foundation {
         public:
             SphereData();
 
-            /** Pure virtual function for derived classes to implement returning position of their data.
-                @return Position
+            /**
              */
             gmtl::Vec3f getPosition() const;
+            /**
+             */
+            void setPosition(const gmtl::Vec3f _nPosition);
 
             /**
              */
             float getRadius();
+            /**
+             */
+            void setRadius(const float _nRadius);
 
         protected:
             float           m_nRadius;
