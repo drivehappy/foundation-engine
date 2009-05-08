@@ -9,6 +9,7 @@ SphereTree::SphereTree()
     m_nMaxRadius = 50;
 
     m_pRoot = new SphereNode(false, 10);
+    m_pRoot->setRadius(m_nMaxRadius);
 }
 
 SphereTree::~SphereTree()
@@ -17,6 +18,9 @@ SphereTree::~SphereTree()
 
 vector<SphereData *>::iterator& SphereTree::addData(const SphereData & _data)
 {
+    f_printf("SphereTree Adding Data... (Pos: %f, %f, %f\n",
+         _data.getPosition()[0], _data.getPosition()[1], _data.getPosition()[2]);
+
     vector<SphereData *>::iterator *itr = new vector<SphereData *>::iterator();
     //SphereData *dataCopy = new SphereData(_data);
 
@@ -48,5 +52,5 @@ void SphereTree::update()
 
 void SphereTree::debugRender(const char* _sSceneManagerName)
 {
-
+    m_pRoot->debugRender(_sSceneManagerName, false);
 }
