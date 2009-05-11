@@ -89,6 +89,7 @@ class Unit(Actor):
 
             self.physics.doTask(deltaTime)
             self.graphic.setPosition(self.physics.getPosition())
+            self.sphereData.setPosition(self.physics.getPosition())
 
             if self.shutdownFlag:
                 raise TaskletExit
