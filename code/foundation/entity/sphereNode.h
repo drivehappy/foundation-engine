@@ -49,7 +49,7 @@ namespace Foundation {
 
             /**
              */
-            void addSphereData(const SphereData & _data);
+            void addSphereData(SphereData *_data);
 
             /**
              */
@@ -65,16 +65,17 @@ namespace Foundation {
         protected:
             /** Default Constructor.
              */
-            SphereNode();
+            SphereNode(const float _nMinRadius, const float _nMaxRadius);
 
             /**
              */
-            SphereNode(const SphereData & _pData);
+            SphereNode(const float _nMinRadius, const float _nMaxRadius, SphereData *_pData);
 
             /**
              */
-            SphereNode(bool _bDataNode, unsigned int _nMaxBucketSize = 1);
+            SphereNode(const float _nMinRadius, const float _nMaxRadius, bool _bDataNode, unsigned int _nMaxBucketSize = 1);
             
+            bool                    m_bRootNode;
 
         private:
             bool                    m_bDataNode;
@@ -82,6 +83,7 @@ namespace Foundation {
             SphereData             *m_pData;
             gmtl::Vec3f             m_nPosition;
             float                   m_nRadius;
+            float                   m_nMinRadius, m_nMaxRadius;
             float                   m_nElasticity;
             unsigned int            m_nMaxBucketSize;
             char                   *m_sGraphicID;

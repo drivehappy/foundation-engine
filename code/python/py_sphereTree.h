@@ -25,6 +25,8 @@ namespace Foundation
         {
         public:
             gmtlVector3_PythonWrapper getPosition();
+
+            void setPosition(const gmtlVector3_PythonWrapper _nPosition);
         };
 
 		class SphereTree_PythonWrapper : public SphereTree
@@ -32,7 +34,7 @@ namespace Foundation
 		public:
 			SphereTree_PythonWrapper();
 
-			void addData(SphereData_PythonWrapper _uData);
+			void addData(SphereData_PythonWrapper *_uData);
 
             void debugRender(const char* _sSceneManagerName);
 		};
