@@ -930,10 +930,7 @@ void GraphicManager::destroyCircle(const char *_sSceneManagerName, const char *_
         return;
     }
 
-    Ogre::String sCircleID;
-
-    sCircleID = Ogre::String("_CIRCLE_") + _sID;
-
+    Ogre::String sCircleID = Ogre::String("_CIRCLE_") + _sID;
     destroyLine(_sSceneManagerName, sCircleID.c_str());
 }
 

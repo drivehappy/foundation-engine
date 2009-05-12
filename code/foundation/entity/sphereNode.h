@@ -97,6 +97,14 @@ namespace Foundation {
             /**
              */
             float getTwoClosestChildren(SphereNode *& _node1, SphereNode *& _node2);
+
+            /**
+             */
+            gmtl::Vec3f determineAverageChildPositions(void);
+
+            /**
+             */
+            void removeSphereNode(SphereNode *_node);
             
         friend class SphereTree;
         };
