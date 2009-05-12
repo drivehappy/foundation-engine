@@ -54,71 +54,55 @@ SphereNode::~SphereNode()
 
 void SphereNode::update()
 {
-    vector<SphereNode *>::iterator itr;
+    vector<SphereNode *>::iterator itr, itrTemp;
     float       nMin[3] = {HUGE_VAL};
     float       nMax[3] = {0.0f};
     gmtl::Vec3f nPosition;
-    float       nRadius;
     float       nDistanceSq;
-    float       nRadiiSumDistSq, nRadiiSubDistSq;
+    float       nRadiiSumDistSq, nRadiiSubDistSq, nRadiiDistSq;
 
     // If we're a data node update our node position to our data
     if (m_bDataNode) {
         m_nPosition = m_pData->getPosition();
     } else {
         // Move through our children and update
-        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
-            (*itr)->update();
+        for (int i = 0; i < m_uNodeChildren.size(); i++) {
+        //for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+        //    (*itr)->update();
+            m_uNodeChildren[i]->update();
         }
 
-        // Move through our updated children vector and determine
-        //  if any lie outside our radius
-        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
-            nDistanceSq = gmtl::lengthSquared<float, 3>((*itr)->getPosition() - m_nPosition);
-            nRadiiSumDistSq = pow((*itr)->getRadius() + m_nRadius, 2.0f);
-            nRadiiSubDistSq = pow((*itr)->getRadius() - m_nRadius, 2.0f);
-            
-            if (nDistanceSq > nRadiiSumDistSq) {
-                // (*itr) child (including radius) is completely outside of us, move into the parent
-            }
-
-            else if (nDistanceSq > m_nRadius) {
-                // (*itr) child (center) is completely outside of us, move into the parent
-            }
-
-            else if (nDistanceSq > nRadiiSubDistSq) {
-                // (*itr) child (center + radius) is somewhat outside of us
-            }
-        }
-
-        // After we're done culling out bad ones,
-        //  Update our position and radius of our node depending upon our children
-        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
-            nPosition = (*itr)->getPosition();
-            nRadius = (*itr)->getRadius();
-
-            for (int d = 0; d < 3; d++) {
-                if (nPosition[d] - nRadius < nMin[d]) {
-                    nMin[d] = nPosition[d] - nRadius;
-                }
+        if (!m_bRootNode) {
+            // Move through our updated children vector and determine
+            //  if any lie outside our radius
+            for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); /* Do nothing */) {
+                nDistanceSq = gmtl::lengthSquared<float, 3>((*itr)->getPosition() - m_nPosition);
+                nRadiiSumDistSq = pow((*itr)->getRadius() + m_nRadius, 2.0f);
+                nRadiiSubDistSq = pow((*itr)->getRadius() - m_nRadius, 2.0f);
+                nRadiiDistSq = pow(m_nRadius, 2.0f);
                 
-                if (nPosition[d] + nRadius > nMax[d]) {
-                    nMax[d] = nPosition[d] + nRadius;
+                if ((nDistanceSq > nRadiiSumDistSq) ||
+                    (nDistanceSq > nRadiiDistSq) ||
+                    (nDistanceSq > nRadiiSubDistSq))
+                {
+                    // Remove it and feed it to the parent for reinsertion
+                    itrTemp = itr;
+                    itrTemp++;
+
+                    SphereData *data = (*itr)->m_pData;
+                    delete (*itr);
+                    itr = m_uNodeChildren.erase(itr);
+                    m_pParentNode->addSphereData(data);
+
+                    //itr = itrTemp;
+                    updateToFitChildren();
+                } else {
+                    itr++;
                 }
             }
         }
 
-        if (m_uNodeChildren.size() == 0) {
-            m_nPosition = gmtl::Vec3f(0, 0, 0);
-        } else {
-            gmtl::Vec2f nRadiusDistance = gmtl::Vec2f(
-                nMax[gmtl::Xelt] - nMin[gmtl::Xelt],
-                nMax[gmtl::Zelt] - nMin[gmtl::Zelt]);
-            m_nRadius = gmtl::length(nRadiusDistance) / 2.0f;
-
-            m_nPosition[gmtl::Xelt] = (nMax[gmtl::Xelt] + nMin[gmtl::Xelt]) / 2.0f;
-            m_nPosition[gmtl::Zelt] = (nMax[gmtl::Zelt] + nMin[gmtl::Zelt]) / 2.0f;
-        }
+        updateToFitChildren();
     }
 
     if (!m_bRootNode) {
@@ -130,98 +114,77 @@ void SphereNode::update()
     }
 }
 
-void SphereNode::addSphereData(SphereData *_data)
+bool SphereNode::addSphereData(SphereData *_data)
 {
     //SphereNode *pBestNode = getBestFitNode(_data);
     SphereNode *pNewNode;
-    
+    vector<SphereNode *>::iterator itr;
     gmtl::Vec3f nPosition;
-    float       nRadius;
+    float nRadiusSq = pow(m_nRadius, 2.0f);
+    float nDistanceSq, nOtherRadiusSq;
+    nDistanceSq = gmtl::lengthSquared<float, 3>(_data->getPosition() - m_nPosition);
+    nOtherRadiusSq = pow(m_nMinRadius, 2.0f);
 
-    f_printf(" SphereNode Adding Data\n");
+    //if (pBestNode == this) {
+    // Check if this data will fit in our sphere
+    if (!m_bDataNode && (nDistanceSq + nOtherRadiusSq < nRadiusSq) || m_bRootNode) {
+        pNewNode = new SphereNode(m_nMinRadius, m_nMaxRadius, _data);
 
-    // Greedy search the child nodes
-    //while ( (pBestNode = pBestNode->getBestFitNode(_data)) );
+        // Can it even fit?
+        if ((m_uNodeChildren.size() >= m_nMaxBucketSize)) {
+            // Won't fit, we're going to have a create an internal data node around some of our existing children
+            // Drop a sphere node around all of our children, and drop the new data node and sphere node into us
+            // and remove our existing children
+            f_printf(" Node is full... creating new internal node...\n");
 
-    //f_printf(" SphereNode Found Best Fit Node: %p\n", pBestNode);
+            SphereNode *newNode = new SphereNode(m_nMinRadius, m_nMaxRadius, false, m_nMaxBucketSize);
+            SphereNode *pNode1, *pNode2;
+            float nDistance;
 
-    // Test me, this is root and just add all nodes to me
-    pNewNode = new SphereNode(m_nMinRadius, m_nMaxRadius, _data);
-    m_uNodeChildren.push_back(pNewNode);
+            nDistance = getTwoClosestChildren(pNode1, pNode2);
+            if (nDistance > 0.0f && nDistance < m_nMaxRadius) {
+                newNode->addSphereNode(pNode1);
+                newNode->addSphereNode(pNode2);
+                newNode->updateToFitChildren();
 
-    /*
-    // Find our new center, this is based on the min/max of each dimension, radius' of our children
-    for (vector<SphereNode *>::iterator itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
-        nPosition = (*itr)->getPosition();
-        nRadius = (*itr)->getRadius();
-
-        for (int d = 0; d < 3; d++) {
-            if (nPosition[d] - nRadius < nMin[d]) {
-                nMin[d] = nPosition[d] - nRadius;
-            } else if (nPosition[d] + nRadius > nMax[d]) {
-                nMax[d] = nPosition[d] + nRadius;
-            }
-        }
-    }
-    */
-
-    /*
-    // Take the node if we're the best parent for it
-    if (pBestNode == this) {
-        pNewNode = new SphereNode(_data);
-        m_uNodeChildren.push_back(pNewNode);
-
-        // Find our new center, this is based on the min/max of each dimension, radius' of our children
-        for (vector<SphereNode *>::iterator itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
-            nPosition = (*itr)->getPosition();
-            nRadius = (*itr)->getRadius();
-
-            for (int d = 0; d < 3; d++) {
-                if (nPosition[d] - nRadius < nMin[d]) {
-                    nMin[d] = nPosition[d] - nRadius;
-                } else if (nPosition[d] + nRadius > nMax[d]) {
-                    nMax[d] = nPosition[d] + nRadius;
+                // Add then remove the two
+                for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); /* Do nothing */) {
+                    if (*itr == pNode1 || *itr == pNode2) {
+                        itr = m_uNodeChildren.erase(itr);
+                    } else {
+                        itr++;
+                    }
                 }
+            } else if (nDistance >= m_nMaxRadius) {
+                // Our distances between our two closest children is too great for a node to handle
+                //  we need to send some to the parent to deal with
+
+                int dummy = 0;
             }
+
+            addSphereNode(newNode);
+            
         }
 
-        // Adjust our radius if needed
-        
+        addSphereNode(pNewNode);
+
+        return true;
+    } else {
+        // Else send it to our parent
+        return m_pParentNode->addSphereData(_data);
     }
-    */
 }
 
-SphereNode* SphereNode::getBestFitNode(const SphereData & _uData)
+void SphereNode::addSphereNode(SphereNode *_node)
 {
-    // Determine if this point fits within us
-    gmtl::Vec3f nPoint = _uData.getPosition();
-    float nRadiusSq = pow(m_nRadius, 2.0f);
-    float nDistanceSq;
-    SphereNode *bestNode = NULL;
     vector<SphereNode *>::iterator itr;
 
-    nDistanceSq = gmtl::lengthSquared<float, 3>(nPoint - m_nPosition);
-    
-    f_printf("  Getting best fit node: %f < %f\n", nDistanceSq, nRadiusSq);
+    if (m_bDataNode)
+        f_printf("Warning: Adding a node to a data node!\n");
 
-    if (nDistanceSq < nRadiusSq) {
-        // It fits, try out the children now, somehow determine which is best
-        //  perhaps recurse through it find any non null nodes and check against each?
-        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
-            f_printf("    Child %p\n", (*itr));
-            bestNode = (*itr)->getBestFitNode(_uData);
-
-            if (bestNode)
-                break;
-        }
-
-        if (!bestNode)
-            bestNode = this;
-    } else {
-        bestNode = this;
-    }
-
-    return bestNode;
+    // Simply add the internal node to us
+    m_uNodeChildren.push_back(_node);
+    _node->m_pParentNode = this;
 }
 
 void SphereNode::debugRender(const char* _sSceneManagerName, bool _bRecursive)
@@ -288,23 +251,68 @@ unsigned int SphereNode::getMaxDepth()
 }
 
 // TODO: Needs work, find the real average with radii included
-void SphereNode::updateToFitChildren(gmtl::Vec3f & _nPosition, float & _nRadius)
+void SphereNode::updateToFitChildren()
 {
     vector<SphereNode*>::iterator itr;
-    float nDistSq = 0.0f;
-    gmtl::Vec3f nTempData;
-
-    _nPosition = gmtl::Vec3f(0, 0, 0);
+    float       nMin[3] = {HUGE_VAL};
+    float       nMax[3] = {0.0f};
+    gmtl::Vec3f nPosition;
+    float       nRadius;
+    
     for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
-        nTempData = (*itr)->getPosition();
+        nPosition = (*itr)->getPosition();
+        nRadius = (*itr)->getRadius();
 
-        _nPosition += nTempData;
-
-        if (gmtl::length<float, 3>(nTempData - m_nPosition) > nDistSq)
-            nDistSq = gmtl::length<float, 3>(nTempData - m_nPosition);
+        for (int d = 0; d < 3; d++) {
+            if (nPosition[d] - nRadius < nMin[d]) {
+                nMin[d] = nPosition[d] - nRadius;
+            }
+            
+            if (nPosition[d] + nRadius > nMax[d]) {
+                nMax[d] = nPosition[d] + nRadius;
+            }
+        }
     }
-    _nPosition /= m_uNodeChildren.size();
 
-    // For now, just test it - will be broken
-    _nRadius = nDistSq;
+    if (m_uNodeChildren.size() == 0) {
+        m_nPosition = gmtl::Vec3f(0, 0, 0);
+    } else {
+        gmtl::Vec2f nRadiusDistance = gmtl::Vec2f(
+            nMax[gmtl::Xelt] - nMin[gmtl::Xelt],
+            nMax[gmtl::Zelt] - nMin[gmtl::Zelt]);
+        m_nRadius = gmtl::length(nRadiusDistance) / 2.0f;
+
+        //if (m_bRootNode && m_nRadius < 500.0f)
+        //    m_nRadius = 500.0f;
+
+        m_nPosition[gmtl::Xelt] = (nMax[gmtl::Xelt] + nMin[gmtl::Xelt]) / 2.0f;
+        m_nPosition[gmtl::Zelt] = (nMax[gmtl::Zelt] + nMin[gmtl::Zelt]) / 2.0f;
+    }
+}
+
+float SphereNode::getTwoClosestChildren(SphereNode *& _node1, SphereNode *& _node2)
+{
+    vector<SphereNode*>::iterator itr, itr2;
+    float nDistanceSq = HUGE_VAL, nTemp;
+    gmtl::Vec3f nTempVec;
+
+    if (m_uNodeChildren.size() < 2)
+        return 0.0f;
+
+    for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+        for (itr2 = m_uNodeChildren.begin(); itr2 != m_uNodeChildren.end(); itr2++) {
+            if (*itr == *itr2)
+                continue;
+
+            nTempVec = (*itr)->getPosition() - (*itr2)->getPosition();
+            nTemp = gmtl::lengthSquared(nTempVec);
+            if (nTemp < nDistanceSq) {
+                nDistanceSq = nTemp;
+                _node1 = *itr;
+                _node2 = *itr2;
+            }
+        }
+    }
+
+    return sqrt(nDistanceSq);
 }

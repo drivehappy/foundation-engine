@@ -49,11 +49,11 @@ namespace Foundation {
 
             /**
              */
-            void addSphereData(SphereData *_data);
+            bool addSphereData(SphereData *_data);
 
             /**
              */
-            SphereNode* getBestFitNode(const SphereData & _uData);
+            void addSphereNode(SphereNode *_node);
 
             /**
              */
@@ -76,6 +76,7 @@ namespace Foundation {
             SphereNode(const float _nMinRadius, const float _nMaxRadius, bool _bDataNode, unsigned int _nMaxBucketSize = 1);
             
             bool                    m_bRootNode;
+            SphereNode             *m_pParentNode;
 
         private:
             bool                    m_bDataNode;
@@ -87,10 +88,15 @@ namespace Foundation {
             float                   m_nElasticity;
             unsigned int            m_nMaxBucketSize;
             char                   *m_sGraphicID;
+            
 
             /**
              */
-            void updateToFitChildren(gmtl::Vec3f & _nPosition, float & _nRadius);
+            void updateToFitChildren();
+
+            /**
+             */
+            float getTwoClosestChildren(SphereNode *& _node1, SphereNode *& _node2);
             
         friend class SphereTree;
         };

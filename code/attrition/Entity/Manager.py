@@ -60,8 +60,7 @@ class Manager():
         def __sendWorldState(self):
             worldState = WorldState(self.deltaTime, Foundation.TimeManager().getTime())
             
-            # Update the sphere tree, determine any data movements
-            self.sphereTree.update()
+            
             
             for unit in self.unitList:
                 unit.channel.send((self.channel, Message.WORLD_STATE, worldState))
@@ -69,7 +68,11 @@ class Manager():
         def __runFrame(self):
             while True:
                 self.__sendWorldState()
+                
+                # Update the sphere tree, determine any data movements
+                self.sphereTree.update()
                 self.sphereTree.debugRender("SceneManager0");
+                
                 stackless.schedule()
 
         # Attempt a clean shutdown by killing all actors
