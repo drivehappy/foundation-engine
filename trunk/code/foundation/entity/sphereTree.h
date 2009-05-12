@@ -36,6 +36,10 @@ namespace Foundation {
 
             /**
              */
+            //SphereNode* getBestFitNode(const SphereData *_uData);
+
+            /**
+             */
             void debugRender(const char* _sSceneManagerName);
 
         private:

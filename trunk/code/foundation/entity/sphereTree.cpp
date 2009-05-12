@@ -6,10 +6,11 @@ using namespace Foundation::Entities;
 SphereTree::SphereTree()
 {
     m_nMinRadius = 20;
-    m_nMaxRadius = 100;
+    m_nMaxRadius = 200;
 
-    m_pRoot = new SphereNode(m_nMinRadius, m_nMaxRadius, false, 10);
+    m_pRoot = new SphereNode(m_nMinRadius, m_nMaxRadius, false, 4);
     m_pRoot->m_bRootNode = true;
+    m_pRoot->m_pParentNode = NULL;
 }
 
 SphereTree::~SphereTree()
@@ -50,6 +51,40 @@ void SphereTree::update()
 {
     m_pRoot->update();
 }
+
+/*
+SphereNode* SphereTree::getBestFitNode(const SphereData *_uData)
+{
+    // Determine if this point fits within us
+    gmtl::Vec3f nPoint = _uData->getPosition();
+    float nRadiusSq = pow(m_nRadius, 2.0f);
+    float nDistanceSq, nOtherRadiusSq;
+    SphereNode *bestNode = NULL;
+    vector<SphereNode *>::iterator itr;
+
+    nDistanceSq = gmtl::lengthSquared<float, 3>(nPoint - m_nPosition);
+    nOtherRadiusSq = pow(m_nMinRadius, 2.0f);
+    
+    if (!m_bDataNode && (nDistanceSq + nOtherRadiusSq < nRadiusSq) || m_bRootNode) {
+        // It fits, try out the children now
+        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+            bestNode = (*itr)->getBestFitNode(_uData);
+
+            if (bestNode)
+                break;
+        }
+
+        // We couldn't find a suitable child to accept the data, so we'll take it
+        if (!bestNode) {
+            bestNode = this;
+        }
+    } else {
+        bestNode = NULL;
+    }
+
+    return bestNode;
+}
+*/
 
 void SphereTree::debugRender(const char* _sSceneManagerName)
 {
