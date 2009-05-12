@@ -137,10 +137,7 @@ void SphereNode::update()
                 if (pNodeIntr->canAcceptData(pNodeData->m_pData)) {
                     //f_printf("Moving data node into lower interior node...\n");
 
-                    //SphereData *pData = pNodeData->m_pData;
                     removeSphereNode(pNodeData);
-                    //delete pNodeData;
-                    //pNodeIntr->addSphereData(pData);
                 }
             }
         }
