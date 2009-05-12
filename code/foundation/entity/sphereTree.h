@@ -36,7 +36,7 @@ namespace Foundation {
 
             /**
              */
-            //SphereNode* getBestFitNode(const SphereData *_uData);
+            void dump();
 
             /**
              */

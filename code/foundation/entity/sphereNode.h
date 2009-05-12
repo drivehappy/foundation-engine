@@ -49,11 +49,23 @@ namespace Foundation {
 
             /**
              */
+            bool canAcceptData(SphereData *_data);
+
+            /**
+             */
+            SphereNode* getBestFitChild(SphereData *_uData);
+
+            /**
+             */
             bool addSphereData(SphereData *_data);
 
             /**
              */
             void addSphereNode(SphereNode *_node);
+
+            /**
+             */
+            void dump(int _level);
 
             /**
              */

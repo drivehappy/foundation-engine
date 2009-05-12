@@ -825,7 +825,7 @@ void GraphicManager::destroyLine(const char *_sSceneManagerName, const char *_sI
             if (pSceneManager->hasManualObject(sManualObjectName)) {
                 myManualObject = pSceneManager->getManualObject(sManualObjectName);
                 if (myManualObject) {
-                    //myManualObject->getParentSceneNode()->detachObject(myManualObject);
+                    myManualObject->getParentSceneNode()->detachObject(myManualObject);
                     pSceneManager->destroyManualObject(myManualObject);
                 } else {
                     f_printf("[Foundation.GraphicManager] Error: ManualObject is null.\n");
@@ -926,12 +926,23 @@ void GraphicManager::addCircle(const char *_sSceneManagerName, const char *_sID,
 void GraphicManager::destroyCircle(const char *_sSceneManagerName, const char *_sID)
 {
     if (!m_pRoot) {
-        f_printf("[GraphicManager] Error: Adding circle when not initialized.\n");
+        f_printf("[GraphicManager] Error: Destroying circle when not initialized.\n");
         return;
     }
 
     Ogre::String sCircleID = Ogre::String("_CIRCLE_") + _sID;
     destroyLine(_sSceneManagerName, sCircleID.c_str());
+}
+
+void GraphicManager::clearCircle(const char *_sSceneManagerName, const char *_sID)
+{
+    if (!m_pRoot) {
+        f_printf("[GraphicManager] Error: Clearing circle when not initialized.\n");
+        return;
+    }
+
+    Ogre::String sCircleID = Ogre::String("_CIRCLE_") + _sID;
+    clearLine(_sSceneManagerName, sCircleID.c_str());
 }
 
 void GraphicManager::updateCircle(const char *_sSceneManagerName, const char *_sID, gmtl::Vec3f _nPosition, float _nRadius, gmtl::VectorIndex _nPlane)

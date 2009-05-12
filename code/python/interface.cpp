@@ -601,6 +601,7 @@ BOOST_PYTHON_MODULE(FoundationPython)
         .def("addData", &Entities::SphereTree_PythonWrapper::addData)
         .def("update", &Entities::SphereTree_PythonWrapper::update)
         .def("debugRender", &Entities::SphereTree_PythonWrapper::debugRender)
+        .def("dump", &Entities::SphereTree_PythonWrapper::dump)
     ;
 
     class_<Entities::SphereData_PythonWrapper, boost::noncopyable>("SphereData")
