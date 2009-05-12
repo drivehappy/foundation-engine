@@ -444,6 +444,10 @@ namespace Foundation
 				 */
 				void destroyCircle(const char *_sSceneManagerName, const char *_sID);
 
+                /**
+				 */
+				void clearCircle(const char *_sSceneManagerName, const char *_sID);
+
 				/**
 				 */
 				void updateCircle(const char *_sSceneManagerName, const char *_sID, gmtl::Vec3f _nPosition, float _nRadius, gmtl::VectorIndex _nPlane);

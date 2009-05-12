@@ -37,7 +37,7 @@ SelectionCallbackChannel    = Foundation.Channel()
 
 # -----------------------------------------------
 # Inputs
-KEY_DELAY   = 0.015
+KEY_DELAY   = 0.03
 KEYS        = [Foundation.Keycode.A, Foundation.Keycode.B, Foundation.Keycode.C,
                Foundation.Keycode.D, Foundation.Keycode.E, Foundation.Keycode.F,
                Foundation.Keycode.G, Foundation.Keycode.H, Foundation.Keycode.I, Foundation.Keycode.J,
@@ -98,6 +98,9 @@ def doInput(_nDeltaTime):
                     Camera0.moveRelative(Foundation.Vector3(0, 0, -nCamSpeed))
                 elif KeyIndex == Foundation.Keycode.X:
                     Camera0.moveRelative(Foundation.Vector3(0, 0, nCamSpeed))
+
+                if KeyIndex == Foundation.Keycode.SPACE:
+                    EntityManager.sphereTree.dump()
 
         KeyboardStateChange.assign(keyboardState)
         TimerKeyDelay.reset()

@@ -2,6 +2,7 @@
 # Python Libs
 import stackless
 from Queue import Queue
+import random
 
 # --------------------------------------------------
 # Foundation Libs
@@ -54,6 +55,10 @@ class Unit(Actor):
         # And finally, initialize our Unit graphics
         self.initGraphic()
 
+        # RANDOMIZING DEBUGGING
+        ## Handle our total time since last random move
+        self.RANDMOVETIME = 5.0;
+
         # Add a non-blocking tasklet to quickly update our physics/graphics
         stackless.tasklet(self.__handleNonblockingTasklet)()
         stackless.schedule()
@@ -86,6 +91,13 @@ class Unit(Actor):
             deltaTime = self.timer.getTime()
             self.timer.reset()
             deltaTime = Foundation.f_clamp(deltaTime, 0, 1)
+
+            # RAND MOVE FOR SPHERE TREE
+            self.RANDMOVETIME -= deltaTime
+            if (self.RANDMOVETIME <= 0.0):
+                self.RANDMOVETIME = 10.0
+                targetPosition = Foundation.Vector3(random.randrange(-500, 500, 1), 20, random.randrange(-500, 500, 1))
+                self.physics.moveTo(targetPosition)
 
             self.physics.doTask(deltaTime)
             self.graphic.setPosition(self.physics.getPosition())
