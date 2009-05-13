@@ -36,6 +36,7 @@ SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, SphereD
     m_nMaxBucketSize = 0xDEADC0DE;
     m_bDataNode = true;
     m_pData = _pData;
+    m_nPosition = m_pData->getPosition();
 
     vector<gmtl::Vec3f> Points;
     Points.push_back(gmtl::Vec3f(0, 0, 0));
@@ -331,15 +332,6 @@ bool SphereNode::addSphereData(SphereData *_data)
 
     if (pBestNode) {
         pNewNode = new SphereNode(m_nMinRadius, m_nMaxRadius, _data);
-
-        /*
-        if ((m_uNodeChildren.size() >= m_nMaxBucketSize)) {
-            newNode = createInternalNode();
-
-            if (newNode)
-                pBestNode->addSphereNode(newNode);
-        }
-        */
 
         if ((pBestNode->m_uNodeChildren.size() >= pBestNode->m_nMaxBucketSize)) {
             newNode = pBestNode->createInternalNode();

@@ -439,7 +439,7 @@ def main(argv):
         CommandCenter = EntityManager.addUnit("CommandCenter", Foundation.Vector3(-400, 20, -400))
         CommandCenter.team = Team.BLUE
 
-        for i in range(0, 2):
+        for i in range(0, 20):
             Scout = EntityManager.addUnit("Scout", Foundation.Vector3(-400, 20, -400))
             Scout.team = Team.RED
 
