@@ -317,6 +317,7 @@ BOOST_PYTHON_MODULE(FoundationPython)
     void (Physics::PhysicsManager_PythonWrap::*setCollisionShapeRotation1)(unsigned int _nId, gmtlQuaternion_PythonWrapper _nRotation) = &Physics::PhysicsManager_PythonWrap::setCollisionShapeRotation;
     void (Physics::PhysicsManager_PythonWrap::*setCollisionShapeRotation2)(unsigned int _nId, gmtlVector3_PythonWrapper _nAxis, float _nAngle) = &Physics::PhysicsManager_PythonWrap::setCollisionShapeRotation;
     class_<Physics::PhysicsManager_PythonWrap, boost::noncopyable>("PhysicsManager")
+        .def("setPaused", &Physics::PhysicsManager_PythonWrap::setPaused)
         .def("getTaskUpdate", &Physics::PhysicsManager_PythonWrap::getTaskUpdate, return_internal_reference<>())
         .def("initialize", &Physics::PhysicsManager_PythonWrap::initialize)
         .def("destroy", &Physics::PhysicsManager_PythonWrap::destroy)
@@ -601,6 +602,7 @@ BOOST_PYTHON_MODULE(FoundationPython)
         .def("addData", &Entities::SphereTree_PythonWrapper::addData)
         .def("update", &Entities::SphereTree_PythonWrapper::update)
         .def("debugRender", &Entities::SphereTree_PythonWrapper::debugRender)
+        .def("clearDebugRender", &Entities::SphereTree_PythonWrapper::clearDebugRender)
         .def("dump", &Entities::SphereTree_PythonWrapper::dump)
     ;
 

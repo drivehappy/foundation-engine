@@ -42,10 +42,15 @@ namespace Foundation {
              */
             void debugRender(const char* _sSceneManagerName);
 
+            /**
+             */
+            void clearDebugRender(const char* _sSceneManagerName);
+
         private:
             SphereNode             *m_pRoot;
             unsigned int            m_nMinRadius, m_nMaxRadius;
             vector<SphereData>      m_uDataStore;
+            unsigned int            m_nDebugDataCount;
         };      
 
     };

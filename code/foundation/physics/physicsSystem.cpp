@@ -16,6 +16,7 @@ btCollisionWorld                        *PhysicsManager::collisionWorld;
 map<unsigned int, btCollisionObject*>   PhysicsManager::collisionObjects;
 vector<CollisionEvent *>                PhysicsManager::m_uCollisionEventList;
 vector<btCollisionShape *>              PhysicsManager::m_uCollisionShapeList;
+bool                                    PhysicsManager::m_bPaused;
 // --
 
 // CollisionEvent
@@ -215,6 +216,8 @@ PhysicsManager::PhysicsManager()
     broadphase = new btDbvtBroadphase();
     collisionWorld = new btCollisionWorld(dispatcher, broadphase, collisionConfiguration);
     //collisionWorld = new btCollisionWorld(dispatcher, pTest, collisionConfiguration);
+
+    m_bPaused = false;
 }
 
 PhysicsManager::~PhysicsManager()
@@ -233,20 +236,22 @@ void* PhysicsManager::doTaskUpdate(void *_args)
     float fElapsedTime = *(float*)_args;
     vector<RigidBody*>::iterator itrVec;
 
-    // Work on collisions
-    if (collisionWorld) {
-        collisionWorld->updateAabbs();
-        collisionWorld->getBroadphase()->calculateOverlappingPairs(dispatcher);
-        dispatcher->dispatchAllCollisionPairs(broadphase->getOverlappingPairCache(), collisionWorld->getDispatchInfo(), dispatcher);
-        collisionWorld->performDiscreteCollisionDetection();
-        
-        int numManifolds = collisionWorld->getDispatcher()->getNumManifolds();
+    if (!m_bPaused) {
+        // Work on collisions
+        if (collisionWorld) {
+            collisionWorld->updateAabbs();
+            collisionWorld->getBroadphase()->calculateOverlappingPairs(dispatcher);
+            dispatcher->dispatchAllCollisionPairs(broadphase->getOverlappingPairCache(), collisionWorld->getDispatchInfo(), dispatcher);
+            collisionWorld->performDiscreteCollisionDetection();
+            
+            int numManifolds = collisionWorld->getDispatcher()->getNumManifolds();
 
-        for (int i=0; i<numManifolds; i++) {
-            btPersistentManifold *contactManifold = collisionWorld->getDispatcher()->getManifoldByIndexInternal(i);
-            CollisionEvent *pNewCollision = new CollisionEvent(contactManifold);
+            for (int i=0; i<numManifolds; i++) {
+                btPersistentManifold *contactManifold = collisionWorld->getDispatcher()->getManifoldByIndexInternal(i);
+                CollisionEvent *pNewCollision = new CollisionEvent(contactManifold);
 
-            m_uCollisionEventList.push_back(pNewCollision);
+                m_uCollisionEventList.push_back(pNewCollision);
+            }
         }
     }
 

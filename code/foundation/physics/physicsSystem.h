@@ -167,6 +167,10 @@ namespace Foundation {
                     reinterpret_cast<PhysicsManager*>(_class)->doTaskUpdate(_args);
                 };
 
+                static inline void setPaused(bool _bPause) {
+                    m_bPaused = _bPause;
+                };
+
             protected:
                 PhysicsManager();
                 PhysicsManager(const PhysicsManager&);
@@ -188,6 +192,8 @@ namespace Foundation {
                 static map<unsigned int, btCollisionObject*>    collisionObjects;    // Use the memory location as an ID for now
                 static vector<CollisionEvent *>                 m_uCollisionEventList;
                 static vector<btCollisionShape *>               m_uCollisionShapeList;
+
+                static bool                                     m_bPaused;
         };
 
     };

@@ -150,7 +150,7 @@ void SphereNode::update()
                 SphereNode *pNodeIntr = (*(vecInterior.begin() + j));
 
                 if (pNodeIntr->canAcceptData(pNodeData->m_pData)) {
-                    //f_printf("Moving data node into lower interior node...\n");
+                    f_printf("Moving data node into lower interior node...\n");
 
                     pNodeIntr->addSphereNode(pNodeData);
                     removeSphereNode(pNodeData);
@@ -430,13 +430,28 @@ void SphereNode::debugRender(const char* _sSceneManagerName, bool _bRecursive)
         Points.push_back(m_pParentNode->m_nPosition);
         
         Ogre::String sLineID = m_sGraphicID + Ogre::String("_PARENT_LINE");
-        Graphic::GraphicManager::getSingleton().updateLine("SceneManager0", sLineID.c_str(), Points);
+        Graphic::GraphicManager::getSingleton().updateLine(_sSceneManagerName, sLineID.c_str(), Points);
     }
 
     if (_bRecursive) {
         for (vector<SphereNode *>::iterator itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
             (*itr)->debugRender(_sSceneManagerName, _bRecursive);
         }
+    }
+}
+
+void SphereNode::clearDebugRender(const char* _sSceneManagerName)
+{
+    // Clear our renders
+    Graphic::GraphicManager::getSingleton().clearCircle(_sSceneManagerName, m_sGraphicID);
+
+    if (m_pParentNode) {
+        Ogre::String sLineID = m_sGraphicID + Ogre::String("_PARENT_LINE");
+        //Graphic::GraphicManager::getSingleton().clearLine(_sSceneManagerName, sLineID.c_str());
+    }
+
+    for (vector<SphereNode *>::iterator itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+        (*itr)->clearDebugRender(_sSceneManagerName);
     }
 }
 
@@ -465,8 +480,12 @@ unsigned int SphereNode::getChildCount()
     vector<SphereNode *>::iterator itr;
     unsigned int nCount = 0;
 
-    for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
-        nCount += (*itr)->getChildCount();
+    if (m_bDataNode) {
+        nCount = 1;
+    } else {
+        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+            nCount += (*itr)->getChildCount();
+        }
     }
 
     return nCount;
@@ -494,6 +513,7 @@ void SphereNode::updateToFitChildren()
     gmtl::Vec3f nMin, nMax;
     gmtl::Vec3f nPosition;
     float       nRadius;
+    float       nDistance;
 
     nMax[gmtl::Xelt] = -HUGE_VAL;
     nMax[gmtl::Zelt] = -HUGE_VAL;
@@ -520,12 +540,32 @@ void SphereNode::updateToFitChildren()
                 nMax[gmtl::Zelt] = nPosition[gmtl::Zelt] + nRadius;
         }
 
-        // Compute the radius and position
+        // Compute the position
+        m_nPosition[gmtl::Xelt] = (nMax[gmtl::Xelt] + nMin[gmtl::Xelt]) / 2.0f;
+        m_nPosition[gmtl::Yelt] = 20.0f;
+        m_nPosition[gmtl::Zelt] = (nMax[gmtl::Zelt] + nMin[gmtl::Zelt]) / 2.0f;
+
+        // Compute the radius
+        /*
         gmtl::Vec2f nRadiusDistance = gmtl::Vec2f(
             nMax[gmtl::Xelt] - nMin[gmtl::Xelt],
             nMax[gmtl::Zelt] - nMin[gmtl::Zelt]);
 
         m_nRadius = gmtl::length(nRadiusDistance) / 2.0f;
+        */
+
+        // Find the furthest point + radius and use it
+        nRadius = m_nMinRadius;
+        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+            nPosition = (*itr)->m_nPosition - m_nPosition;
+            nPosition[gmtl::Yelt] = 0.0f;
+
+            nDistance = gmtl::length(nPosition) + (*itr)->m_nRadius;
+
+            if (nDistance > nRadius)
+                nRadius = nDistance;
+        }
+        m_nRadius = nRadius + 1.0f; // Use a epsilon so we're not ping ponging
 
         if (!m_bRootNode) {
             if (m_nRadius > m_nMaxRadius) {
@@ -534,12 +574,6 @@ void SphereNode::updateToFitChildren()
                 m_nRadius = m_nMinRadius;
             }
         }
-
-        m_nPosition[gmtl::Xelt] = (nMax[gmtl::Xelt] + nMin[gmtl::Xelt]) / 2.0f;
-        m_nPosition[gmtl::Yelt] = 20.0f;
-        m_nPosition[gmtl::Zelt] = (nMax[gmtl::Zelt] + nMin[gmtl::Zelt]) / 2.0f;
-
-        //f_printf("%p Updated to %f, %f\n", this, m_nPosition[0], m_nPosition[2]);
     }
 }
 

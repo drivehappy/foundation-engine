@@ -68,8 +68,8 @@ class Manager():
                 self.__sendWorldState()
                 
                 # Update the sphere tree, determine any data movements
-                self.sphereTree.update()
-                self.sphereTree.debugRender("SceneManager0");
+                #self.sphereTree.update()
+                #self.sphereTree.debugRender("SceneManager0");
                 
                 stackless.schedule()
 

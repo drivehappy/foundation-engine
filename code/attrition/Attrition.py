@@ -37,7 +37,8 @@ SelectionCallbackChannel    = Foundation.Channel()
 
 # -----------------------------------------------
 # Inputs
-KEY_DELAY   = 0.03
+KEY_DELAY   = 0.010
+LARGE_KEY_DELAY = 0.10
 KEYS        = [Foundation.Keycode.A, Foundation.Keycode.B, Foundation.Keycode.C,
                Foundation.Keycode.D, Foundation.Keycode.E, Foundation.Keycode.F,
                Foundation.Keycode.G, Foundation.Keycode.H, Foundation.Keycode.I, Foundation.Keycode.J,
@@ -64,13 +65,20 @@ SelectionBounds         = Foundation.Vector4(0, 0, 0, 0)
 SelectionWorldBounds    = Foundation.Vector4(0, 0, 0, 0)
 SelectedEntityList      = []
 
+# Sphere Tree Demo CS709
+RenderSphereTree = True
+RenderSphereTreeLevel = 5
+Pause = False
+
 # ------------------------------------------------
 # InputWork
 def doInput(_nDeltaTime):
     global MouseStateChange, KeyboardStateChange, Joystick0StateChange, Joystick1StateChange
     global TimerKeyDelay
     global SelectionBounds, SelectionWorldBounds, SelectedEntityList
+    global RenderSphereTree, Pause
 
+    resetKey = False
     mouseState, keyboardState, joystickState = Input.Manager.consumeEvent(InputManager, GUIManager)
 
     # Keyboard
@@ -99,11 +107,21 @@ def doInput(_nDeltaTime):
                 elif KeyIndex == Foundation.Keycode.X:
                     Camera0.moveRelative(Foundation.Vector3(0, 0, nCamSpeed))
 
-                if KeyIndex == Foundation.Keycode.SPACE:
-                    EntityManager.sphereTree.dump()
-
-        KeyboardStateChange.assign(keyboardState)
-        TimerKeyDelay.reset()
+                if (TimerKeyDelay.getTime() > LARGE_KEY_DELAY):
+                    if KeyIndex == Foundation.Keycode.SPACE:
+                        EntityManager.sphereTree.dump()
+                    elif KeyIndex == Foundation.Keycode.B:
+                        RenderSphereTree = not RenderSphereTree
+                        print "RenderSphereTree: ", RenderSphereTree
+                    elif KeyIndex == Foundation.Keycode.P:
+                        Pause = not Pause
+                        print "Simulation Pause: ", Pause
+                        
+                resetKey = True           
+            
+        if resetKey:
+            KeyboardStateChange.assign(keyboardState)
+            TimerKeyDelay.reset()
 
     # Mouse
     if mouseState:
@@ -195,7 +213,7 @@ def initManagers():
 
     # Init Graphics
     HTTPLogger().writeContent(LoggerError.NONE, "[GraphicManager] Initializing...")
-    bResult = GraphicManager.initialize("Scarab")
+    bResult = GraphicManager.initialize("Attrition - Sphere Tree Demp CS709")
     if bResult:
         GraphicManager.showCursor(False)
         GraphicManager.addSceneManager("SceneManager0")
@@ -297,10 +315,12 @@ def onMouseEvent(channel, header, data, size):
         for i in range(0, 9):
             if sButton == "Btn_Entity_Create" + str(i):
                 #print sButton, "pressed", "ENTITY =", SelectedEntityList[0].getCreationAbilities()[i]
-                sType = SelectedEntityList[0].creationAbilities[i]
-                SelectedEntityList[0].createUnit(EntityManager.getEntityTypeFromName(sType))
-                print "+ GUI Selected Unit of Type %s From Unit %s" % (sType, SelectedEntityList[0])
-
+                if (len(SelectedEntityList) > 0) :
+                    sType = SelectedEntityList[0].creationAbilities[i]
+                    SelectedEntityList[0].createUnit(EntityManager.getEntityTypeFromName(sType))
+                    print "+ GUI Selected Unit of Type %s From Unit %s" % (sType, SelectedEntityList[0])
+                else:
+                    print "No Entity Selected"
 
     elif header == 3:
         pass
@@ -328,7 +348,8 @@ def onSelection(channel, header, data, size):
 # ------------------------------------------------
 # Main Tasklets
 def schedulerTasklet():
-    global EntityManager
+    global EntityManager, PhysicsManager
+    global RenderSphereTree, Pause
     
     uMainTimer = Foundation.Timer()
     nDeltaTime = 0
@@ -349,15 +370,19 @@ def schedulerTasklet():
 
         # Update internals
         Scheduler.Step(1.0)
-
-        EntityManager.deltaTime = nDeltaTime
-        
-        EntityManager.sphereTree.update()
-        EntityManager.sphereTree.debugRender("SceneManager0")
-
         TimeManager.sleep(1)
+        
+        PhysicsManager.setPaused(Pause)
+        if (not Pause):
+            EntityManager.deltaTime = nDeltaTime
+            
+            EntityManager.sphereTree.update()
+            if RenderSphereTree:
+                EntityManager.sphereTree.debugRender("SceneManager0")
+            else:
+                EntityManager.sphereTree.clearDebugRender("SceneManager0")
 
-        stackless.schedule()
+            stackless.schedule()
         
         
 
