@@ -104,6 +104,10 @@ namespace Foundation {
 
             /**
              */
+            void checkOutsideChildren();
+
+            /**
+             */
             void updateToFitChildren();
 
             /**

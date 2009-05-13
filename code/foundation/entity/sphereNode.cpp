@@ -85,8 +85,6 @@ void SphereNode::update()
     vector<SphereNode *>            vecChildDelete;
     vector<SphereNode *>            vecInterior, vecData;
     gmtl::Vec3f                     nPosition;
-    float                           nDistanceSq;
-    float                           nRadiiSubDistSq; //, nRadiiSumDistSq, nRadiiDistSq;
 
     // If we're a data node update our node position to our data
     if (m_bDataNode) {
@@ -101,6 +99,8 @@ void SphereNode::update()
                 addSphereNode(internalNode);
             }
         }
+
+        updateToFitChildren();
 
         // Move through our children and update and
         // Generate an interior node list and a data node list
@@ -129,17 +129,19 @@ void SphereNode::update()
 
             // Child is good, go ahead and update
             else {
-                if (m_uNodeChildren[i]->m_bDataNode)
-                    vecData.push_back(m_uNodeChildren[i]);
-                else
-                    vecInterior.push_back(m_uNodeChildren[i]);
-
                 m_uNodeChildren[i]->update();
                 i++;
             }
         }
 
-        updateToFitChildren();
+        // Again, check the existing ones now
+        for (size_t i = 0; i < m_uNodeChildren.size(); i++) {
+            if (m_uNodeChildren[i]->m_bDataNode)
+                vecData.push_back(m_uNodeChildren[i]);
+            else
+                vecInterior.push_back(m_uNodeChildren[i]);
+        }
+
 
         // See if we can fit any of our data nodes into our interior nodes
         for (size_t j = 0; j < vecInterior.size(); j++) {
@@ -164,86 +166,98 @@ void SphereNode::update()
         updateToFitChildren();
 
         if (!m_bRootNode) {
-            // Move through our updated children vector and determine if any lie outside our radius
-            for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
-                nDistanceSq = gmtl::length<float, 2>(
-                    gmtl::Vec2f((*itr)->m_nPosition[0], (*itr)->m_nPosition[2]) - 
-                        gmtl::Vec2f(m_nPosition[0], m_nPosition[2]));
-
-                nRadiiSubDistSq = m_nRadius - (*itr)->m_nRadius;
-                //nRadiiSumDistSq = m_nRadius + (*itr)->m_nRadius;
-                //nRadiiDistSq = m_nRadius;
-                
-                // Determine 0-multiple nodes exiting our maxed out radius
-                if (nDistanceSq > nRadiiSubDistSq) {
-                    //f_printf("Child outside (%p): Distance: %f\n        Radius: %f Position: %f, %f\n", (*itr), nDistanceSq, m_nRadius, m_nPosition[0], m_nPosition[2]);
-                    // Add it to our delete list
-                    vecChildDelete.push_back((*itr));
-                }
-            }
-
-            // If we have anything to possibly delete
-            if (vecChildDelete.size() > 0) {
-                SphereNode *pBestNode = NULL;
-                float nCurrentDistance = HUGE_VAL;
-
-                // First, determine our average child positions
-                gmtl::Vec3f nAverageChildPos = determineAverageChildPositions();
-                gmtl::Vec3f nDiff;
-
-                //f_printf("%p (Parent %p): Found %i children to possibly delete\n", this, m_pParentNode, vecChildDelete.size());
-
-                // Initially start with our first one
-                pBestNode = vecChildDelete[0];
-                nDiff = pBestNode->m_nPosition - nAverageChildPos;
-                nCurrentDistance = gmtl::length(nDiff);
-
-                // Move through our delete list and determine which node is better to remove
-                for (size_t i = 1; i < vecChildDelete.size(); i++) {
-                    nDiff = vecChildDelete[i]->m_nPosition - nAverageChildPos;
-                    if (gmtl::length(nDiff) < nCurrentDistance) {
-                        nCurrentDistance = gmtl::length(nDiff);
-                        pBestNode = vecChildDelete[i];
-                    }
-                }
-    
-                //
-                // Remove the best node from our list and send it to our parent
-                //
-                vector<SphereData *>            dataList;
-                vector<SphereData *>::iterator  itrData;
-
-                if (!pBestNode->m_bDataNode) {
-                    //f_printf("%%%% Node is Internal Node (%i Children)\n", _node->m_uNodeChildren.size());
-                    for (itr = pBestNode->m_uNodeChildren.begin(); itr != pBestNode->m_uNodeChildren.end(); itr++) {
-                        // Steal the node's child and put it into our parent
-                        if (m_pParentNode)
-                            m_pParentNode->addSphereNode((*itr));
-                        else
-                            addSphereNode((*itr));
-
-                        //f_printf("$$ Moving removed node's child %p to parent %p (%p)\n", (*itr), m_pParentNode, (*itr)->m_pParentNode);
-                    }
-                } else {
-                    //f_printf("%%%% Node is Data Node\n");
-                    dataList.push_back(pBestNode->m_pData);
-                }
-
-                // Remove
-                removeSphereNode(pBestNode);
-                delete pBestNode;
-
-                // Loop through the data and add it to our parent if not root
-                for (itrData = dataList.begin(); itrData != dataList.end(); itrData++) {
-                    if (m_pParentNode)
-                        m_pParentNode->addSphereData((*itrData));
-                    else
-                        addSphereData((*itrData));
-                }
-            }
+            checkOutsideChildren();
         }
 
         updateToFitChildren();
+    }
+}
+
+void SphereNode::checkOutsideChildren()
+{
+    vector<SphereNode *>::iterator  itr;
+    vector<SphereNode *>            vecChildDelete;
+    vector<SphereNode *>            vecInterior, vecData;
+    gmtl::Vec3f                     nPosition;
+    float                           nDistanceSq;
+    float                           nRadiiSubDistSq;
+
+    // Move through our updated children vector and determine if any lie outside our radius
+    for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+        nDistanceSq = gmtl::length<float, 2>(
+            gmtl::Vec2f((*itr)->m_nPosition[0], (*itr)->m_nPosition[2]) - 
+                gmtl::Vec2f(m_nPosition[0], m_nPosition[2]));
+
+        nRadiiSubDistSq = m_nRadius - (*itr)->m_nRadius;
+        //nRadiiSumDistSq = m_nRadius + (*itr)->m_nRadius;
+        //nRadiiDistSq = m_nRadius;
+        
+        // Determine 0-multiple nodes exiting our maxed out radius
+        if (nDistanceSq > nRadiiSubDistSq) {
+            //f_printf("Child outside (%p): Distance: %f\n        Radius: %f Position: %f, %f\n", (*itr), nDistanceSq, m_nRadius, m_nPosition[0], m_nPosition[2]);
+            // Add it to our delete list
+            vecChildDelete.push_back((*itr));
+        }
+    }
+
+    // If we have anything to possibly delete
+    if (vecChildDelete.size() > 0) {
+        SphereNode *pBestNode = NULL;
+        float nCurrentDistance = HUGE_VAL;
+
+        // First, determine our average child positions
+        gmtl::Vec3f nAverageChildPos = determineAverageChildPositions();
+        gmtl::Vec3f nDiff;
+
+        //f_printf("%p (Parent %p): Found %i children to possibly delete\n", this, m_pParentNode, vecChildDelete.size());
+
+        // Initially start with our first one
+        pBestNode = vecChildDelete[0];
+        nDiff = pBestNode->m_nPosition - nAverageChildPos;
+        nCurrentDistance = gmtl::length(nDiff);
+
+        // Move through our delete list and determine which node is better to remove
+        for (size_t i = 1; i < vecChildDelete.size(); i++) {
+            nDiff = vecChildDelete[i]->m_nPosition - nAverageChildPos;
+            if (gmtl::length(nDiff) < nCurrentDistance) {
+                nCurrentDistance = gmtl::length(nDiff);
+                pBestNode = vecChildDelete[i];
+            }
+        }
+
+        //
+        // Remove the best node from our list and send it to our parent
+        //
+        vector<SphereData *>            dataList;
+        vector<SphereData *>::iterator  itrData;
+
+        if (!pBestNode->m_bDataNode) {
+            //f_printf("%%%% Node is Internal Node (%i Children)\n", _node->m_uNodeChildren.size());
+            for (itr = pBestNode->m_uNodeChildren.begin(); itr != pBestNode->m_uNodeChildren.end(); itr++) {
+                // Steal the node's child and put it into our parent
+                if (m_pParentNode)
+                    m_pParentNode->addSphereNode((*itr));
+                else
+                    addSphereNode((*itr));
+
+                //f_printf("$$ Moving removed node's child %p to parent %p (%p)\n", (*itr), m_pParentNode, (*itr)->m_pParentNode);
+            }
+        } else {
+            //f_printf("%%%% Node is Data Node\n");
+            dataList.push_back(pBestNode->m_pData);
+        }
+
+        // Remove
+        removeSphereNode(pBestNode);
+        delete pBestNode;
+
+        // Loop through the data and add it to our parent if not root
+        for (itrData = dataList.begin(); itrData != dataList.end(); itrData++) {
+            if (m_pParentNode)
+                m_pParentNode->addSphereData((*itrData));
+            else
+                addSphereData((*itrData));
+        }
     }
 }
 
@@ -307,9 +321,10 @@ bool SphereNode::addSphereData(SphereData *_data)
     nOtherRadiusSq = pow(m_nMinRadius, 2.0f);
 
     pBestNode = getBestFitChild(_data);
-    pNewNode = new SphereNode(m_nMinRadius, m_nMaxRadius, _data);
 
     if (pBestNode) {
+        pNewNode = new SphereNode(m_nMinRadius, m_nMaxRadius, _data);
+
         if ((m_uNodeChildren.size() >= m_nMaxBucketSize)) {
             newNode = createInternalNode();
 
@@ -319,10 +334,14 @@ bool SphereNode::addSphereData(SphereData *_data)
 
         pBestNode->addSphereNode(pNewNode);
         pBestNode->updateToFitChildren();
+
         f_printf("Best Fit Node Found: %p for %p\n", pBestNode, pNewNode);
+
         return true;
     } else {
-        // Check if we're root, if not, push it higher
+        f_printf("NOT FOUND, PUSHING TO PARENT\n");
+
+        // Push it higher
         return m_pParentNode->addSphereData(_data);
     }
 }
@@ -383,36 +402,9 @@ void SphereNode::removeSphereNode(SphereNode *_node)
         for (size_t i = 0; i < m_uNodeChildren.size(); i++) {
             // Search for the node in our children
             if (m_uNodeChildren[i] == _node) {
-                /*
-                if (!_node->m_bDataNode) {
-                    //f_printf("%%%% Node is Internal Node (%i Children)\n", _node->m_uNodeChildren.size());
-                    for (itr = _node->m_uNodeChildren.begin(); itr != _node->m_uNodeChildren.end(); itr++) {
-                        // Steal the node's child and put it into our parent
-                        if (m_pParentNode)
-                            m_pParentNode->addSphereNode((*itr));
-                        else
-                            addSphereNode((*itr));
-
-                        //f_printf("$$ Moving removed node's child %p to parent %p (%p)\n", (*itr), m_pParentNode, (*itr)->m_pParentNode);
-                    }
-                } else {
-                    //f_printf("%%%% Node is Data Node\n");
-                    dataList.push_back(_node->m_pData);
-                }
-                */
                 f_printf("## Removed node %p from %p, Contained %i Data Children, Reinserting...\n", _node, this, dataList.size())
 
-                //delete _node;
                 m_uNodeChildren.erase(m_uNodeChildren.begin() + i);
-
-                /*
-                for (itrData = dataList.begin(); itrData != dataList.end(); itrData++) {
-                    if (m_pParentNode)
-                        m_pParentNode->addSphereData((*itrData));
-                    else
-                        addSphereData((*itrData));
-                }
-                */
 
                 updateToFitChildren();
 
@@ -565,8 +557,8 @@ float SphereNode::getTwoClosestChildren(SphereNode *& _node1, SphereNode *& _nod
             if (*itr == *itr2)
                 continue;
 
-            if (!(*itr)->m_bDataNode || !(*itr2)->m_bDataNode)
-                continue;
+            //if (!(*itr)->m_bDataNode || !(*itr2)->m_bDataNode)
+            //    continue;
 
             nTempVec = (*itr)->getPosition() - (*itr2)->getPosition();
             nTemp = gmtl::lengthSquared(nTempVec);

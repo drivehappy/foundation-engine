@@ -60,8 +60,6 @@ class Manager():
         def __sendWorldState(self):
             worldState = WorldState(self.deltaTime, Foundation.TimeManager().getTime())
             
-            
-            
             for unit in self.unitList:
                 unit.channel.send((self.channel, Message.WORLD_STATE, worldState))
 

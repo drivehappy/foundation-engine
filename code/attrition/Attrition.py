@@ -351,10 +351,15 @@ def schedulerTasklet():
         Scheduler.Step(1.0)
 
         EntityManager.deltaTime = nDeltaTime
+        
+        EntityManager.sphereTree.update()
+        EntityManager.sphereTree.debugRender("SceneManager0")
 
         TimeManager.sleep(1)
 
         stackless.schedule()
+        
+        
 
 def buildingInitTasklet():
     uUnitType = EntityManager.getEntityTypeFromName("CommandCenter")
