@@ -70,6 +70,7 @@ RenderSphereTree = True
 RenderSphereTreeLevel = 5
 Pause = False
 SphereTreeBucketSize = 3
+SphereTreeSpeedFactor = 1
 
 # ------------------------------------------------
 # InputWork
@@ -77,7 +78,7 @@ def doInput(_nDeltaTime):
     global MouseStateChange, KeyboardStateChange, Joystick0StateChange, Joystick1StateChange
     global TimerKeyDelay
     global SelectionBounds, SelectionWorldBounds, SelectedEntityList
-    global RenderSphereTree, Pause, SphereTreeBucketSize
+    global RenderSphereTree, Pause, SphereTreeBucketSize, SphereTreeSpeedFactor
 
     resetKey = False
     mouseState, keyboardState, joystickState = Input.Manager.consumeEvent(InputManager, GUIManager)
@@ -117,7 +118,16 @@ def doInput(_nDeltaTime):
                         SphereTreeBucketSize += 1
                         if (SphereTreeBucketSize > 20):
                             SphereTreeBucketSize = 20
-
+                    '''
+                    if KeyIndex == Foundation.Keycode.K:
+                        SphereTreeSpeedFactor /= 2.0
+                        if (SphereTreeSpeedFactor < 0.25):
+                            SphereTreeSpeedFactor = 0.25
+                    elif KeyIndex == Foundation.Keycode.L:
+                        SphereTreeSpeedFactor *= 2.0
+                        if (SphereTreeSpeedFactor > 8.0):
+                            SphereTreeSpeedFactor = 8.0
+                    '''
                     if KeyIndex == Foundation.Keycode.SPACE:
                         EntityManager.sphereTree.dump()
                     elif KeyIndex == Foundation.Keycode.B:
@@ -359,7 +369,7 @@ def onSelection(channel, header, data, size):
 # Main Tasklets
 def schedulerTasklet():
     global EntityManager, PhysicsManager
-    global RenderSphereTree, Pause, SphereTreeBucketSize
+    global RenderSphereTree, Pause, SphereTreeBucketSize, SphereTreeSpeedFactor
     
     uMainTimer = Foundation.Timer()
     nDeltaTime = 0
@@ -367,6 +377,7 @@ def schedulerTasklet():
         nDeltaTime = uMainTimer.getTime()
         uMainTimer.reset()
         nDeltaTime = Foundation.f_clamp(nDeltaTime, 0.0, 0.1)
+        nDeltaTime *= SphereTreeSpeedFactor
 
         # Update Input
         if not doInput(nDeltaTime):
