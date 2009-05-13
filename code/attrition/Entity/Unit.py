@@ -92,16 +92,16 @@ class Unit(Actor):
             self.timer.reset()
             deltaTime = Foundation.f_clamp(deltaTime, 0, 0.1)
 
+            self.physics.doTask(deltaTime)
+            self.graphic.setPosition(self.physics.getPosition())
+            self.sphereData.setPosition(self.physics.getPosition())
+
             # RAND MOVE FOR SPHERE TREE
             self.RANDMOVETIME -= deltaTime
             if (self.RANDMOVETIME <= 0.0):
                 self.RANDMOVETIME = 15.0
                 targetPosition = Foundation.Vector3(random.randrange(-500, 500, 1), 20, random.randrange(-500, 500, 1))
                 self.physics.moveTo(targetPosition)
-
-            self.physics.doTask(deltaTime)
-            self.graphic.setPosition(self.physics.getPosition())
-            self.sphereData.setPosition(self.physics.getPosition())
 
             if self.shutdownFlag:
                 raise TaskletExit
