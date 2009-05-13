@@ -76,7 +76,7 @@ class Unit(Actor):
             # Do housekeeping tasks
             newUnitType = self.__updateUnitCreation(worldstate.deltaTime)
             if newUnitType:
-                channel.send((self, Message.CREATE_UNIT, newUnitType, self.team))
+                channel.send((self, Message.CREATE_UNIT, newUnitType, self.team, self.physics.getPosition()))
 
         elif msg == Message.UNIT_MOVE:
             targetPosition = msgdata[0]
@@ -90,7 +90,7 @@ class Unit(Actor):
         while True:
             deltaTime = self.timer.getTime()
             self.timer.reset()
-            deltaTime = Foundation.f_clamp(deltaTime, 0, 0.5)
+            deltaTime = Foundation.f_clamp(deltaTime, 0, 0.1)
 
             # RAND MOVE FOR SPHERE TREE
             self.RANDMOVETIME -= deltaTime
@@ -185,6 +185,9 @@ class Unit(Actor):
                 # Return the type of unit to actually create
                 return uUnitType
         return None
+
+    def setPosition(self, _nPosition):
+        self.physics.setPosition(_nPosition)
 
     # ------------------------------------------
     # Initialize Graphics
