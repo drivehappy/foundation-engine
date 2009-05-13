@@ -69,6 +69,7 @@ SelectedEntityList      = []
 RenderSphereTree = True
 RenderSphereTreeLevel = 5
 Pause = False
+SphereTreeBucketSize = 3
 
 # ------------------------------------------------
 # InputWork
@@ -76,7 +77,7 @@ def doInput(_nDeltaTime):
     global MouseStateChange, KeyboardStateChange, Joystick0StateChange, Joystick1StateChange
     global TimerKeyDelay
     global SelectionBounds, SelectionWorldBounds, SelectedEntityList
-    global RenderSphereTree, Pause
+    global RenderSphereTree, Pause, SphereTreeBucketSize
 
     resetKey = False
     mouseState, keyboardState, joystickState = Input.Manager.consumeEvent(InputManager, GUIManager)
@@ -108,7 +109,16 @@ def doInput(_nDeltaTime):
                 elif KeyIndex == Foundation.Keycode.X:
                     Camera0.moveRelative(Foundation.Vector3(0, 0, nCamSpeed))
 
-                if (TimerKeyDelay.getTime() > LARGE_KEY_DELAY):
+                if (TimerKeyDelay.getTime() > LARGE_KEY_DELAY):                    
+                    if KeyIndex == Foundation.Keycode.I:
+                        SphereTreeBucketSize -= 1
+                        if (SphereTreeBucketSize < 2):
+                            SphereTreeBucketSize = 2
+                    elif KeyIndex == Foundation.Keycode.O:
+                        SphereTreeBucketSize += 1
+                        if (SphereTreeBucketSize > 20):
+                            SphereTreeBucketSize = 20
+
                     if KeyIndex == Foundation.Keycode.SPACE:
                         EntityManager.sphereTree.dump()
                     elif KeyIndex == Foundation.Keycode.B:
@@ -350,7 +360,7 @@ def onSelection(channel, header, data, size):
 # Main Tasklets
 def schedulerTasklet():
     global EntityManager, PhysicsManager
-    global RenderSphereTree, Pause
+    global RenderSphereTree, Pause, SphereTreeBucketSize
     
     uMainTimer = Foundation.Timer()
     nDeltaTime = 0
@@ -368,7 +378,7 @@ def schedulerTasklet():
 
         # Update GUI
         entityCount = EntityManager.getEntityCount()
-        GUIHelper.updateGameUI(nDeltaTime, TimeManager.getTime(), GraphicManager.getAverageFPS(), entityCount)
+        GUIHelper.updateGameUI(nDeltaTime, TimeManager.getTime(), GraphicManager.getAverageFPS(), entityCount, SphereTreeBucketSize)
         if len(SelectedEntityList) > 0:
             GUIHelper.updateEntityUI(nDeltaTime, SelectedEntityList[0])
 
@@ -380,6 +390,7 @@ def schedulerTasklet():
         if (not Pause):
             #EntityManager.deltaTime = nDeltaTime
             
+            EntityManager.sphereTree.setMaxBucketSize(SphereTreeBucketSize)
             EntityManager.sphereTree.update()
             if RenderSphereTree:
                 EntityManager.sphereTree.debugRender("SceneManager0")
