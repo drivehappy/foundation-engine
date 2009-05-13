@@ -87,7 +87,6 @@ def doInput(_nDeltaTime):
         for KeyIndex in keyboardState.Keys:
             if keyboardState.Keys[KeyIndex]:
                 if KeyIndex == Foundation.Keycode.ESCAPE:
-                    print "Escape"
                     return False
 
                 if KeyIndex == Foundation.Keycode.NUMPAD_8:
@@ -224,7 +223,7 @@ def initManagers():
 
     # Init Graphics
     HTTPLogger().writeContent(LoggerError.NONE, "[GraphicManager] Initializing...")
-    bResult = GraphicManager.initialize("Attrition - Sphere Tree Demp CS709")
+    bResult = GraphicManager.initialize("Attrition - Sphere Tree Demo CS709")
     if bResult:
         GraphicManager.showCursor(False)
         GraphicManager.addSceneManager("SceneManager0")
@@ -367,7 +366,7 @@ def schedulerTasklet():
     while True:
         nDeltaTime = uMainTimer.getTime()
         uMainTimer.reset()
-        nDeltaTime = Foundation.f_clamp(nDeltaTime, 0.0, 0.5)
+        nDeltaTime = Foundation.f_clamp(nDeltaTime, 0.0, 0.1)
 
         # Update Input
         if not doInput(nDeltaTime):
@@ -386,16 +385,18 @@ def schedulerTasklet():
         Scheduler.Step(1.0)
         TimeManager.sleep(1)
         
+        EntityManager.sphereTree.setMaxBucketSize(SphereTreeBucketSize)
+        EntityManager.sphereTree.update()
+        if RenderSphereTree:
+            EntityManager.sphereTree.debugRender("SceneManager0")
+        else:
+            EntityManager.sphereTree.clearDebugRender("SceneManager0")
+
         PhysicsManager.setPaused(Pause)
         if (not Pause):
             #EntityManager.deltaTime = nDeltaTime
             
-            EntityManager.sphereTree.setMaxBucketSize(SphereTreeBucketSize)
-            EntityManager.sphereTree.update()
-            if RenderSphereTree:
-                EntityManager.sphereTree.debugRender("SceneManager0")
-            else:
-                EntityManager.sphereTree.clearDebugRender("SceneManager0")
+            
 
             stackless.schedule()      
 
@@ -430,16 +431,23 @@ def main(argv):
             GraphicManager.addCircle("SceneManager0", "CIRCLETEST" + str(x), Foundation.Vector3(nX, 13.0, nZ), nRadius, Foundation.VectorIndex.Yelt, 1, 0, 0)
         '''
         # -----------------------------------
-        
-        stackless.tasklet(schedulerTasklet)()
 
         # Spin up some units
-        CommandCenter = EntityManager.addUnit("CommandCenter")
+        CommandCenter = EntityManager.addUnit("CommandCenter", Foundation.Vector3(400, 20, 400))
         CommandCenter.team = Team.RED
 
-        for i in range(0, 100):
-            Scout = EntityManager.addUnit("Scout")
+        CommandCenter = EntityManager.addUnit("CommandCenter", Foundation.Vector3(-400, 20, -400))
+        CommandCenter.team = Team.BLUE
+
+        for i in range(0, 2):
+            Scout = EntityManager.addUnit("Scout", Foundation.Vector3(-400, 20, -400))
             Scout.team = Team.RED
+
+            Scout = EntityManager.addUnit("Scout", Foundation.Vector3(400, 20, 400))
+            Scout.team = Team.BLUE
+
+        # Start
+        stackless.tasklet(schedulerTasklet)()
 
         try:
             stackless.run()

@@ -42,16 +42,16 @@ class Manager():
         def __handleTasklet(self, channelData):
             sender, msg, msgdata = channelData[0], channelData[1], channelData[2:]
 
-            #print "Manager Update"
-
             if msg == Message.UNIT_STATE:
                 #print "UnitState Message Received"
                 pass
             elif msg == Message.CREATE_UNIT:
                 unitType = msgdata[0]['Name']
                 unitTeam = msgdata[1]
+                unitPosition = msgdata[2]
+
                 HTTPLogger().writeContent(LoggerError.DEBUG, sender.name + " creating unit of type " + unitType)
-                newUnit = self.addUnit(unitType)
+                newUnit = self.addUnit(unitType, unitPosition)
 
                 newUnit.channel.send((self.channel, Message.UNIT_SETTEAM, unitTeam))
                 newUnit.channel.send((self.channel, Message.UNIT_MOVE, Foundation.Vector3(random.randrange(-500, 500, 1), 20, random.randrange(-500, 500, 1))))
@@ -79,7 +79,7 @@ class Manager():
             self.shutdown()
 
         # addUnit
-        def addUnit(self, unitType):
+        def addUnit(self, unitType, _position):
             uUnitType = self.getEntityTypeFromName(unitType)
             if not self.hasEntityType(unitType):
                 HTTPLogger().writeContent(LoggerError.ERROR, "EntityType " + unitType + " doesn't exist.")
@@ -92,6 +92,7 @@ class Manager():
                     self.unitTypeCount[typename] = 0
 
                 unitNew = Unit(uUnitType, uUnitType['Name'] + str(self.unitTypeCount[typename]))
+                unitNew.setPosition(_position)
 
                 HTTPLogger().writeContent(LoggerError.NONE, "Created unit of type %s" % (uUnitType["Name"]))
                 self.unitList.append(unitNew)
