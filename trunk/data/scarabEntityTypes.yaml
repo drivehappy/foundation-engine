@@ -11,6 +11,7 @@ EntityTypes:
     Cost_Gold:  30
     Cost_Wood:  5
     BuildTime:  0.5
+    Sight:      8
 
     # Graphic Options
     Mesh:       cube.mesh
@@ -38,6 +39,7 @@ EntityTypes:
     Size:       4
     Cost_Gold:  300
     Cost_Wood:  100
+    Sight:      40
 
     # Graphic Options
     Mesh:       cube.mesh

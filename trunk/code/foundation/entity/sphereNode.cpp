@@ -294,7 +294,7 @@ SphereNode* SphereNode::getBestFitChild(SphereData *_uData)
     vecDiff = m_nPosition - _uData->getPosition();
     nDistance = gmtl::length(vecDiff);
 
-    if ((!m_bDataNode && nDistance > m_nMinRadius && nDistance < m_nMaxRadius && m_uNodeChildren.size() < m_nMaxBucketSize) || m_bRootNode) {
+    if ((!m_bDataNode && nDistance > ((m_nMinRadius + m_nMaxRadius) / 2.0f) && nDistance < m_nMaxRadius && m_uNodeChildren.size() < m_nMaxBucketSize) || m_bRootNode) {
         // Assume we're the best fit until we check our children
         pBestChild = this;
         nBestDistance = nDistance;
@@ -646,6 +646,18 @@ void SphereNode::dump(int _level)
         } else {
             f_printf("Internal Node (%p): P: %f, %f - R: %f\n", (*itr), (*itr)->m_nPosition[0], (*itr)->m_nPosition[2], (*itr)->m_nRadius);
             (*itr)->dump(_level + 1);
+        }
+    }
+}
+
+void SphereNode::setMaxBucketSize(unsigned int _size, bool _recursive)
+{
+    vector<SphereNode *>::iterator itr;
+    m_nMaxBucketSize = _size;
+
+    if (_recursive) {
+        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+            (*itr)->setMaxBucketSize(_size, true);
         }
     }
 }

@@ -386,9 +386,7 @@ def schedulerTasklet():
             else:
                 EntityManager.sphereTree.clearDebugRender("SceneManager0")
 
-            stackless.schedule()
-        
-        
+            stackless.schedule()      
 
 def buildingInitTasklet():
     uUnitType = EntityManager.getEntityTypeFromName("CommandCenter")
@@ -449,7 +447,9 @@ def shutdown():
 
     # Cleanup
     GUIHelper.cleanupGameUI()
+    print "GUI Cleanup done"
     cleanupManagers()
+    print "Manager Cleanup done"
 
     HTTPLogger().writeContent(LoggerError.SUCCESS, "Shutdown Complete")
     HTTPLogger().endTable()

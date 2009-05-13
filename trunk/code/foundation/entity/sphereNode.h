@@ -73,6 +73,10 @@ namespace Foundation {
 
             /**
              */
+            void setMaxBucketSize(unsigned int _size, bool _recursive);
+
+            /**
+             */
             void debugRender(const char* _sSceneManagerName, bool _bRecursive);
 
             /**

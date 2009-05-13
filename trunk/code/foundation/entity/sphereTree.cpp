@@ -5,10 +5,10 @@ using namespace Foundation::Entities;
 
 SphereTree::SphereTree()
 {
-    m_nMinRadius = 40;
-    m_nMaxRadius = 100;
+    m_nMinRadius = 10;
+    m_nMaxRadius = 80;
 
-    m_pRoot = new SphereNode(m_nMinRadius, m_nMaxRadius, false, 5);
+    m_pRoot = new SphereNode(m_nMinRadius, m_nMaxRadius, false, 3);
     m_pRoot->m_bRootNode = true;
     m_pRoot->m_pParentNode = NULL;
 
@@ -54,6 +54,16 @@ unsigned int SphereTree::getChildCount()
 unsigned int SphereTree::getMaxDepth()
 {
     return m_pRoot->getMaxDepth();
+}
+
+void SphereTree::setMaxBucketSize(unsigned int _size)
+{
+    if (_size < 0)
+        _size = 0;
+    else if (_size > 20)
+        _size = 20;
+
+    m_pRoot->setMaxBucketSize(_size, true);
 }
 
 void SphereTree::update()

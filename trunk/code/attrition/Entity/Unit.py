@@ -30,12 +30,12 @@ class Unit(Actor):
         self.physics = UnitPhysics()
         self.targetPosition = None
         self.graphic = None
-        self.radiusLineOfSight = 5
 
         self.physics.setPosition(position)
         self.timer = Foundation.Timer()
         
         self.sphereData = Foundation.SphereData()
+        self.sphereData.setRadius(self.type["Sight"])
 
         # Weapon
         self.weaponList = []
@@ -102,7 +102,6 @@ class Unit(Actor):
             self.physics.doTask(deltaTime)
             self.graphic.setPosition(self.physics.getPosition())
             self.sphereData.setPosition(self.physics.getPosition())
-            self.sphereData.setRadius(self.radiusLineOfSight)
 
             if self.shutdownFlag:
                 raise TaskletExit

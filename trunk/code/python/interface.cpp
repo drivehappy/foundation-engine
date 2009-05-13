@@ -600,6 +600,7 @@ BOOST_PYTHON_MODULE(FoundationPython)
     // Sphere Tree
     class_<Entities::SphereTree_PythonWrapper, boost::noncopyable>("SphereTree")
         .def("addData", &Entities::SphereTree_PythonWrapper::addData)
+        .def("setMaxBucketSize", &Entities::SphereTree_PythonWrapper::setMaxBucketSize)
         .def("update", &Entities::SphereTree_PythonWrapper::update)
         .def("debugRender", &Entities::SphereTree_PythonWrapper::debugRender)
         .def("clearDebugRender", &Entities::SphereTree_PythonWrapper::clearDebugRender)

@@ -34,6 +34,10 @@ namespace Foundation {
 
             /**
              */
+            void setMaxBucketSize(unsigned int _size);
+
+            /**
+             */
             void update();
 
             /**
