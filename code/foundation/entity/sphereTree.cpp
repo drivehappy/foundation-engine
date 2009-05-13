@@ -58,8 +58,8 @@ unsigned int SphereTree::getMaxDepth()
 
 void SphereTree::setMaxBucketSize(unsigned int _size)
 {
-    if (_size < 0)
-        _size = 0;
+    if (_size < 2)
+        _size = 2;
     else if (_size > 20)
         _size = 20;
 
