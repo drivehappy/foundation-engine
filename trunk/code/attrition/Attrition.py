@@ -86,6 +86,7 @@ def doInput(_nDeltaTime):
         for KeyIndex in keyboardState.Keys:
             if keyboardState.Keys[KeyIndex]:
                 if KeyIndex == Foundation.Keycode.ESCAPE:
+                    print "Escape"
                     return False
 
                 if KeyIndex == Foundation.Keycode.NUMPAD_8:
@@ -258,13 +259,13 @@ def initManagers():
 # ------------------------------------------------
 # Cleanup Managers
 def cleanupManagers():
-    global TimeManager, Schdeuler, AudioManager, InputManager, GraphicManager, GUIManager
+    global TimeManager, Schdeuler, AudioManager, InputManager, GraphicManager, GUIManager, EntityManager
 
     HTTPLogger().writeContent(LoggerError.NONE, "[Scheduler] Shutting down...")
     if Scheduler:
         if EntityManager:
             HTTPLogger().writeContent(LoggerError.NONE, "[EntityManager] Shutting down...")
-            #Scheduler.RemoveTask(EntityManager.Task)
+            EntityManager.sphereTree.destroy()
             HTTPLogger().writeContent(LoggerError.NONE, "[EntityManager] Complete.")
 
         if AudioManager:
@@ -356,15 +357,18 @@ def schedulerTasklet():
     while True:
         nDeltaTime = uMainTimer.getTime()
         uMainTimer.reset()
-        nDeltaTime = Foundation.f_clamp(nDeltaTime, 0.0, 1.0)
+        nDeltaTime = Foundation.f_clamp(nDeltaTime, 0.0, 0.5)
 
         # Update Input
         if not doInput(nDeltaTime):
+            print "EntityManager shutting down units..."
             EntityManager.shutdownUnits()
+            print "Done"
             break
 
         # Update GUI
-        GUIHelper.updateGameUI(nDeltaTime, TimeManager.getTime(), GraphicManager.getAverageFPS())
+        entityCount = EntityManager.getEntityCount()
+        GUIHelper.updateGameUI(nDeltaTime, TimeManager.getTime(), GraphicManager.getAverageFPS(), entityCount)
         if len(SelectedEntityList) > 0:
             GUIHelper.updateEntityUI(nDeltaTime, SelectedEntityList[0])
 
@@ -374,7 +378,7 @@ def schedulerTasklet():
         
         PhysicsManager.setPaused(Pause)
         if (not Pause):
-            EntityManager.deltaTime = nDeltaTime
+            #EntityManager.deltaTime = nDeltaTime
             
             EntityManager.sphereTree.update()
             if RenderSphereTree:
@@ -424,6 +428,10 @@ def main(argv):
         CommandCenter = EntityManager.addUnit("CommandCenter")
         CommandCenter.team = Team.RED
 
+        for i in range(0, 100):
+            Scout = EntityManager.addUnit("Scout")
+            Scout.team = Team.RED
+
         try:
             stackless.run()
         except TaskletExit:
@@ -437,6 +445,8 @@ def main(argv):
 # ------------------------------------------------
 # Shutdown
 def shutdown():
+    print "Shutting down..."
+
     # Cleanup
     GUIHelper.cleanupGameUI()
     cleanupManagers()

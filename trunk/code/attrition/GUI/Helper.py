@@ -19,11 +19,14 @@ class Helper:
         GUIManager.setObjectColor("Text_DeltaTime", 1, 1, 1)
         GUIManager.createStaticText("Window_Stats", "Text_TotalTime", 10, 50, 150, 20, "tTime: 0.0")
         GUIManager.setObjectColor("Text_TotalTime", 1, 1, 1)
+        GUIManager.createStaticText("Window_Stats", "Text_EntityCount", 10, 70, 150, 20, "Entities: 0")
+        GUIManager.setObjectColor("Text_EntityCount", 1, 1, 1)
 
-    def updateGameUI(self, _nDeltaTime, _nTotalTime, _nFPS):
+    def updateGameUI(self, _nDeltaTime, _nTotalTime, _nFPS, _nEntityCount):
         GUIManager.setWidgetCaption("Text_FPS", ("FPS: %3.2f" % _nFPS))
         GUIManager.setWidgetCaption("Text_DeltaTime", ("dTime: %2.6f" % _nDeltaTime))
         GUIManager.setWidgetCaption("Text_TotalTime", ("tTime: %2.6f" % _nTotalTime))
+        GUIManager.setWidgetCaption("Text_EntityCount", ("Entities: %i" % _nEntityCount))
 
     def cleanupGameUI(self):
         GUIManager.destroyObject("Window_Stats")

@@ -7,6 +7,7 @@ using namespace Foundation::Entities;
 SphereData::SphereData()
 {
     m_nPosition = gmtl::Vec3f(0, 0, 0);
+    m_nRadius = 0.0f;
 }
 
 gmtl::Vec3f SphereData::getPosition() const

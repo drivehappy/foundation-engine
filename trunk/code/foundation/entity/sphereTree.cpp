@@ -5,7 +5,7 @@ using namespace Foundation::Entities;
 
 SphereTree::SphereTree()
 {
-    m_nMinRadius = 20;
+    m_nMinRadius = 40;
     m_nMaxRadius = 100;
 
     m_pRoot = new SphereNode(m_nMinRadius, m_nMaxRadius, false, 5);
@@ -17,12 +17,18 @@ SphereTree::SphereTree()
 
 SphereTree::~SphereTree()
 {
+    destroy();
+}
+
+void SphereTree::destroy()
+{
+    m_pRoot->destroy();
+    delete m_pRoot;
 }
 
 vector<SphereData *>::iterator& SphereTree::addData(SphereData *_data)
 {
-    f_printf("SphereTree Adding Data... (Pos: %f, %f, %f)\n",
-         _data->getPosition()[0], _data->getPosition()[1], _data->getPosition()[2]);
+    //f_printf("SphereTree Adding Data... (Pos: %f, %f, %f)\n", _data->getPosition()[0], _data->getPosition()[1], _data->getPosition()[2]);
 
     vector<SphereData *>::iterator *itr = new vector<SphereData *>::iterator();
     //SphereData *dataCopy = new SphereData(_data);
@@ -52,25 +58,7 @@ unsigned int SphereTree::getMaxDepth()
 
 void SphereTree::update()
 {
-    unsigned int nTemp;
-
-    nTemp = m_pRoot->getChildCount();
-    if (m_nDebugDataCount == nTemp) {
-        //f_printf("!! SphereTree Node Count Good\n");
-    } else {
-        f_printf("!! WARNING: Pre Update: SphereTree Node Count Bad\n");
-        m_nDebugDataCount = nTemp;
-    }
-
     m_pRoot->update();
-
-    nTemp = m_pRoot->getChildCount();
-    if (m_nDebugDataCount == nTemp) {
-        //f_printf("!! SphereTree Node Count Good\n");
-    } else {
-        f_printf("!! WARNING: Post Update: SphereTree Node Count Bad\n");
-        m_nDebugDataCount = nTemp;
-    }
 }
 
 void SphereTree::dump()
