@@ -11,6 +11,8 @@ namespace Foundation {
             SphereTree();
             ~SphereTree();
 
+            void destroy();
+
             /** Add new data to the tree.
                 @param _data Data to add
                 @return Node in which data resides

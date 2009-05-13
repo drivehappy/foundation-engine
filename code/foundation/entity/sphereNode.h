@@ -23,6 +23,10 @@ namespace Foundation {
 
             /**
              */
+            void destroy();
+
+            /**
+             */
             gmtl::Vec3f getPosition();
             /**
              */
@@ -104,6 +108,7 @@ namespace Foundation {
             float                   m_nElasticity;
             unsigned int            m_nMaxBucketSize;
             char                   *m_sGraphicID;
+            Ogre::String            m_sLineID;
             
 
             /**

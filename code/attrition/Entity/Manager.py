@@ -32,11 +32,11 @@ class Manager():
             self.__readEntityTypesFromYaml(fileEntityTypes)
             self.__readWeaponTypesFromYaml(fileWeaponTypes)
             self.unitList = []
-            self.deltaTime = 0.0
             self.unitTypeCount = {}
             self.sphereTree = Foundation.SphereTree()
 
             stackless.tasklet(self.__runFrame)()
+            stackless.schedule()
 
         # Tasklet
         def __handleTasklet(self, channelData):
@@ -58,7 +58,10 @@ class Manager():
 
         # Tasklet
         def __sendWorldState(self):
-            worldState = WorldState(self.deltaTime, Foundation.TimeManager().getTime())
+            nDeltaTime = self.deltaTime.getTime()
+            self.deltaTime.reset()
+
+            worldState = WorldState(nDeltaTime, Foundation.TimeManager().getTime())
             
             for unit in self.unitList:
                 unit.channel.send((self.channel, Message.WORLD_STATE, worldState))
@@ -66,11 +69,7 @@ class Manager():
         def __runFrame(self):
             while True:
                 self.__sendWorldState()
-                
-                # Update the sphere tree, determine any data movements
-                #self.sphereTree.update()
-                #self.sphereTree.debugRender("SceneManager0");
-                
+         
                 stackless.schedule()
 
         # Attempt a clean shutdown by killing all actors
@@ -112,6 +111,9 @@ class Manager():
 
         def getEntityTypes(self):
             return self.entityTypes
+
+        def getEntityCount(self):
+            return len(self.unitList)
 
         def getEntityTypeFromName(self, name):
             if self.entityTypes:

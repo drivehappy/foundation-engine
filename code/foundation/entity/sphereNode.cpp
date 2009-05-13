@@ -19,10 +19,8 @@ SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius)
 
     vector<gmtl::Vec3f> Points;
     Points.push_back(gmtl::Vec3f(0, 0, 0));
-    Ogre::String sLineID = m_sGraphicID + Ogre::String("_PARENT_LINE");
-    Graphic::GraphicManager::getSingleton().addLine("SceneManager0", sLineID.c_str(), Points, 1.0f, 0.0f, 0.0f);
-
-    //f_printf("^^ Added new SphereNode (%p): DataNode: %i\n", this, m_bDataNode);
+    m_sLineID = m_sGraphicID + Ogre::String("_PARENT_LINE");
+    Graphic::GraphicManager::getSingleton().addLine("SceneManager0", m_sLineID.c_str(), Points, 1.0f, 0.0f, 0.0f);
 }
 
 SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, SphereData *_pData)
@@ -32,7 +30,7 @@ SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, SphereD
 
     m_nMinRadius = _nMinRadius;
     m_nMaxRadius = _nMaxRadius;
-    m_nRadius = m_nMinRadius;
+    m_nRadius = _pData->getRadius();
     m_bRootNode = false;
 
     m_nMaxBucketSize = 0xDEADC0DE;
@@ -41,10 +39,8 @@ SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, SphereD
 
     vector<gmtl::Vec3f> Points;
     Points.push_back(gmtl::Vec3f(0, 0, 0));
-    Ogre::String sLineID = m_sGraphicID + Ogre::String("_PARENT_LINE");
-    Graphic::GraphicManager::getSingleton().addLine("SceneManager0", sLineID.c_str(), Points, 1.0f, 0.0f, 0.0f);
-
-    //f_printf("^^ Added new SphereNode (%p): DataNode: %i\n", this, m_bDataNode);
+    m_sLineID = m_sGraphicID + Ogre::String("_PARENT_LINE");
+    Graphic::GraphicManager::getSingleton().addLine("SceneManager0", m_sLineID.c_str(), Points, 1.0f, 0.0f, 0.0f);
 }
 
 SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, bool _bDataNode, unsigned int _nMaxBucketSize)
@@ -63,25 +59,33 @@ SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, bool _b
 
     vector<gmtl::Vec3f> Points;
     Points.push_back(gmtl::Vec3f(0, 0, 0));
-    Ogre::String sLineID = m_sGraphicID + Ogre::String("_PARENT_LINE");
-    Graphic::GraphicManager::getSingleton().addLine("SceneManager0", sLineID.c_str(), Points, 1.0f, 0.0f, 0.0f);
-
-    //f_printf("^^ Added new SphereNode (%p): DataNode: %i\n", this, m_bDataNode);
+    m_sLineID = m_sGraphicID + Ogre::String("_PARENT_LINE");
+    Graphic::GraphicManager::getSingleton().addLine("SceneManager0", m_sLineID.c_str(), Points, 1.0f, 0.0f, 0.0f);
 }
 
 SphereNode::~SphereNode()
 {
-    Ogre::String sLineID = m_sGraphicID + Ogre::String("_PARENT_LINE");
-    Graphic::GraphicManager::getSingleton().clearLine("SceneManager0", sLineID.c_str());
+    Graphic::GraphicManager::getSingleton().clearLine("SceneManager0", m_sLineID.c_str());
     Graphic::GraphicManager::getSingleton().clearCircle("SceneManager0", m_sGraphicID);    
     delete m_sGraphicID;
     m_pData = NULL;
 }
 
+void SphereNode::destroy()
+{
+    vector<SphereNode *>::iterator  itr;
+
+    for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+        (*itr)->destroy();
+        delete (*itr);
+    }
+
+    Graphic::GraphicManager::getSingleton().destroyLine("SceneManager0", m_sLineID.c_str());
+    Graphic::GraphicManager::getSingleton().destroyCircle("SceneManager0", m_sGraphicID);  
+}
 
 void SphereNode::update()
 {
-    vector<SphereNode *>::iterator  itr;
     vector<SphereNode *>            vecChildDelete;
     vector<SphereNode *>            vecInterior, vecData;
     gmtl::Vec3f                     nPosition;
@@ -100,7 +104,7 @@ void SphereNode::update()
             }
         }
 
-        updateToFitChildren();
+        //updateToFitChildren();
 
         // Move through our children and update and
         // Generate an interior node list and a data node list
@@ -117,7 +121,7 @@ void SphereNode::update()
             else if ((!m_uNodeChildren[i]->m_bDataNode && 
                       m_uNodeChildren[i]->m_uNodeChildren.size() == 1))
             {
-                f_printf("%p Removing useless node %p\n", this, m_uNodeChildren[i]);
+                //f_printf("%p Removing useless node %p\n", this, m_uNodeChildren[i]);
 
                 SphereNode *pChild = m_uNodeChildren[i]->m_uNodeChildren[0];
                 delete m_uNodeChildren[i];
@@ -150,7 +154,7 @@ void SphereNode::update()
                 SphereNode *pNodeIntr = (*(vecInterior.begin() + j));
 
                 if (pNodeIntr->canAcceptData(pNodeData->m_pData)) {
-                    f_printf("Moving data node into lower interior node...\n");
+                    //f_printf("Moving data node into lower interior node...\n");
 
                     pNodeIntr->addSphereNode(pNodeData);
                     removeSphereNode(pNodeData);
@@ -182,6 +186,10 @@ void SphereNode::checkOutsideChildren()
     float                           nDistanceSq;
     float                           nRadiiSubDistSq;
 
+    // Ignore anything outside the root, the root node will update and pick it up eventually
+    if (m_bRootNode)
+        return;
+
     // Move through our updated children vector and determine if any lie outside our radius
     for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
         nDistanceSq = gmtl::length<float, 2>(
@@ -189,9 +197,7 @@ void SphereNode::checkOutsideChildren()
                 gmtl::Vec2f(m_nPosition[0], m_nPosition[2]));
 
         nRadiiSubDistSq = m_nRadius - (*itr)->m_nRadius;
-        //nRadiiSumDistSq = m_nRadius + (*itr)->m_nRadius;
-        //nRadiiDistSq = m_nRadius;
-        
+
         // Determine 0-multiple nodes exiting our maxed out radius
         if (nDistanceSq > nRadiiSubDistSq) {
             //f_printf("Child outside (%p): Distance: %f\n        Radius: %f Position: %f, %f\n", (*itr), nDistanceSq, m_nRadius, m_nPosition[0], m_nPosition[2]);
@@ -248,6 +254,7 @@ void SphereNode::checkOutsideChildren()
         }
 
         // Remove
+        //f_printf("%%%% Removing Sphere %p from sphere %p\n", pBestNode, this);
         removeSphereNode(pBestNode);
         delete pBestNode;
 
@@ -325,8 +332,17 @@ bool SphereNode::addSphereData(SphereData *_data)
     if (pBestNode) {
         pNewNode = new SphereNode(m_nMinRadius, m_nMaxRadius, _data);
 
+        /*
         if ((m_uNodeChildren.size() >= m_nMaxBucketSize)) {
             newNode = createInternalNode();
+
+            if (newNode)
+                pBestNode->addSphereNode(newNode);
+        }
+        */
+
+        if ((pBestNode->m_uNodeChildren.size() >= pBestNode->m_nMaxBucketSize)) {
+            newNode = pBestNode->createInternalNode();
 
             if (newNode)
                 pBestNode->addSphereNode(newNode);
@@ -335,12 +351,10 @@ bool SphereNode::addSphereData(SphereData *_data)
         pBestNode->addSphereNode(pNewNode);
         pBestNode->updateToFitChildren();
 
-        f_printf("Best Fit Node Found: %p for %p\n", pBestNode, pNewNode);
+        //f_printf("Best Fit Node Found: %p for %p\n", pBestNode, pNewNode);
 
         return true;
     } else {
-        f_printf("NOT FOUND, PUSHING TO PARENT\n");
-
         // Push it higher
         return m_pParentNode->addSphereData(_data);
     }
@@ -362,7 +376,7 @@ SphereNode* SphereNode::createInternalNode()
         newNode->addSphereNode(pNode2);
 
         // Then remove the two from our node
-        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); ) {
+        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); /* nothing */ ) {
             if (*itr == pNode1 || *itr == pNode2) {
                 itr = m_uNodeChildren.erase(itr);
             } else {
@@ -370,7 +384,7 @@ SphereNode* SphereNode::createInternalNode()
             }
         }
 
-        f_printf("@@ Created new internal node: %p\n", newNode);            
+        //f_printf("@@ Created new internal node: %p\n", newNode);            
     }
 
     return newNode;
@@ -402,7 +416,7 @@ void SphereNode::removeSphereNode(SphereNode *_node)
         for (size_t i = 0; i < m_uNodeChildren.size(); i++) {
             // Search for the node in our children
             if (m_uNodeChildren[i] == _node) {
-                f_printf("## Removed node %p from %p, Contained %i Data Children, Reinserting...\n", _node, this, dataList.size())
+                //f_printf("## Removed node %p from %p, Contained %i Data Children, Reinserting...\n", _node, this, dataList.size())
 
                 m_uNodeChildren.erase(m_uNodeChildren.begin() + i);
 
@@ -429,8 +443,7 @@ void SphereNode::debugRender(const char* _sSceneManagerName, bool _bRecursive)
         Points.push_back(m_nPosition);
         Points.push_back(m_pParentNode->m_nPosition);
         
-        Ogre::String sLineID = m_sGraphicID + Ogre::String("_PARENT_LINE");
-        Graphic::GraphicManager::getSingleton().updateLine(_sSceneManagerName, sLineID.c_str(), Points);
+        Graphic::GraphicManager::getSingleton().updateLine(_sSceneManagerName, m_sLineID.c_str(), Points);
     }
 
     if (_bRecursive) {
@@ -446,8 +459,7 @@ void SphereNode::clearDebugRender(const char* _sSceneManagerName)
     Graphic::GraphicManager::getSingleton().clearCircle(_sSceneManagerName, m_sGraphicID);
 
     if (m_pParentNode) {
-        Ogre::String sLineID = m_sGraphicID + Ogre::String("_PARENT_LINE");
-        //Graphic::GraphicManager::getSingleton().clearLine(_sSceneManagerName, sLineID.c_str());
+        //Graphic::GraphicManager::getSingleton().clearLine(_sSceneManagerName, m_sLineID.c_str());
     }
 
     for (vector<SphereNode *>::iterator itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
@@ -567,7 +579,7 @@ void SphereNode::updateToFitChildren()
         }
         m_nRadius = nRadius + 1.0f; // Use a epsilon so we're not ping ponging
 
-        if (!m_bRootNode) {
+        if (!m_bRootNode && !m_bDataNode) {
             if (m_nRadius > m_nMaxRadius) {
                 m_nRadius = m_nMaxRadius;
             } else if (m_nRadius < m_nMinRadius) {

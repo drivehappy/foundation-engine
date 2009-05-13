@@ -807,7 +807,7 @@ void GraphicManager::clearLine(const char *_sSceneManagerName, const char *_sID)
                     myManualObject->end();
                 }
             } else {
-                f_printf("[Foundation.GraphicManager] Error: ManualObject is null.\n");
+                //f_printf("[Foundation.GraphicManager] Error: ManualObject is null.\n");
             }
         }
     }
@@ -828,7 +828,7 @@ void GraphicManager::destroyLine(const char *_sSceneManagerName, const char *_sI
                     myManualObject->getParentSceneNode()->detachObject(myManualObject);
                     pSceneManager->destroyManualObject(myManualObject);
                 } else {
-                    f_printf("[Foundation.GraphicManager] Error: ManualObject is null.\n");
+                    //f_printf("[Foundation.GraphicManager] Error: ManualObject is null.\n");
                 }
             } else {
                 //f_printf("[Foundation.GraphicManager] Error: SceneManager doesn't have ManualObject %s.\n", sManualObjectName.c_str());

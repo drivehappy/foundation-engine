@@ -30,6 +30,7 @@ class Unit(Actor):
         self.physics = UnitPhysics()
         self.targetPosition = None
         self.graphic = None
+        self.radiusLineOfSight = 5
 
         self.physics.setPosition(position)
         self.timer = Foundation.Timer()
@@ -55,9 +56,8 @@ class Unit(Actor):
         # And finally, initialize our Unit graphics
         self.initGraphic()
 
-        # RANDOMIZING DEBUGGING
-        ## Handle our total time since last random move
-        self.RANDMOVETIME = 5.0;
+        # SPHERE TREE DEMO
+        self.RANDMOVETIME = 5.0
 
         # Add a non-blocking tasklet to quickly update our physics/graphics
         stackless.tasklet(self.__handleNonblockingTasklet)()
@@ -90,7 +90,7 @@ class Unit(Actor):
         while True:
             deltaTime = self.timer.getTime()
             self.timer.reset()
-            deltaTime = Foundation.f_clamp(deltaTime, 0, 1)
+            deltaTime = Foundation.f_clamp(deltaTime, 0, 0.5)
 
             # RAND MOVE FOR SPHERE TREE
             self.RANDMOVETIME -= deltaTime
@@ -102,6 +102,7 @@ class Unit(Actor):
             self.physics.doTask(deltaTime)
             self.graphic.setPosition(self.physics.getPosition())
             self.sphereData.setPosition(self.physics.getPosition())
+            self.sphereData.setRadius(self.radiusLineOfSight)
 
             if self.shutdownFlag:
                 raise TaskletExit
