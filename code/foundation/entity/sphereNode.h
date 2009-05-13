@@ -117,6 +117,10 @@ namespace Foundation {
             /**
              */
             void removeSphereNode(SphereNode *_node);
+
+            /**
+             */
+            SphereNode* createInternalNode();
             
         friend class SphereTree;
         };

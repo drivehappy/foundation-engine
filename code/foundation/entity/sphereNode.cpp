@@ -35,6 +35,7 @@ SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, SphereD
     m_nRadius = m_nMinRadius;
     m_bRootNode = false;
 
+    m_nMaxBucketSize = 0xDEADC0DE;
     m_bDataNode = true;
     m_pData = _pData;
 
@@ -74,6 +75,7 @@ SphereNode::~SphereNode()
     Graphic::GraphicManager::getSingleton().clearLine("SceneManager0", sLineID.c_str());
     Graphic::GraphicManager::getSingleton().clearCircle("SceneManager0", m_sGraphicID);    
     delete m_sGraphicID;
+    m_pData = NULL;
 }
 
 
@@ -89,7 +91,17 @@ void SphereNode::update()
     // If we're a data node update our node position to our data
     if (m_bDataNode) {
         m_nPosition = m_pData->getPosition();
-    } else {       
+    } else {
+        updateToFitChildren();
+
+        // If we're the root node try to jump start an internal node
+        if (m_uNodeChildren.size() > m_nMaxBucketSize) {
+            SphereNode *internalNode = createInternalNode();
+            if (internalNode) {
+                addSphereNode(internalNode);
+            }
+        }
+
         // Move through our children and update and
         // Generate an interior node list and a data node list
         for (size_t i = 0; i < m_uNodeChildren.size(); /* Do Nothing */) {
@@ -101,20 +113,19 @@ void SphereNode::update()
                 m_uNodeChildren.erase(m_uNodeChildren.begin() + i);
             } 
 
-            /*
             // Check if the child is interior node with 1 child, if so remove
             else if ((!m_uNodeChildren[i]->m_bDataNode && 
                       m_uNodeChildren[i]->m_uNodeChildren.size() == 1))
             {
                 f_printf("%p Removing useless node %p\n", this, m_uNodeChildren[i]);
 
-                //removeSphereNode(m_uNodeChildren[i]);
                 SphereNode *pChild = m_uNodeChildren[i]->m_uNodeChildren[0];
                 delete m_uNodeChildren[i];
                 m_uNodeChildren.erase(m_uNodeChildren.begin() + i);
+                pChild->m_pParentNode = this;
                 m_uNodeChildren.push_back(pChild);
                 i = 0;
-            }*/
+            }
 
             // Child is good, go ahead and update
             else {
@@ -128,19 +139,27 @@ void SphereNode::update()
             }
         }
 
+        updateToFitChildren();
+
         // See if we can fit any of our data nodes into our interior nodes
         for (size_t j = 0; j < vecInterior.size(); j++) {
-            for (size_t i = 0; i < vecData.size(); i++) {
+            for (size_t i = 0; i < vecData.size(); /* nothing */) {
                 SphereNode *pNodeData = (*(vecData.begin() + i));
                 SphereNode *pNodeIntr = (*(vecInterior.begin() + j));
 
                 if (pNodeIntr->canAcceptData(pNodeData->m_pData)) {
                     //f_printf("Moving data node into lower interior node...\n");
 
+                    pNodeIntr->addSphereNode(pNodeData);
                     removeSphereNode(pNodeData);
+                    vecData.erase(vecData.begin() + i);
+                } else {
+                    i++;
                 }
             }
         }
+        vecInterior.clear();
+        vecData.clear();
 
         updateToFitChildren();
 
@@ -187,21 +206,44 @@ void SphereNode::update()
                         pBestNode = vecChildDelete[i];
                     }
                 }
-
+    
+                //
                 // Remove the best node from our list and send it to our parent
+                //
+                vector<SphereData *>            dataList;
+                vector<SphereData *>::iterator  itrData;
+
+                if (!pBestNode->m_bDataNode) {
+                    //f_printf("%%%% Node is Internal Node (%i Children)\n", _node->m_uNodeChildren.size());
+                    for (itr = pBestNode->m_uNodeChildren.begin(); itr != pBestNode->m_uNodeChildren.end(); itr++) {
+                        // Steal the node's child and put it into our parent
+                        if (m_pParentNode)
+                            m_pParentNode->addSphereNode((*itr));
+                        else
+                            addSphereNode((*itr));
+
+                        //f_printf("$$ Moving removed node's child %p to parent %p (%p)\n", (*itr), m_pParentNode, (*itr)->m_pParentNode);
+                    }
+                } else {
+                    //f_printf("%%%% Node is Data Node\n");
+                    dataList.push_back(pBestNode->m_pData);
+                }
+
+                // Remove
                 removeSphereNode(pBestNode);
+                delete pBestNode;
+
+                // Loop through the data and add it to our parent if not root
+                for (itrData = dataList.begin(); itrData != dataList.end(); itrData++) {
+                    if (m_pParentNode)
+                        m_pParentNode->addSphereData((*itrData));
+                    else
+                        addSphereData((*itrData));
+                }
             }
         }
 
         updateToFitChildren();
-    }
-
-    if (!m_bRootNode) {
-        if (m_nRadius > m_nMaxRadius) {
-            m_nRadius = m_nMaxRadius;
-        } else if (m_nRadius < m_nMinRadius) {
-            m_nRadius = m_nMinRadius;
-        }
     }
 }
 
@@ -212,7 +254,7 @@ bool SphereNode::canAcceptData(SphereData *_data)
     nDistance = gmtl::length<float, 3>(_data->getPosition() - m_nPosition);
 
     // Check if this data will fit in our sphere
-    if ( (!m_bDataNode && (nDistance < m_nMaxRadius) && 
+    if ( (!m_bDataNode && (nDistance + (m_nMinRadius * 2.0f) < m_nMaxRadius) && 
         (m_uNodeChildren.size() < m_nMaxBucketSize) ) || m_bRootNode)
     {
         return true;
@@ -231,7 +273,7 @@ SphereNode* SphereNode::getBestFitChild(SphereData *_uData)
     vecDiff = m_nPosition - _uData->getPosition();
     nDistance = gmtl::length(vecDiff);
 
-    if (!m_bDataNode && nDistance > m_nMinRadius && nDistance < m_nMaxRadius && m_uNodeChildren.size() < m_nMaxBucketSize) {
+    if ((!m_bDataNode && nDistance > m_nMinRadius && nDistance < m_nMaxRadius && m_uNodeChildren.size() < m_nMaxBucketSize) || m_bRootNode) {
         // Assume we're the best fit until we check our children
         pBestChild = this;
         nBestDistance = nDistance;
@@ -268,48 +310,51 @@ bool SphereNode::addSphereData(SphereData *_data)
     pNewNode = new SphereNode(m_nMinRadius, m_nMaxRadius, _data);
 
     if (pBestNode) {
+        if ((m_uNodeChildren.size() >= m_nMaxBucketSize)) {
+            newNode = createInternalNode();
+
+            if (newNode)
+                pBestNode->addSphereNode(newNode);
+        }
+
         pBestNode->addSphereNode(pNewNode);
+        pBestNode->updateToFitChildren();
         f_printf("Best Fit Node Found: %p for %p\n", pBestNode, pNewNode);
         return true;
     } else {
         // Check if we're root, if not, push it higher
-        if (!m_bRootNode) {
-            return m_pParentNode->addSphereData(_data);
-        } else {
-            // We're the root, since it fit nowhere else
-            if ((m_uNodeChildren.size() >= m_nMaxBucketSize)) {
-                // Won't fit, we're going to have a create an internal data node
-                SphereNode *pNode1, *pNode2;
-                float nDistance;
-
-                nDistance = getTwoClosestChildren(pNode1, pNode2);
-
-                // Only create this new node if the 2 closest children are below max radius
-                if (nDistance > 0.0f && nDistance < m_nMaxRadius) {
-                    newNode = new SphereNode(m_nMinRadius, m_nMaxRadius, false, m_nMaxBucketSize);
-                    addSphereNode(newNode);
-                    newNode->addSphereNode(pNode1);
-                    newNode->addSphereNode(pNode2);
-
-                    // Then remove the two from our node
-                    for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); ) {
-                        if (*itr == pNode1 || *itr == pNode2) {
-                            itr = m_uNodeChildren.erase(itr);
-                        } else {
-                            itr++;
-                        }
-                    }
-
-                    f_printf("@@ Node is full: Created new internal node: %p\n", newNode);            
-                }
-            }
-
-            addSphereNode(pNewNode);
-            updateToFitChildren();
-
-            return true;
-        }
+        return m_pParentNode->addSphereData(_data);
     }
+}
+
+SphereNode* SphereNode::createInternalNode()
+{
+    vector<SphereNode *>::iterator itr;
+    SphereNode *pNode1, *pNode2;
+    SphereNode *newNode = NULL;
+    float nDistance;
+
+    nDistance = getTwoClosestChildren(pNode1, pNode2);
+
+    // Only create this new node if the 2 closest children are below max radius
+    if (nDistance > 0.0f && nDistance + (m_nMinRadius * 2) < m_nMaxRadius) {
+        newNode = new SphereNode(m_nMinRadius, m_nMaxRadius, false, m_nMaxBucketSize);
+        newNode->addSphereNode(pNode1);
+        newNode->addSphereNode(pNode2);
+
+        // Then remove the two from our node
+        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); ) {
+            if (*itr == pNode1 || *itr == pNode2) {
+                itr = m_uNodeChildren.erase(itr);
+            } else {
+                itr++;
+            }
+        }
+
+        f_printf("@@ Created new internal node: %p\n", newNode);            
+    }
+
+    return newNode;
 }
 
 void SphereNode::addSphereNode(SphereNode *_node)
@@ -338,6 +383,7 @@ void SphereNode::removeSphereNode(SphereNode *_node)
         for (size_t i = 0; i < m_uNodeChildren.size(); i++) {
             // Search for the node in our children
             if (m_uNodeChildren[i] == _node) {
+                /*
                 if (!_node->m_bDataNode) {
                     //f_printf("%%%% Node is Internal Node (%i Children)\n", _node->m_uNodeChildren.size());
                     for (itr = _node->m_uNodeChildren.begin(); itr != _node->m_uNodeChildren.end(); itr++) {
@@ -353,18 +399,20 @@ void SphereNode::removeSphereNode(SphereNode *_node)
                     //f_printf("%%%% Node is Data Node\n");
                     dataList.push_back(_node->m_pData);
                 }
+                */
+                f_printf("## Removed node %p from %p, Contained %i Data Children, Reinserting...\n", _node, this, dataList.size())
 
-                //f_printf("## Removed node %p, Contained %i Data Children, Reinserting...\n", _node, dataList.size())
-
-                delete _node;
+                //delete _node;
                 m_uNodeChildren.erase(m_uNodeChildren.begin() + i);
 
+                /*
                 for (itrData = dataList.begin(); itrData != dataList.end(); itrData++) {
                     if (m_pParentNode)
                         m_pParentNode->addSphereData((*itrData));
                     else
                         addSphereData((*itrData));
                 }
+                */
 
                 updateToFitChildren();
 
@@ -488,8 +536,11 @@ void SphereNode::updateToFitChildren()
         m_nRadius = gmtl::length(nRadiusDistance) / 2.0f;
 
         if (!m_bRootNode) {
-            if (m_nRadius > m_nMaxRadius)
+            if (m_nRadius > m_nMaxRadius) {
                 m_nRadius = m_nMaxRadius;
+            } else if (m_nRadius < m_nMinRadius) {
+                m_nRadius = m_nMinRadius;
+            }
         }
 
         m_nPosition[gmtl::Xelt] = (nMax[gmtl::Xelt] + nMin[gmtl::Xelt]) / 2.0f;
@@ -512,6 +563,9 @@ float SphereNode::getTwoClosestChildren(SphereNode *& _node1, SphereNode *& _nod
     for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
         for (itr2 = m_uNodeChildren.begin(); itr2 != m_uNodeChildren.end(); itr2++) {
             if (*itr == *itr2)
+                continue;
+
+            if (!(*itr)->m_bDataNode || !(*itr2)->m_bDataNode)
                 continue;
 
             nTempVec = (*itr)->getPosition() - (*itr2)->getPosition();
