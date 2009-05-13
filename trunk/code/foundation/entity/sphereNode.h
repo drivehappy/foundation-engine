@@ -71,6 +71,10 @@ namespace Foundation {
              */
             void debugRender(const char* _sSceneManagerName, bool _bRecursive);
 
+            /**
+             */
+            void clearDebugRender(const char* _sSceneManagerName);
+
              
 
         // Constructor Guard

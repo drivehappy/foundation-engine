@@ -134,6 +134,7 @@ namespace Foundation {
                 }
                 */
     
+                void setPaused(bool _bPaused);
         };
 
     };

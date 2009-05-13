@@ -188,6 +188,11 @@ void PhysicsManager_PythonWrap::destroyCollisionEvent(CollisionEvent_PythonWrapp
     PhysicsManager::getSingleton().destroyCollisionEvent(_pEvent);
 }
 
+void PhysicsManager_PythonWrap::setPaused(bool _bPaused)
+{
+    PhysicsManager::getSingleton().setPaused(_bPaused);
+}
+
 // CollisionEvent
 unsigned int CollisionEvent_PythonWrapper::getBody0()
 {
@@ -203,4 +208,3 @@ gmtlVector3_PythonWrapper CollisionEvent_PythonWrapper::getContactPoint()
 {
     return CollisionEvent::getContactPoint();
 }
-
