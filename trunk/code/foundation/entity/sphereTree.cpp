@@ -6,9 +6,9 @@ using namespace Foundation::Entities;
 SphereTree::SphereTree()
 {
     m_nMinRadius = 20;
-    m_nMaxRadius = 120;
+    m_nMaxRadius = 100;
 
-    m_pRoot = new SphereNode(m_nMinRadius, m_nMaxRadius, false, 4);
+    m_pRoot = new SphereNode(m_nMinRadius, m_nMaxRadius, false, 5);
     m_pRoot->m_bRootNode = true;
     m_pRoot->m_pParentNode = NULL;
 }
