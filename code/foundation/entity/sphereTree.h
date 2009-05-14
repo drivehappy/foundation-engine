@@ -46,7 +46,7 @@ namespace Foundation {
 
             /**
              */
-            void debugRender(const char* _sSceneManagerName, int _nRenderLevel);
+            void debugRender(const char* _sSceneManagerName, int _nRenderLevel, char _nTeamBitfieldFlag);
 
             /**
              */

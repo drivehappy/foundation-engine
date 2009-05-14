@@ -24,6 +24,6 @@ class UnitState:
 # Unit Team
 class Team:
     UNKNOWN     = 0x00
-    OBSERVER    = 0x01
-    RED         = 0x10
-    BLUE        = 0x11
+    BLUE        = 0x01
+    RED         = 0x02
+    
