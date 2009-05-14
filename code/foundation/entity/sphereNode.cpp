@@ -204,7 +204,6 @@ void SphereNode::update()
     updateTeamFlags();
 }
 
-/*
 void SphereNode::checkOutsideChildren()
 {
     vector<SphereNode *>::iterator  itr;
@@ -295,7 +294,6 @@ void SphereNode::checkOutsideChildren()
         }
     }
 }
-*/
 
 void SphereNode::checkOutsideChildren(bool bOverload)
 {
@@ -660,6 +658,11 @@ void SphereNode::updateToFitChildren()
                 nRadius = nDistance;
         }
         m_nRadius = nRadius + 1.0f; // Use a epsilon so we're not ping ponging
+
+        if (!m_bRootNode) {
+            if (m_nRadius > m_nMaxRadius)
+                m_nRadius = m_nMaxRadius;
+        }
     }
 }
 
