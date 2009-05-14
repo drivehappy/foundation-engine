@@ -198,6 +198,8 @@ void SphereNode::update()
 
         updateToFitChildren();
     }
+
+    updateTeamFlags();
 }
 
 void SphereNode::checkOutsideChildren()
@@ -703,9 +705,9 @@ void SphereNode::dump(int _level)
             f_printf("  ");
 
         if ((*itr)->m_bDataNode) {
-            f_printf("Data Node (%p): P: %f, %f - R: %f\n", (*itr), (*itr)->m_nPosition[0], (*itr)->m_nPosition[2], (*itr)->m_nRadius);
+            f_printf("Data Node: P: %f, %f - R: %f - T: %i\n", (*itr)->m_nPosition[0], (*itr)->m_nPosition[2], (*itr)->m_nRadius, (*itr)->m_nTeamBitfield);
         } else {
-            f_printf("Internal Node (%p): P: %f, %f - R: %f\n", (*itr), (*itr)->m_nPosition[0], (*itr)->m_nPosition[2], (*itr)->m_nRadius);
+            f_printf("Internal Node: P: %f, %f - R: %f - T: %i\n", (*itr)->m_nPosition[0], (*itr)->m_nPosition[2], (*itr)->m_nRadius, (*itr)->m_nTeamBitfield);
             (*itr)->dump(_level + 1);
         }
     }
@@ -765,4 +767,22 @@ SphereNode* SphereNode::findFurthestChild()
     }
 
     return pBestNode;
+}
+
+void SphereNode::updateTeamFlags()
+{
+    vector<SphereNode *>::iterator itr;
+
+    if (m_bDataNode) {
+        if (m_pData->getTeam()) {
+            m_nTeamBitfield = 1 << 0;
+        } else {
+            m_nTeamBitfield = 1 << 1;
+        }
+    } else {
+        m_nTeamBitfield = 0;
+        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+            m_nTeamBitfield |= (*itr)->m_nTeamBitfield;
+        }
+    }
 }

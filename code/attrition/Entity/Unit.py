@@ -83,7 +83,7 @@ class Unit(Actor):
 
         elif msg == Message.UNIT_SETTEAM:
             HTTPLogger().writeContent(LoggerError.SUCCESS, "Team set to %i" % (msgdata[0]))
-            self.team = msgdata[0]
+            self.setTeam(msgdata[0])
 
     def __handleNonblockingTasklet(self):
         while True:
@@ -106,7 +106,16 @@ class Unit(Actor):
                 raise TaskletExit
             stackless.schedule()
 
-
+    def setTeam(self, team):
+        self.team = team
+        
+        if (self.team == Team.RED):
+            self.sphereData.setTeam(False)
+            self.graphic.setMaterial(self.type["Material_RedTeam"])
+        else:
+            self.sphereData.setTeam(True)
+            self.graphic.setMaterial(self.type["Material_BlueTeam"])
+            
     # ------------------------------------------
     # Unit Creation
     def createUnit(self, type):

@@ -114,6 +114,7 @@ namespace Foundation {
             char                   *m_sGraphicID;
             Ogre::String            m_sLineID;
             float                   m_nChildAreaFactor;
+            char                    m_nTeamBitfield;
             
             /**
              */
@@ -150,6 +151,10 @@ namespace Foundation {
             /**
              */
             SphereNode* createInternalNode();
+
+            /**
+             */
+            void updateTeamFlags();
             
         friend class SphereTree;
         };

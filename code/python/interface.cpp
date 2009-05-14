@@ -610,6 +610,7 @@ BOOST_PYTHON_MODULE(FoundationPython)
 
     class_<Entities::SphereData_PythonWrapper, boost::noncopyable>("SphereData")
         .def("getPosition", &Entities::SphereData_PythonWrapper::getPosition)
+        .def("setTeam", &Entities::SphereData_PythonWrapper::setTeam)
         .def("setPosition", &Entities::SphereData_PythonWrapper::setPosition)
         .def("getRadius", &Entities::SphereData_PythonWrapper::getRadius)
         .def("setRadius", &Entities::SphereData_PythonWrapper::setRadius)

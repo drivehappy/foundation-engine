@@ -445,10 +445,10 @@ def main(argv):
 
         # Spin up some units
         CommandCenter = EntityManager.addUnit("CommandCenter", Foundation.Vector3(400, 20, 400))
-        CommandCenter.team = Team.RED
+        CommandCenter.setTeam(Team.RED)
 
         CommandCenter = EntityManager.addUnit("CommandCenter", Foundation.Vector3(-400, 20, -400))
-        CommandCenter.team = Team.BLUE
+        CommandCenter.setTeam(Team.BLUE)
 
         '''
         for i in range(0, 150):
