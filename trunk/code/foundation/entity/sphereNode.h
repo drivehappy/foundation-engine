@@ -77,7 +77,7 @@ namespace Foundation {
 
             /**
              */
-            void debugRender(const char* _sSceneManagerName, bool _bRecursive, int _nRenderLevel, int _nLevel);
+            void debugRender(const char* _sSceneManagerName, bool _bRecursive, char _nTeamBitfieldFlag, int _nRenderLevel, int _nLevel);
 
             /**
              */

@@ -23,6 +23,7 @@ SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius)
     Graphic::GraphicManager::getSingleton().addLine("SceneManager0", m_sLineID.c_str(), Points, 0.0f, 0.0f, 1.0f);
 
     m_nChildAreaFactor = 100.0f;
+    m_nTeamBitfield = 0;
 }
 
 SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, SphereData *_pData)
@@ -46,6 +47,7 @@ SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, SphereD
     Graphic::GraphicManager::getSingleton().addLine("SceneManager0", m_sLineID.c_str(), Points, 0.0f, 0.0f, 1.0f);
 
     m_nChildAreaFactor = 100.0f;
+    m_nTeamBitfield = 0;
 }
 
 SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, bool _bDataNode, unsigned int _nMaxBucketSize)
@@ -68,6 +70,7 @@ SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, bool _b
     Graphic::GraphicManager::getSingleton().addLine("SceneManager0", m_sLineID.c_str(), Points, 0.0f, 0.0f, 1.0f);
 
     m_nChildAreaFactor = 100.0f;
+    m_nTeamBitfield = 0;
 }
 
 SphereNode::~SphereNode()
@@ -171,10 +174,9 @@ void SphereNode::update()
                 vecInterior.push_back(m_uNodeChildren[i]);
         }
 
-
         // See if we can fit any of our data nodes into our interior nodes
         for (size_t j = 0; j < vecInterior.size(); j++) {
-            for (size_t i = 0; i < vecData.size(); /* nothing */) {
+            for (size_t i = 0; i < vecData.size(); ) {
                 SphereNode *pNodeData = (*(vecData.begin() + i));
                 SphereNode *pNodeIntr = (*(vecInterior.begin() + j));
 
@@ -193,7 +195,7 @@ void SphereNode::update()
         updateToFitChildren();
 
         if (!m_bRootNode) {
-            checkOutsideChildren(true);
+            checkOutsideChildren();
         }
 
         updateToFitChildren();
@@ -491,30 +493,51 @@ void SphereNode::removeSphereNode(SphereNode *_node)
     }
 }
 
-void SphereNode::debugRender(const char* _sSceneManagerName, bool _bRecursive, int _nRenderLevel, int _nLevel)
+void SphereNode::debugRender(const char* _sSceneManagerName, bool _bRecursive, char _nTeamBitfieldFlag, int _nRenderLevel, int _nLevel)
 {
     gmtl::Vec3f nPosition = m_nPosition;
     
     nPosition[gmtl::Yelt] = 20.0f;
 
-    // Do Render Circle
-    Graphic::GraphicManager::getSingleton().updateCircle(_sSceneManagerName, m_sGraphicID, nPosition, m_nRadius, gmtl::Yelt);
+    // Check to see if we can render based on our bitfield
+    char nTemp = (m_nTeamBitfield & _nTeamBitfieldFlag);
 
-    if (_nLevel >= _nRenderLevel) {
-        // Render a line from our center to our parent's center
-        if (m_pParentNode) {
-            vector<gmtl::Vec3f> Points;
-            Points.push_back(m_nPosition);
-            Points.push_back(m_pParentNode->m_nPosition);
-            
-            Graphic::GraphicManager::getSingleton().updateLine(_sSceneManagerName, m_sLineID.c_str(), Points);
-        }
-    }
+    if (nTemp) {
+        // Do Render Circle
+        Graphic::GraphicManager::getSingleton().updateCircle(_sSceneManagerName, m_sGraphicID, nPosition, m_nRadius, gmtl::Yelt);
 
-    if (_bRecursive) {
-        for (vector<SphereNode *>::iterator itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
-            (*itr)->debugRender(_sSceneManagerName, _bRecursive, _nRenderLevel, _nLevel);
+        if (_nLevel >= _nRenderLevel) {
+            // Render a line from our center to our parent's center
+            if (m_pParentNode) {
+                vector<gmtl::Vec3f> Points;
+                Points.push_back(m_nPosition);
+                Points.push_back(m_pParentNode->m_nPosition);
+                
+                Graphic::GraphicManager::getSingleton().updateLine(_sSceneManagerName, m_sLineID.c_str(), Points);
+            }
         }
+
+        if (_bRecursive) {
+            for (vector<SphereNode *>::iterator itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+                (*itr)->debugRender(_sSceneManagerName, _bRecursive, _nTeamBitfieldFlag, _nRenderLevel, _nLevel + 1);
+            }
+        }
+    } else if (m_bDataNode) {
+        // Do Render Circle
+        Graphic::GraphicManager::getSingleton().updateCircle(_sSceneManagerName, m_sGraphicID, nPosition, m_nRadius, gmtl::Yelt);
+
+        if (_nLevel >= _nRenderLevel) {
+            // Render a line from our center to our parent's center
+            if (m_pParentNode) {
+                vector<gmtl::Vec3f> Points;
+                Points.push_back(m_nPosition);
+                Points.push_back(m_pParentNode->m_nPosition);
+                
+                Graphic::GraphicManager::getSingleton().updateLine(_sSceneManagerName, m_sLineID.c_str(), Points);
+            }
+        }
+    } else {
+        clearDebugRender(_sSceneManagerName);
     }
 }
 
@@ -734,7 +757,11 @@ float SphereNode::calcCurrentChildAreaFactor()
         nChildFactor = (gmtl::Math::PI * m_nRadius * m_nRadius);
     } else {
         for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
-            nChildFactor += ((gmtl::Math::PI * m_nRadius * m_nRadius) / (*itr)->calcCurrentChildAreaFactor()) - 20.0f /* Interior Node factor */;
+            if ((*itr)->m_bDataNode) {
+                nChildFactor += ((gmtl::Math::PI * m_nRadius * m_nRadius) / (*itr)->calcCurrentChildAreaFactor());
+            } else {
+                nChildFactor += ((gmtl::Math::PI * m_nRadius * m_nRadius) / (*itr)->calcCurrentChildAreaFactor()) - 20.0f /* Interior Node factor */;
+            }
         }
     }
 

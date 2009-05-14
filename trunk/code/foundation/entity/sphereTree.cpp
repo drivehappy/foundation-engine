@@ -78,9 +78,9 @@ void SphereTree::dump()
     f_printf("========================================================================\n");
 }
 
-void SphereTree::debugRender(const char* _sSceneManagerName, int _nRenderLevel)
+void SphereTree::debugRender(const char* _sSceneManagerName, int _nRenderLevel, char _nTeamBitfieldFlag)
 {
-    m_pRoot->debugRender(_sSceneManagerName, true, _nRenderLevel, 0);
+    m_pRoot->debugRender(_sSceneManagerName, true, _nTeamBitfieldFlag, _nRenderLevel, 0);
 }
 
 void SphereTree::clearDebugRender(const char* _sSceneManagerName)

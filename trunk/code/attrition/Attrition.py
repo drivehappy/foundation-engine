@@ -71,6 +71,7 @@ RenderSphereTreeLevel = 0
 Pause = False
 SphereTreeBucketSize = 10
 SphereTreeSpeedFactor = 1
+SphereTreeTeamFlags = 3
 
 # ------------------------------------------------
 # InputWork
@@ -78,7 +79,7 @@ def doInput(_nDeltaTime):
     global MouseStateChange, KeyboardStateChange, Joystick0StateChange, Joystick1StateChange
     global TimerKeyDelay
     global SelectionBounds, SelectionWorldBounds, SelectedEntityList
-    global RenderSphereTree, Pause, SphereTreeBucketSize, SphereTreeSpeedFactor, RenderSphereTreeLevel
+    global RenderSphereTree, Pause, SphereTreeBucketSize, SphereTreeSpeedFactor, RenderSphereTreeLevel, SphereTreeTeamFlags
 
     resetKey = False
     mouseState, keyboardState, joystickState = Input.Manager.consumeEvent(InputManager, GUIManager)
@@ -119,16 +120,29 @@ def doInput(_nDeltaTime):
                         if (SphereTreeBucketSize > 20):
                             SphereTreeBucketSize = 20
 
-                    '''
                     if KeyIndex == Foundation.Keycode.K:
-                        RenderSphereTreeLevel -= 1
-                        if (RenderSphereTreeLevel < 0):
-                            RenderSphereTreeLevel = 0
+                        nTemp = SphereTreeTeamFlags & 0x02
+                        print nTemp
+                        if nTemp == 0x00:
+                            nTemp = 0x02
+                            SphereTreeTeamFlags |= nTemp
+                            print "Red Team Rendering ON:", SphereTreeTeamFlags
+                        else:
+                            nTemp = 0x01
+                            print "Red Team Rendering OFF:", SphereTreeTeamFlags
+                            SphereTreeTeamFlags &= nTemp
+                            
                     elif KeyIndex == Foundation.Keycode.L:
-                        RenderSphereTreeLevel += 1
-                        if (RenderSphereTreeLevel > 10):
-                            RenderSphereTreeLevel = 10
-                    '''
+                        nTemp = SphereTreeTeamFlags & 0x01
+                        print nTemp
+                        if nTemp == 0x00:
+                            nTemp = 0x01
+                            SphereTreeTeamFlags |= nTemp
+                            print "Blue Team Rendering ON:", SphereTreeTeamFlags
+                        else:
+                            nTemp = 0x02
+                            print "Blue Team Rendering OFF:", SphereTreeTeamFlags
+                            SphereTreeTeamFlags &= nTemp
                     
                     if KeyIndex == Foundation.Keycode.SPACE:
                         EntityManager.sphereTree.dump()
@@ -371,7 +385,7 @@ def onSelection(channel, header, data, size):
 # Main Tasklets
 def schedulerTasklet():
     global EntityManager, PhysicsManager
-    global RenderSphereTree, Pause, SphereTreeBucketSize, SphereTreeSpeedFactor, RenderSphereTreeLevel
+    global RenderSphereTree, Pause, SphereTreeBucketSize, SphereTreeSpeedFactor, RenderSphereTreeLevel, SphereTreeTeamFlags
     
     uMainTimer = Foundation.Timer()
     nDeltaTime = 0
@@ -401,7 +415,7 @@ def schedulerTasklet():
         EntityManager.sphereTree.setMaxBucketSize(SphereTreeBucketSize)
         EntityManager.sphereTree.update()
         if RenderSphereTree:
-            EntityManager.sphereTree.debugRender("SceneManager0", RenderSphereTreeLevel)
+            EntityManager.sphereTree.debugRender("SceneManager0", RenderSphereTreeLevel, SphereTreeTeamFlags)
         else:
             EntityManager.sphereTree.clearDebugRender("SceneManager0")
 
