@@ -26,9 +26,18 @@ namespace Foundation {
              */
             void setRadius(const float _nRadius);
 
+            /**
+             */
+            void setTeam(bool _bBlueTeam);
+
+            /**
+             */
+            bool getTeam() { return m_bBlueTeam; };
+
         protected:
             float           m_nRadius;
             gmtl::Vec3f     m_nPosition;
+            bool            m_bBlueTeam;
         };
 
     };

@@ -29,3 +29,8 @@ void SphereData::setRadius(const float _nRadius)
 {
     m_nRadius = _nRadius;
 }
+
+void SphereData::setTeam(bool _bBlueTeam)
+{
+    m_bBlueTeam = _bBlueTeam;
+}
