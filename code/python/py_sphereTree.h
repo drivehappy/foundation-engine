@@ -36,7 +36,7 @@ namespace Foundation
 
 			void addData(SphereData_PythonWrapper *_uData);
 
-            void debugRender(const char* _sSceneManagerName);
+            void debugRender(const char* _sSceneManagerName, int _nRenderLevel);
 		};
 	}
 };

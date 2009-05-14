@@ -77,7 +77,7 @@ namespace Foundation {
 
             /**
              */
-            void debugRender(const char* _sSceneManagerName, bool _bRecursive);
+            void debugRender(const char* _sSceneManagerName, bool _bRecursive, int _nRenderLevel, int _nLevel);
 
             /**
              */
@@ -113,11 +113,23 @@ namespace Foundation {
             unsigned int            m_nMaxBucketSize;
             char                   *m_sGraphicID;
             Ogre::String            m_sLineID;
+            float                   m_nChildAreaFactor;
             
+            /**
+             */
+            inline float calcCurrentChildAreaFactor();
+
+            /**
+             */
+            SphereNode* findFurthestChild();
 
             /**
              */
             void checkOutsideChildren();
+
+            /**
+             */
+            void checkOutsideChildren(bool bOverload);
 
             /**
              */

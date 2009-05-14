@@ -23,7 +23,7 @@ class Actor:
                 raise TaskletExit
 
             self.tasklet(self.channel.receive())
-            stackless.schedule()
+            #stackless.schedule()
             
     def shutdown(self):
         self.shutdownFlag = True

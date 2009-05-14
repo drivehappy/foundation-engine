@@ -61,7 +61,6 @@ class Unit(Actor):
 
         # Add a non-blocking tasklet to quickly update our physics/graphics
         stackless.tasklet(self.__handleNonblockingTasklet)()
-        stackless.schedule()
 
     def __handleTasklet(self, channelData):
         channel, msg, msgdata = channelData[0], channelData[1], channelData[2:]
