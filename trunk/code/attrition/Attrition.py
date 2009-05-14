@@ -67,9 +67,9 @@ SelectedEntityList      = []
 
 # Sphere Tree Demo CS709
 RenderSphereTree = True
-RenderSphereTreeLevel = 5
+RenderSphereTreeLevel = 0
 Pause = False
-SphereTreeBucketSize = 3
+SphereTreeBucketSize = 10
 SphereTreeSpeedFactor = 1
 
 # ------------------------------------------------
@@ -78,7 +78,7 @@ def doInput(_nDeltaTime):
     global MouseStateChange, KeyboardStateChange, Joystick0StateChange, Joystick1StateChange
     global TimerKeyDelay
     global SelectionBounds, SelectionWorldBounds, SelectedEntityList
-    global RenderSphereTree, Pause, SphereTreeBucketSize, SphereTreeSpeedFactor
+    global RenderSphereTree, Pause, SphereTreeBucketSize, SphereTreeSpeedFactor, RenderSphereTreeLevel
 
     resetKey = False
     mouseState, keyboardState, joystickState = Input.Manager.consumeEvent(InputManager, GUIManager)
@@ -118,16 +118,18 @@ def doInput(_nDeltaTime):
                         SphereTreeBucketSize += 1
                         if (SphereTreeBucketSize > 20):
                             SphereTreeBucketSize = 20
+
                     '''
                     if KeyIndex == Foundation.Keycode.K:
-                        SphereTreeSpeedFactor /= 2.0
-                        if (SphereTreeSpeedFactor < 0.25):
-                            SphereTreeSpeedFactor = 0.25
+                        RenderSphereTreeLevel -= 1
+                        if (RenderSphereTreeLevel < 0):
+                            RenderSphereTreeLevel = 0
                     elif KeyIndex == Foundation.Keycode.L:
-                        SphereTreeSpeedFactor *= 2.0
-                        if (SphereTreeSpeedFactor > 8.0):
-                            SphereTreeSpeedFactor = 8.0
+                        RenderSphereTreeLevel += 1
+                        if (RenderSphereTreeLevel > 10):
+                            RenderSphereTreeLevel = 10
                     '''
+                    
                     if KeyIndex == Foundation.Keycode.SPACE:
                         EntityManager.sphereTree.dump()
                     elif KeyIndex == Foundation.Keycode.B:
@@ -369,7 +371,7 @@ def onSelection(channel, header, data, size):
 # Main Tasklets
 def schedulerTasklet():
     global EntityManager, PhysicsManager
-    global RenderSphereTree, Pause, SphereTreeBucketSize, SphereTreeSpeedFactor
+    global RenderSphereTree, Pause, SphereTreeBucketSize, SphereTreeSpeedFactor, RenderSphereTreeLevel
     
     uMainTimer = Foundation.Timer()
     nDeltaTime = 0
@@ -399,15 +401,13 @@ def schedulerTasklet():
         EntityManager.sphereTree.setMaxBucketSize(SphereTreeBucketSize)
         EntityManager.sphereTree.update()
         if RenderSphereTree:
-            EntityManager.sphereTree.debugRender("SceneManager0")
+            EntityManager.sphereTree.debugRender("SceneManager0", RenderSphereTreeLevel)
         else:
             EntityManager.sphereTree.clearDebugRender("SceneManager0")
 
         PhysicsManager.setPaused(Pause)
         if (not Pause):
             #EntityManager.deltaTime = nDeltaTime
-            
-            
 
             stackless.schedule()      
 
@@ -450,13 +450,16 @@ def main(argv):
         CommandCenter = EntityManager.addUnit("CommandCenter", Foundation.Vector3(-400, 20, -400))
         CommandCenter.team = Team.BLUE
 
-        for i in range(0, 20):
+        '''
+        for i in range(0, 150):
+            #print "Creating Unit", i
             Scout = EntityManager.addUnit("Scout", Foundation.Vector3(-400, 20, -400))
             Scout.team = Team.RED
 
             Scout = EntityManager.addUnit("Scout", Foundation.Vector3(400, 20, 400))
             Scout.team = Team.BLUE
-
+        '''
+        
         # Start
         stackless.tasklet(schedulerTasklet)()
 

@@ -46,7 +46,7 @@ namespace Foundation {
 
             /**
              */
-            void debugRender(const char* _sSceneManagerName);
+            void debugRender(const char* _sSceneManagerName, int _nRenderLevel);
 
             /**
              */

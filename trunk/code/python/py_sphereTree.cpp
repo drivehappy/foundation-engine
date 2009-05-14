@@ -28,8 +28,8 @@ void SphereTree_PythonWrapper::addData(SphereData_PythonWrapper *_uData)
 {
     SphereTree::addData(_uData);
 }
-void SphereTree_PythonWrapper::debugRender(const char* _sSceneManagerName)
+void SphereTree_PythonWrapper::debugRender(const char* _sSceneManagerName, int _nRenderLevel)
 {
-    SphereTree::debugRender(_sSceneManagerName);
+    SphereTree::debugRender(_sSceneManagerName, _nRenderLevel);
 }
 

@@ -20,7 +20,9 @@ SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius)
     vector<gmtl::Vec3f> Points;
     Points.push_back(gmtl::Vec3f(0, 0, 0));
     m_sLineID = m_sGraphicID + Ogre::String("_PARENT_LINE");
-    Graphic::GraphicManager::getSingleton().addLine("SceneManager0", m_sLineID.c_str(), Points, 1.0f, 0.0f, 0.0f);
+    Graphic::GraphicManager::getSingleton().addLine("SceneManager0", m_sLineID.c_str(), Points, 0.0f, 0.0f, 1.0f);
+
+    m_nChildAreaFactor = 100.0f;
 }
 
 SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, SphereData *_pData)
@@ -41,7 +43,9 @@ SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, SphereD
     vector<gmtl::Vec3f> Points;
     Points.push_back(gmtl::Vec3f(0, 0, 0));
     m_sLineID = m_sGraphicID + Ogre::String("_PARENT_LINE");
-    Graphic::GraphicManager::getSingleton().addLine("SceneManager0", m_sLineID.c_str(), Points, 1.0f, 0.0f, 0.0f);
+    Graphic::GraphicManager::getSingleton().addLine("SceneManager0", m_sLineID.c_str(), Points, 0.0f, 0.0f, 1.0f);
+
+    m_nChildAreaFactor = 100.0f;
 }
 
 SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, bool _bDataNode, unsigned int _nMaxBucketSize)
@@ -61,7 +65,9 @@ SphereNode::SphereNode(const float _nMinRadius, const float _nMaxRadius, bool _b
     vector<gmtl::Vec3f> Points;
     Points.push_back(gmtl::Vec3f(0, 0, 0));
     m_sLineID = m_sGraphicID + Ogre::String("_PARENT_LINE");
-    Graphic::GraphicManager::getSingleton().addLine("SceneManager0", m_sLineID.c_str(), Points, 1.0f, 0.0f, 0.0f);
+    Graphic::GraphicManager::getSingleton().addLine("SceneManager0", m_sLineID.c_str(), Points, 0.0f, 0.0f, 1.0f);
+
+    m_nChildAreaFactor = 100.0f;
 }
 
 SphereNode::~SphereNode()
@@ -97,10 +103,31 @@ void SphereNode::update()
     } else {
         updateToFitChildren();
 
+        /*
+        // If we consist of an internal node and data node try to combine
+        if (m_uNodeChildren.size() == 2) {
+            //f_printf("Detected DataNode and Internal\n");
+            if ((m_uNodeChildren[0]->m_bDataNode && !m_uNodeChildren[1]->m_bDataNode)) {
+                SphereNode *pChild = m_uNodeChildren[0];
+                m_uNodeChildren.erase(m_uNodeChildren.begin() + 0);
+                m_uNodeChildren[1]->addSphereNode(pChild);
+            } 
+
+            else if ((m_uNodeChildren[1]->m_bDataNode && !m_uNodeChildren[0]->m_bDataNode)) {
+                SphereNode *pChild = m_uNodeChildren[1];
+                m_uNodeChildren.erase(m_uNodeChildren.begin() + 1);
+                m_uNodeChildren[0]->addSphereNode(pChild);
+            }
+        }
+        */
+
+        //updateToFitChildren();
+
         // If we're the root node try to jump start an internal node
         if (m_uNodeChildren.size() > m_nMaxBucketSize) {
-            SphereNode *internalNode = createInternalNode();
-            if (internalNode) {
+            SphereNode *internalNode;
+            
+            while (internalNode = createInternalNode()) {
                 addSphereNode(internalNode);
             }
         }
@@ -112,8 +139,6 @@ void SphereNode::update()
         for (size_t i = 0; i < m_uNodeChildren.size(); /* Do Nothing */) {
             // First check to see if the child is an interior node with no children, if so remove
             if (!m_uNodeChildren[i]->m_bDataNode && m_uNodeChildren[i]->m_uNodeChildren.size() <= 0) {
-                //f_printf("%p Removing empty node %p\n", this, m_uNodeChildren[i]);
-
                 delete m_uNodeChildren[i];
                 m_uNodeChildren.erase(m_uNodeChildren.begin() + i);
             } 
@@ -122,14 +147,13 @@ void SphereNode::update()
             else if ((!m_uNodeChildren[i]->m_bDataNode && 
                       m_uNodeChildren[i]->m_uNodeChildren.size() == 1))
             {
-                //f_printf("%p Removing useless node %p\n", this, m_uNodeChildren[i]);
-
                 SphereNode *pChild = m_uNodeChildren[i]->m_uNodeChildren[0];
                 delete m_uNodeChildren[i];
                 m_uNodeChildren.erase(m_uNodeChildren.begin() + i);
-                pChild->m_pParentNode = this;
-                m_uNodeChildren.push_back(pChild);
-                i = 0;
+                //pChild->m_pParentNode = this;
+                //m_uNodeChildren.push_back(pChild);
+                addSphereNode(pChild);
+                i = 0;  // Startover
             }
 
             // Child is good, go ahead and update
@@ -155,8 +179,6 @@ void SphereNode::update()
                 SphereNode *pNodeIntr = (*(vecInterior.begin() + j));
 
                 if (pNodeIntr->canAcceptData(pNodeData->m_pData)) {
-                    //f_printf("Moving data node into lower interior node...\n");
-
                     pNodeIntr->addSphereNode(pNodeData);
                     removeSphereNode(pNodeData);
                     vecData.erase(vecData.begin() + i);
@@ -171,7 +193,7 @@ void SphereNode::update()
         updateToFitChildren();
 
         if (!m_bRootNode) {
-            checkOutsideChildren();
+            checkOutsideChildren(true);
         }
 
         updateToFitChildren();
@@ -269,15 +291,59 @@ void SphereNode::checkOutsideChildren()
     }
 }
 
+void SphereNode::checkOutsideChildren(bool bOverload)
+{
+    vector<SphereNode *>::iterator itr;
+    float nCurrentFactor = calcCurrentChildAreaFactor();
+
+    if (nCurrentFactor > m_nChildAreaFactor) {
+        // Find the furthest node and remove it
+        SphereNode *pBestNode = findFurthestChild();
+
+        //
+        // Remove the best node from our list and send it to our parent
+        //
+        vector<SphereData *>            dataList;
+        vector<SphereData *>::iterator  itrData;
+
+        if (!pBestNode->m_bDataNode) {
+            for (itr = pBestNode->m_uNodeChildren.begin(); itr != pBestNode->m_uNodeChildren.end(); itr++) {
+                // Steal the node's child and put it into our parent
+                if (m_pParentNode)
+                    m_pParentNode->addSphereNode((*itr));
+                else
+                    addSphereNode((*itr));
+            }
+        } else {
+            dataList.push_back(pBestNode->m_pData);
+        }
+
+        // Remove
+        removeSphereNode(pBestNode);
+        delete pBestNode;
+
+        // Loop through the data and add it to our parent if not root
+        for (itrData = dataList.begin(); itrData != dataList.end(); itrData++) {
+            if (m_pParentNode)
+                m_pParentNode->addSphereData((*itrData));
+            else
+                addSphereData((*itrData));
+        }
+
+        //f_printf("%p Current factor is %f, cutoff is %f\n", this, nCurrentFactor, m_nChildAreaFactor);
+    }
+}
+
 bool SphereNode::canAcceptData(SphereData *_data)
 {
     float nDistance;
     
-    nDistance = gmtl::length<float, 3>(_data->getPosition() - m_nPosition);
+    nDistance = gmtl::length<float, 3>(_data->getPosition() - m_nPosition); // - (_data->getRadius() * 2.0f);
 
     // Check if this data will fit in our sphere
-    if ( (!m_bDataNode && (nDistance + (m_nMinRadius * 2.0f) < m_nMaxRadius) && 
+    if ( (!m_bDataNode && (nDistance < m_nRadius) && 
         (m_uNodeChildren.size() < m_nMaxBucketSize) ) || m_bRootNode)
+//    if ( (!m_bDataNode && (nDistance < m_nRadius)) || m_bRootNode)
     {
         return true;
     }
@@ -361,22 +427,25 @@ SphereNode* SphereNode::createInternalNode()
 
     nDistance = getTwoClosestChildren(pNode1, pNode2);
 
-    // Only create this new node if the 2 closest children are below max radius
-    if (nDistance > 0.0f && nDistance + (m_nMinRadius * 2) < m_nMaxRadius) {
-        newNode = new SphereNode(m_nMinRadius, m_nMaxRadius, false, m_nMaxBucketSize);
-        newNode->addSphereNode(pNode1);
-        newNode->addSphereNode(pNode2);
+    if (pNode1 && pNode2) {
+        // Only create this new node if the 2 closest children are below max radius
+        if ((nDistance > 0.0f && nDistance < m_nMaxRadius) ||
+            (!pNode1->m_bDataNode && pNode2->m_bDataNode) ||
+            (!pNode2->m_bDataNode && pNode1->m_bDataNode) )
+        {
+            newNode = new SphereNode(m_nMinRadius, m_nMaxRadius, false, m_nMaxBucketSize);
+            newNode->addSphereNode(pNode1);
+            newNode->addSphereNode(pNode2);
 
-        // Then remove the two from our node
-        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); /* nothing */ ) {
-            if (*itr == pNode1 || *itr == pNode2) {
-                itr = m_uNodeChildren.erase(itr);
-            } else {
-                itr++;
-            }
+            // Then remove the two from our node
+            for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); /* nothing */ ) {
+                if (*itr == pNode1 || *itr == pNode2) {
+                    itr = m_uNodeChildren.erase(itr);
+                } else {
+                    itr++;
+                }
+            }           
         }
-
-        //f_printf("@@ Created new internal node: %p\n", newNode);            
     }
 
     return newNode;
@@ -420,7 +489,7 @@ void SphereNode::removeSphereNode(SphereNode *_node)
     }
 }
 
-void SphereNode::debugRender(const char* _sSceneManagerName, bool _bRecursive)
+void SphereNode::debugRender(const char* _sSceneManagerName, bool _bRecursive, int _nRenderLevel, int _nLevel)
 {
     gmtl::Vec3f nPosition = m_nPosition;
     
@@ -429,18 +498,20 @@ void SphereNode::debugRender(const char* _sSceneManagerName, bool _bRecursive)
     // Do Render Circle
     Graphic::GraphicManager::getSingleton().updateCircle(_sSceneManagerName, m_sGraphicID, nPosition, m_nRadius, gmtl::Yelt);
 
-    // Render a line from our center to our parent's center
-    if (m_pParentNode) {
-        vector<gmtl::Vec3f> Points;
-        Points.push_back(m_nPosition);
-        Points.push_back(m_pParentNode->m_nPosition);
-        
-        Graphic::GraphicManager::getSingleton().updateLine(_sSceneManagerName, m_sLineID.c_str(), Points);
+    if (_nLevel >= _nRenderLevel) {
+        // Render a line from our center to our parent's center
+        if (m_pParentNode) {
+            vector<gmtl::Vec3f> Points;
+            Points.push_back(m_nPosition);
+            Points.push_back(m_pParentNode->m_nPosition);
+            
+            Graphic::GraphicManager::getSingleton().updateLine(_sSceneManagerName, m_sLineID.c_str(), Points);
+        }
     }
 
     if (_bRecursive) {
         for (vector<SphereNode *>::iterator itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
-            (*itr)->debugRender(_sSceneManagerName, _bRecursive);
+            (*itr)->debugRender(_sSceneManagerName, _bRecursive, _nRenderLevel, _nLevel);
         }
     }
 }
@@ -558,6 +629,7 @@ void SphereNode::updateToFitChildren()
         m_nRadius = gmtl::length(nRadiusDistance) / 2.0f;
         */
 
+        //*
         // Find the furthest point + radius and use it
         nRadius = m_nMinRadius;
         for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
@@ -570,14 +642,7 @@ void SphereNode::updateToFitChildren()
                 nRadius = nDistance;
         }
         m_nRadius = nRadius + 1.0f; // Use a epsilon so we're not ping ponging
-
-        if (!m_bRootNode && !m_bDataNode) {
-            if (m_nRadius > m_nMaxRadius) {
-                m_nRadius = m_nMaxRadius;
-            } else if (m_nRadius < m_nMinRadius) {
-                m_nRadius = m_nMinRadius;
-            }
-        }
+        //*/
     }
 }
 
@@ -587,8 +652,12 @@ float SphereNode::getTwoClosestChildren(SphereNode *& _node1, SphereNode *& _nod
     float nDistanceSq = HUGE_VAL, nTemp;
     gmtl::Vec3f nTempVec;
 
-    if (m_uNodeChildren.size() < 2)
+    if (m_uNodeChildren.size() < 2) {
+        _node1 = NULL;
+        _node2 = NULL;
+
         return 0.0f;
+    }
 
     for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
         for (itr2 = m_uNodeChildren.begin(); itr2 != m_uNodeChildren.end(); itr2++) {
@@ -654,3 +723,46 @@ void SphereNode::setMaxBucketSize(unsigned int _size, bool _recursive)
     }
 }
 
+float SphereNode::calcCurrentChildAreaFactor()
+{
+    float nChildFactor = 0.0f;
+    vector<SphereNode *>::iterator itr;
+
+    if (m_bDataNode) {
+        nChildFactor = (gmtl::Math::PI * m_nRadius * m_nRadius);
+    } else {
+        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+            nChildFactor += ((gmtl::Math::PI * m_nRadius * m_nRadius) / (*itr)->calcCurrentChildAreaFactor()) - 20.0f /* Interior Node factor */;
+        }
+    }
+
+    return nChildFactor;
+}
+
+SphereNode* SphereNode::findFurthestChild()
+{
+    vector<SphereNode *>::iterator itr;
+    SphereNode *pBestNode = NULL;
+    float nCurrentDistance = HUGE_VAL;
+    gmtl::Vec3f nAverageChildPos, nDiff;
+
+    // First, determine our average child positions
+    nAverageChildPos = determineAverageChildPositions();
+
+    // Initially start with our first child
+    pBestNode = m_uNodeChildren[0];
+    nDiff = pBestNode->m_nPosition - nAverageChildPos;
+    nCurrentDistance = gmtl::length(nDiff);
+
+    // Move through our delete list and determine which node is better to remove
+    for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+        nDiff = (*itr)->m_nPosition - nAverageChildPos;
+
+        if (gmtl::length(nDiff) < nCurrentDistance) {
+            nCurrentDistance = gmtl::length(nDiff);
+            pBestNode = (*itr);
+        }
+    }
+
+    return pBestNode;
+}

@@ -36,7 +36,6 @@ class Manager():
             self.sphereTree = Foundation.SphereTree()
 
             stackless.tasklet(self.__runFrame)()
-            stackless.schedule()
 
         # Tasklet
         def __handleTasklet(self, channelData):

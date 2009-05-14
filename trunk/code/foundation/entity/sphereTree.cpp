@@ -6,7 +6,7 @@ using namespace Foundation::Entities;
 SphereTree::SphereTree()
 {
     m_nMinRadius = 10;
-    m_nMaxRadius = 80;
+    m_nMaxRadius = 100;
 
     m_pRoot = new SphereNode(m_nMinRadius, m_nMaxRadius, false, 3);
     m_pRoot->m_bRootNode = true;
@@ -78,9 +78,9 @@ void SphereTree::dump()
     f_printf("========================================================================\n");
 }
 
-void SphereTree::debugRender(const char* _sSceneManagerName)
+void SphereTree::debugRender(const char* _sSceneManagerName, int _nRenderLevel)
 {
-    m_pRoot->debugRender(_sSceneManagerName, true);
+    m_pRoot->debugRender(_sSceneManagerName, true, _nRenderLevel, 0);
 }
 
 void SphereTree::clearDebugRender(const char* _sSceneManagerName)
