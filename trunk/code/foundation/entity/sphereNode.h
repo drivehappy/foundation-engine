@@ -155,6 +155,14 @@ namespace Foundation {
             /**
              */
             void updateTeamFlags();
+
+            /**
+             */
+            float calcFutureRadius(SphereData *_data);
+
+            /**
+             */
+            float calcFutureChildAreaFactor(SphereData *_data);
             
         friend class SphereTree;
         };

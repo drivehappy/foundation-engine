@@ -204,6 +204,7 @@ void SphereNode::update()
     updateTeamFlags();
 }
 
+/*
 void SphereNode::checkOutsideChildren()
 {
     vector<SphereNode *>::iterator  itr;
@@ -294,6 +295,7 @@ void SphereNode::checkOutsideChildren()
         }
     }
 }
+*/
 
 void SphereNode::checkOutsideChildren(bool bOverload)
 {
@@ -342,12 +344,13 @@ bool SphereNode::canAcceptData(SphereData *_data)
 {
     float nDistance;
     
-    nDistance = gmtl::length<float, 3>(_data->getPosition() - m_nPosition); // - (_data->getRadius() * 2.0f);
+    nDistance = gmtl::length<float, 3>(_data->getPosition() - m_nPosition) - _data->getRadius();
 
     // Check if this data will fit in our sphere
-    if ( (!m_bDataNode && (nDistance < m_nRadius) && 
-        (m_uNodeChildren.size() < m_nMaxBucketSize) ) || m_bRootNode)
-//    if ( (!m_bDataNode && (nDistance < m_nRadius)) || m_bRootNode)
+    if ( (!m_bDataNode && (nDistance < m_nMaxRadius - 10.0f) && 
+        (m_uNodeChildren.size() < m_nMaxBucketSize) &&
+        (calcFutureChildAreaFactor(_data) > m_nChildAreaFactor)
+        ) || m_bRootNode)
     {
         return true;
     }
@@ -645,16 +648,6 @@ void SphereNode::updateToFitChildren()
         m_nPosition[gmtl::Yelt] = 20.0f;
         m_nPosition[gmtl::Zelt] = (nMax[gmtl::Zelt] + nMin[gmtl::Zelt]) / 2.0f;
 
-        // Compute the radius
-        /*
-        gmtl::Vec2f nRadiusDistance = gmtl::Vec2f(
-            nMax[gmtl::Xelt] - nMin[gmtl::Xelt],
-            nMax[gmtl::Zelt] - nMin[gmtl::Zelt]);
-
-        m_nRadius = gmtl::length(nRadiusDistance) / 2.0f;
-        */
-
-        //*
         // Find the furthest point + radius and use it
         nRadius = m_nMinRadius;
         for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
@@ -667,8 +660,65 @@ void SphereNode::updateToFitChildren()
                 nRadius = nDistance;
         }
         m_nRadius = nRadius + 1.0f; // Use a epsilon so we're not ping ponging
-        //*/
     }
+}
+
+// Find the future radius if we added this data
+float SphereNode::calcFutureRadius(SphereData *_data)
+{
+    vector<SphereNode*>::iterator itr;
+    gmtl::Vec3f nMin, nMax;
+    gmtl::Vec3f nPosition;
+    float       nRadius;
+    float       nDistance;
+
+    nMax[gmtl::Xelt] = -HUGE_VAL;
+    nMax[gmtl::Zelt] = -HUGE_VAL;
+    nMin[gmtl::Xelt] = HUGE_VAL;
+    nMin[gmtl::Zelt] = HUGE_VAL;
+
+    // Traverse each child and determine our min/max
+    for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+        nPosition = (*itr)->m_nPosition;
+        nRadius = (*itr)->m_nRadius;
+
+        if (nPosition[gmtl::Xelt] - nRadius < nMin[gmtl::Xelt])
+            nMin[gmtl::Xelt] = nPosition[gmtl::Xelt] - nRadius;
+        if (nPosition[gmtl::Xelt] + nRadius > nMax[gmtl::Xelt])
+            nMax[gmtl::Xelt] = nPosition[gmtl::Xelt] + nRadius;
+
+        if (nPosition[gmtl::Zelt] - nRadius < nMin[gmtl::Zelt])
+            nMin[gmtl::Zelt] = nPosition[gmtl::Zelt] - nRadius;
+        if (nPosition[gmtl::Zelt] + nRadius > nMax[gmtl::Zelt])
+            nMax[gmtl::Zelt] = nPosition[gmtl::Zelt] + nRadius;
+    }
+
+    // For new data too
+    nPosition = _data->getPosition();
+    nRadius = _data->getRadius();
+    if (nPosition[gmtl::Xelt] - nRadius < nMin[gmtl::Xelt])
+        nMin[gmtl::Xelt] = nPosition[gmtl::Xelt] - nRadius;
+    if (nPosition[gmtl::Xelt] + nRadius > nMax[gmtl::Xelt])
+        nMax[gmtl::Xelt] = nPosition[gmtl::Xelt] + nRadius;
+
+    if (nPosition[gmtl::Zelt] - nRadius < nMin[gmtl::Zelt])
+        nMin[gmtl::Zelt] = nPosition[gmtl::Zelt] - nRadius;
+    if (nPosition[gmtl::Zelt] + nRadius > nMax[gmtl::Zelt])
+        nMax[gmtl::Zelt] = nPosition[gmtl::Zelt] + nRadius;
+
+    // Find the furthest point + radius and use it
+    nRadius = m_nMinRadius;
+    for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+        nPosition = (*itr)->m_nPosition - m_nPosition;
+        nPosition[gmtl::Yelt] = 0.0f;
+
+        nDistance = gmtl::length(nPosition) + (*itr)->m_nRadius;
+
+        if (nDistance > nRadius)
+            nRadius = nDistance;
+    }
+   
+    return nRadius + 1.0f; // Use a epsilon so we're not ping ponging
 }
 
 float SphereNode::getTwoClosestChildren(SphereNode *& _node1, SphereNode *& _node2)
@@ -760,10 +810,33 @@ float SphereNode::calcCurrentChildAreaFactor()
             if ((*itr)->m_bDataNode) {
                 nChildFactor += ((gmtl::Math::PI * m_nRadius * m_nRadius) / (*itr)->calcCurrentChildAreaFactor());
             } else {
-                nChildFactor += ((gmtl::Math::PI * m_nRadius * m_nRadius) / (*itr)->calcCurrentChildAreaFactor()) - 20.0f /* Interior Node factor */;
+                nChildFactor += ((gmtl::Math::PI * m_nRadius * m_nRadius) / (*itr)->calcCurrentChildAreaFactor()) - 30.0f /* Interior Node factor */;
             }
         }
     }
+
+    return nChildFactor;
+}
+
+float SphereNode::calcFutureChildAreaFactor(SphereData *_data)
+{
+    float nChildFactor = 0.0f;
+    float nFutureRadius = calcFutureRadius(_data);
+    vector<SphereNode *>::iterator itr;
+
+    if (m_bDataNode) {
+        nChildFactor = (gmtl::Math::PI * nFutureRadius * nFutureRadius);
+    } else {
+        for (itr = m_uNodeChildren.begin(); itr != m_uNodeChildren.end(); itr++) {
+            if ((*itr)->m_bDataNode) {
+                nChildFactor += ((gmtl::Math::PI * nFutureRadius * nFutureRadius) / (*itr)->calcCurrentChildAreaFactor());
+            } else {
+                nChildFactor += ((gmtl::Math::PI * nFutureRadius * nFutureRadius) / (*itr)->calcCurrentChildAreaFactor()) - 30.0f /* Interior Node factor */;
+            }
+        }
+    }
+
+    nChildFactor += (gmtl::Math::PI * nFutureRadius * nFutureRadius);
 
     return nChildFactor;
 }
