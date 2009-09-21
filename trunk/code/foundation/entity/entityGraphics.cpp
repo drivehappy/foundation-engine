@@ -59,6 +59,11 @@ void EntityGraphic::setPosition(gmtl::Vec3f _nPosition)
     m_pGraphicManager->setMeshPosition(m_sSceneManager, m_sMeshId, _nPosition);
 }
 
+gmtl::Vec3f EntityGraphic::getPosition()
+{
+    return m_pGraphicManager->getMeshPosition(m_sSceneManager, m_sMeshId);
+}
+
 void EntityGraphic::setMaterial(const char *_sMaterialName)
 {
     m_pGraphicManager->setMeshMaterial(m_sSceneManager, m_sMeshId, _sMaterialName);

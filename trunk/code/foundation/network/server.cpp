@@ -196,9 +196,9 @@ double Server::getBitsPerSecond()
 {
     double nBitsPerSecondTotal = 0.0f;
 
-    for (unsigned int x = 0; x < mServer->NumberOfConnections(); x++) {
-        nBitsPerSecondTotal += mServer->GetStatistics(mServer->GetSystemAddressFromIndex(x))->bitsPerSecond;
-    }
+//    for (unsigned int x = 0; x < mServer->NumberOfConnections(); x++) {
+//        nBitsPerSecondTotal += mServer->GetStatistics(mServer->GetSystemAddressFromIndex(x))->bitsPerSecond;
+//    }
 
     return nBitsPerSecondTotal;
 }

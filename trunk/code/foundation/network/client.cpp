@@ -147,5 +147,6 @@ double Client::getBitsPerSecond()
 {
     RakNetStatistics *stats = mClient->GetStatistics(mClient->GetSystemAddressFromIndex(0));
 
-    return stats->bitsPerSecond;
+//    return stats->bitsPerSecond;
+    return 0;
 }

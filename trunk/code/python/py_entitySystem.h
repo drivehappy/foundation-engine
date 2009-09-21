@@ -25,6 +25,8 @@ namespace Foundation
             void setScale(gmtlVector3_PythonWrapper _nScale);
             void setRotation(gmtlQuaternion_PythonWrapper _nRotation);
             void setPosition(gmtlVector3_PythonWrapper _nPosition);
+	
+            gmtlVector3_PythonWrapper getPosition();
         };
 
 		class Entity_PythonWrapper : public Entity

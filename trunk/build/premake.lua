@@ -23,7 +23,7 @@ if (linux) then
     GUI_LIB_INCDIR      = "/usr/local/include/MYGUI"
     NETWORK_LIB_INCDIR  = "/usr/local/include/raknet"
     INPUT_LIB_INCDIR    = "/usr/local/include/OIS"
-    PHYSIC_LIB_INCDIR   = { "/usr/local/include/LinearMath", "/usr/local/include/BulletCollision", "/usr/local/include/BulletDynamics" }
+    PHYSIC_LIB_INCDIR   = { "/usr/local/include/bullet" }
     AUDIO_LIB_INCDIR    = "/usr/local/include/fmodex"
 elseif (windows) then
     GRAPHIC_LIB_INCDIR  = "../../libs/ogre/inc"
@@ -59,15 +59,15 @@ if (linux) then
     INPUT_LIB_NAME_DEBUG        = "OIS"
     GUI_LIB_NAME_DEBUG          = "mygui"
     NETWORK_LIB_NAME_DEBUG      = "raknet"
-    PHYSIC_LIB_NAME_DEBUG       = { "BulletCollision", "LinearMath" }
-    AUDIO_LIB_NAME_DEBUG        = "fmodex"
+    PHYSIC_LIB_NAME_DEBUG       = { "bulletcollision", "bulletmath" }
+    AUDIO_LIB_NAME_DEBUG        = "fmodex-4.26.08"
 
     GRAPHIC_LIB_NAME            = "OgreMain"
     INPUT_LIB_NAME              = "OIS"
     GUI_LIB_NAME                = "mygui"
     NETWORK_LIB_NAME            = "raknet"
-    PHYSIC_LIB_NAME             = { "BulletCollision", "LinearMath" }
-    AUDIO_LIB_NAME              = "fmodex"
+    PHYSIC_LIB_NAME             = { "bulletcollision", "bulletmath" }
+    AUDIO_LIB_NAME              = "fmodex-4.26.08"
 elseif (windows) then
     GRAPHIC_LIB_NAME_DEBUG      = "OgreMain_d"
     GUI_LIB_NAME_DEBUG          = "MyGUI_d"
@@ -95,7 +95,7 @@ end
 
 -- Foundation: Generate proper include paths depending upon what is enabled from above
 if (linux) then
-    incpathExternalLibs = { "/usr/local/include/python2.5",
+    incpathExternalLibs = { "/usr/include/python2.5",
                             "../../libs/boost/inc",
                             "../../libs/etm/inc",
                             "/usr/local/include/ET",
@@ -217,7 +217,7 @@ elseif (linux) then
     project.path = "./gnuc"
     libfilePython = "python2.5"
     libfileUUID = "uuid"
-    libfileTerrain = "EditableTerrain";
+    -- libfileTerrain = "EditableTerrain";
 
     libfileAllDebug = { libfilePython, libfileUUID, libfileTerrain }
     libfileAllRelease = { libfilePython, libfileUUID, libfileTerrain }

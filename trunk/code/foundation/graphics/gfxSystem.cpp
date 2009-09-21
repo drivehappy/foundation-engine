@@ -47,7 +47,7 @@ GraphicManager::GraphicManager()
     //m_pTask->_this = this;
     //m_pTask->_functionPointer = GraphicManager::doTaskRender_Wrapper;
 
-    Channel_Join("GRAPHICS_SELECTION", GraphicManager::doChannelReceive_Wrapper);
+//    Channel_Join("GRAPHICS_SELECTION", GraphicManager::doChannelReceive_Wrapper);
 }
 
 GraphicManager::~GraphicManager()
@@ -132,7 +132,10 @@ bool GraphicManager::configure(const char *_sWindowTitle)
 
     if (!bRestored) {
         f_printf("[GraphicManager::configure] Error: Could not restore previous OGRE configuration.\n");
-        return false;
+        //return false;
+        //m_pRoot->showConfigDialog();
+        Ogre::RenderSystemList* pRenderSystems = m_pRoot->getAvailableRenderers();
+        f_printf("[GraphicsManager::configure] Available Renderers: %i\n", pRenderSystems->size());
     }
 
     m_pWindow = (RenderWindow *)m_pRoot->initialise(true, _sWindowTitle);
@@ -551,6 +554,31 @@ void GraphicManager::removeMesh(const char *_sSceneManagerName, const char *_sID
     } else {
         f_printf("[GraphicManager] Error: Adding mesh when not initialized.\n");
     }
+}
+
+gmtl::Vec3f GraphicManager::getMeshPosition(const char *_sSceneManagerName, const char *_sID)
+{
+    Ogre::SceneManager *pSceneManager = NULL;
+    Ogre::Entity *pEntity = NULL;
+    Ogre::SceneNode *pNode = NULL;
+    gmtl::Vec3f nReturn(0,0,0);
+
+    if (m_pRoot) {
+        pSceneManager = m_pRoot->getSceneManager(_sSceneManagerName);
+        if (pSceneManager) {
+            pEntity = pSceneManager->getEntity(_sID);
+            pNode = pEntity->getParentSceneNode();
+
+            Ogre::Vector3 r = pNode->getPosition();
+            nReturn = gmtl::Vec3f(r.x, r.y, r.z);
+        } else {
+            f_printf("[GraphicManager] Error: Could not find SceneManager: %s\n", _sSceneManagerName);
+        }
+    } else {
+        f_printf("[GraphicManager] Error: Setting mesh position when not initialized.\n");
+    }
+
+    return nReturn;
 }
 
 void GraphicManager::setMeshPosition(const char *_sSceneManagerName, const char *_sID, gmtl::Vec3f _nPosition)

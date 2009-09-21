@@ -25,6 +25,8 @@ namespace Foundation
             void setPosition(gmtl::Vec3f _nPosition);
             void setMaterial(const char *_sMaterialName);
 
+            gmtl::Vec3f getPosition();
+
         private:
             GraphicManager  *m_pGraphicManager;
             const char      *m_sMeshId;

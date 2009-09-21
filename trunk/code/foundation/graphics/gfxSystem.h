@@ -329,6 +329,10 @@ namespace Foundation
                 /**
                 */
                 void removeMesh(const char *_sSceneManagerName, const char *_sID);
+		/** Get a mesh's position.
+                    @return The mesh's position.
+                */
+                gmtl::Vec3f getMeshPosition(const char *_sSceneManagerName, const char *_sID);
                 /** Set a mesh's position.
                     @param
                         String ID of the SceneManager containing the entity.
