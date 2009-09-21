@@ -30,6 +30,11 @@ void EntityGraphic_PythonWrapper::setPosition(gmtlVector3_PythonWrapper _nPositi
     EntityGraphic::setPosition(gmtl::Vec3f(_nPosition));
 }
 
+gmtlVector3_PythonWrapper EntityGraphic_PythonWrapper::getPosition()
+{
+    return EntityGraphic::getPosition();
+}
+
 void Entity_PythonWrapper::setGraphics(EntityGraphic_PythonWrapper *_pGraphic)
 {
     Entity::setGraphics(_pGraphic);

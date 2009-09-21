@@ -142,6 +142,7 @@ BOOST_PYTHON_MODULE(FoundationPython)
         .def("setRotation", &Entities::EntityGraphic_PythonWrapper::setRotation)
         .def("setPosition", &Entities::EntityGraphic_PythonWrapper::setPosition)
         .def("setMaterial", &Entities::EntityGraphic_PythonWrapper::setMaterial)
+        .def("getPosition", &Entities::EntityGraphic_PythonWrapper::getPosition)
     ;
     class_<Entities::Entity_PythonWrapper, boost::noncopyable>("Entity", no_init)
         .def("getId", &Entities::Entity_PythonWrapper::getId)

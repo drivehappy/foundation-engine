@@ -24,7 +24,7 @@ GUIManager::GUIManager()
 {
     m_pGUI = NULL;
     m_pMouseEventChannel = new Channel();
-    m_pMouseEventChannel->Channel_Join("MOUSE_EVENTS", NULL);
+    //m_pMouseEventChannel->Channel_Join("MOUSE_EVENTS", NULL);
 }
 
 GUIManager::~GUIManager()

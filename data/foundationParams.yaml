@@ -30,3 +30,8 @@ program:
         folder: oilking
         script: OilKing
         profiling: False
+    
+    ball_follow:
+        folder: ball_follow
+        script: BallFollow
+        profiling: False
