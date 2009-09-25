@@ -348,6 +348,7 @@ BOOST_PYTHON_MODULE(FoundationPython)
     #if defined(S_ENABLE_GRAPHIC)
 
     class_<Graphic::Camera_PythonWrapper, boost::noncopyable>("Camera", init<const char *, Graphic::SceneManager *>())
+        .def("getPosition", &Graphic::Camera_PythonWrapper::getPosition)
         .def("setPosition", &Graphic::Camera_PythonWrapper::setPosition)
         .def("setRotation", &Graphic::Camera_PythonWrapper::setRotation)
         .def("setLookAt", &Graphic::Camera_PythonWrapper::setLookAt)
