@@ -81,6 +81,9 @@ namespace Foundation
                     {};
                 ~Camera() {};
 
+		//gmtl::Vec3f getPosition() {
+		//    return Ogre:Camera::getPosition();
+		//};
                 void setPosition(gmtl::Vec3f _nPosition) {
                     Ogre::Camera::setPosition(Ogre::Vector3(_nPosition[gmtl::Xelt], _nPosition[gmtl::Yelt], _nPosition[gmtl::Zelt]));
                 };

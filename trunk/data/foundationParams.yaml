@@ -31,7 +31,18 @@ program:
         script: OilKing
         profiling: False
     
+    ball_throw:
+        folder: ball_throw
+        script: BallThrow
+        profiling: False
+
     ball_follow:
         folder: ball_follow
         script: BallFollow
         profiling: False
+    
+    pong:
+        folder: pong
+        script: Pong
+        profiling: False
+
