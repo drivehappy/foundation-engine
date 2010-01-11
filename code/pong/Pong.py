@@ -106,12 +106,12 @@ class Ball:
         self.Velocity = velocity
 
     def reset(self):
-        self.setPosition(Foundation.Vector3(0, 0, 0))
+        self.setPosition(Foundation.Vector3(2500, 0, 0))
         self.resetVelocity()
 
     def resetVelocity(self):
-        xVel = random.randint(500, 1000) * (1 if random.randint(0, 1) == 1 else -1)
-        zVel = random.randint(500, 1000) * (1 if random.randint(0, 1) == 1 else -1)
+        xVel = random.randint(3000, 5000) * -1
+        zVel = random.randint(0, 5000) * (1 if random.randint(0, 1) == 1 else -1)
         self.setVelocity(Foundation.Vector3(xVel, 0, zVel))
 
     def update(self, nDeltaTime):
@@ -124,15 +124,18 @@ class Ball:
         global Boundary
 
         # Check if out of bounds and paddle contact
-        if (self.Position[0] > 1900) and (abs(Boundary[1].getPosition()[2] - self.Position[2]) < 350):
-            self.setPosition(Foundation.Vector3(1899, 0, self.Position[2]))
-            self.Velocity[0] = -self.Velocity[0]
-        elif (self.Position[0] < -1900) and (abs(Boundary[0].getPosition()[2] - self.Position[2]) < 350):
+        #if (self.Position[0] > 1900) and (abs(Boundary[1].getPosition()[2] - self.Position[2]) < 350):
+        #    self.setPosition(Foundation.Vector3(1899, 0, self.Position[2]))
+        #    self.Velocity[0] = -self.Velocity[0]
+        #elif (self.Position[0] < -1900) and (abs(Boundary[0].getPosition()[2] - self.Position[2]) < 350):
+        if (self.Position[0] < -1900) and (abs(Boundary[0].getPosition()[2] - self.Position[2]) < 450):
             self.setPosition(Foundation.Vector3(-1899, 0, self.Position[2]))
             self.Velocity[0] = -self.Velocity[0]
+            self.reset()
 
         # Simply check out of bounds
-        if (self.Position[0] > 2000) or (self.Position[0] < -2000):
+        #if (self.Position[0] > 2000) or (self.Position[0] < -2000):
+        if (self.Position[0] < -3000):
             print "Reset: Ball pos =", self.Position[0], self.Position[2], " + Boundary pos =", Boundary[0].getPosition()[0], Boundary[0].getPosition()[2]
             self.reset()      
  
@@ -154,24 +157,28 @@ class Wall:
     def __init__(self, id, length, width):
         self.Length = length
         self.Width = width
-
-        self.Graphic = Foundation.EntityGraphic("SceneManager0", "Wall_Graphic" + str(id));
-        self.Graphic.setMesh("cube.mesh");
-        self.Graphic.setMaterial("splatting0");
-        self.Graphic.setScale(Foundation.Vector3(length, 0, width))
+        self.Graphic = None
+        
+        if id == 0:
+            self.Graphic = Foundation.EntityGraphic("SceneManager0", "Wall_Graphic" + str(id));
+            self.Graphic.setMesh("cube.mesh");
+            self.Graphic.setMaterial("splatting0");
+            self.Graphic.setScale(Foundation.Vector3(length, 0, width))
         
         self.setPosition(Foundation.Vector3(0, 0, 0))
         
     def setPosition(self, position):
         self.Position = position
-        self.Graphic.setPosition(position)
+        if self.Graphic:
+            self.Graphic.setPosition(position)
         
     def getPosition(self):
         return self.Position
 
     def move(self, offset):
         self.Position += offset
-        self.Graphic.setPosition(self.Position)
+        if self.Graphic:
+            self.Graphic.setPosition(self.Position)
         
 
     
@@ -198,23 +205,11 @@ def doInput(_nDeltaTime):
                     Camera0.setLookAt(Foundation.Vector3(0, 0, 10))
                     
                 nCamSpeed = _nDeltaTime * CAMERA_SPEED
-                if KeyIndex == Foundation.Keycode.A:
-                    #Camera0.moveRelative(Foundation.Vector3(-nCamSpeed, 0, 0))
-                    MoveLeft = True
-                elif KeyIndex == Foundation.Keycode.W:
-                    Boundary[0].move(Foundation.Vector3(0, 0, -30))
-
-                if KeyIndex == Foundation.Keycode.S:
-                    Boundary[0].move(Foundation.Vector3(0, 0, 30))
-                elif KeyIndex == Foundation.Keycode.D:
-                    MoveRight = True
-                    #Camera0.moveRelative(Foundation.Vector3(nCamSpeed, 0, 0))
-
-                if KeyIndex == Foundation.Keycode.Z:
-                    Camera0.moveRelative(Foundation.Vector3(0, 0, -nCamSpeed))
-                elif KeyIndex == Foundation.Keycode.X:
-                    Camera0.moveRelative(Foundation.Vector3(0, 0, nCamSpeed))
-
+                if KeyIndex == Foundation.Keycode.W:
+                    Boundary[0].move(Foundation.Vector3(0, 0, -6000 * _nDeltaTime))
+                elif KeyIndex == Foundation.Keycode.S:
+                    Boundary[0].move(Foundation.Vector3(0, 0, 6000 * _nDeltaTime))
+                
                 if (TimerKeyDelay.getTime() > KEY_DELAY):
                     if KeyIndex == Foundation.Keycode.Q:
                         HumanSimTraining = not HumanSimTraining                   
@@ -271,7 +266,7 @@ def initManagers():
 
     # Init Graphics
     HTTPLogger().writeContent(LoggerError.NONE, "[GraphicManager] Initializing...")
-    bResult = GraphicManager.initialize("BallFollow - Playground for NeuroVisual Control - Test1")
+    bResult = GraphicManager.initialize("Pong - Playground for NeuroVisual Control - Test3")
     if bResult:
         GraphicManager.showCursor(False)
         GraphicManager.addSceneManager("SceneManager0")
@@ -425,22 +420,28 @@ def schedulerTasklet():
 
         PongBall.update(nDeltaTime)
 
+        '''
         # AI Player
-        if (PongBall.getPosition()[2] > Boundary[1].getPosition()[2]):
-            Boundary[1].move(Foundation.Vector3(0, 0, 1000 * nDeltaTime))
-        elif (PongBall.getPosition()[2] < Boundary[1].getPosition()[2]):
-            Boundary[1].move(Foundation.Vector3(0, 0, -1000 * nDeltaTime))
+        if (PongBall.getPosition()[2] > Boundary[1].getPosition()[2] + 150):
+            Boundary[1].move(Foundation.Vector3(0, 0, 3000 * nDeltaTime))
+        elif (PongBall.getPosition()[2] < Boundary[1].getPosition()[2] - 150):
+            Boundary[1].move(Foundation.Vector3(0, 0, -3000 * nDeltaTime))
+        '''
 
         # Human Simulation Training player
         if HumanSimTraining:
-            if (PongBall.getPosition()[2] > Boundary[0].getPosition()[2] + 100):
-                SendKeyPress("s")
+            if (PongBall.getPosition()[0] < 2500):
+                if (PongBall.getPosition()[2] > Boundary[0].getPosition()[2] + 250):
+                    SendKeyPress("s")
+                elif (PongBall.getPosition()[2] < Boundary[0].getPosition()[2] + 250):
+                    SendKeyRelease("s")
+
+                if (PongBall.getPosition()[2] < Boundary[0].getPosition()[2] - 250):
+                    SendKeyPress("w")
+                elif (PongBall.getPosition()[2] > Boundary[0].getPosition()[2] - 250):
+                    SendKeyRelease("w")
             else:
                 SendKeyRelease("s")
-
-            if (PongBall.getPosition()[2] < Boundary[0].getPosition()[2] - 100):
-                SendKeyPress("w")
-            else:
                 SendKeyRelease("w")
 
         # Update Input
@@ -463,22 +464,22 @@ def main(argv):
     random.seed()
 
     try:
-        HTTPLogger("../ballfollow_log.html")
-        HTTPLogger().newTable("Foundation Engine (Project: BallFollow)", "Description")
+        HTTPLogger("../pong_log.html")
+        HTTPLogger().newTable("Foundation Engine (Project: Pong)", "Description")
         HTTPLogger().writeContent(LoggerError.SUCCESS, "Initialized (%s/%s)" % (sys.path[0], sys.argv[0]))
 
         initManagers()
 
         # Init
-        Boundary = [Wall(0, 1, 5), Wall(1, 1, 5), Wall(2, 40, 1), Wall(3, 40, 1)]
+        #Boundary = [Wall(0, 1, 5), Wall(1, 1, 5), Wall(2, 40, 1), Wall(3, 40, 1)]
+        #Boundary = [Wall(0, 1, 5), Wall(1, 1, 15)]
+        Boundary = [Wall(0, 1, 5)]
         Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 0))
-        Boundary[1].setPosition(Foundation.Vector3(2000, 0, 0))
-        Boundary[2].setPosition(Foundation.Vector3(0, 0, 2000))
-        Boundary[3].setPosition(Foundation.Vector3(0, 0, -2000))
+        #Boundary[1].setPosition(Foundation.Vector3(3000, 0, 0))
         
         PongBall = Ball(100)
-        xVel = random.randint(500, 1000) * (1 if random.randint(0, 1) == 1 else -1)
-        zVel = random.randint(500, 1000) * (1 if random.randint(0, 1) == 1 else -1)
+        xVel = random.randint(2000, 3000) * -1
+        zVel = random.randint(2000, 3000) * (1 if random.randint(0, 1) == 1 else -1)
         PongBall.setVelocity(Foundation.Vector3(xVel, 0, zVel))
         
         # Start
