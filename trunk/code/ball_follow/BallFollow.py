@@ -58,7 +58,7 @@ KeyboardStateChange = Input.Manager.KeyboardState()
 Joystick0StateChange = Input.Manager.JoystickState()
 Joystick1StateChange = Input.Manager.JoystickState()
 
-CAMERA_SPEED = 4
+CAMERA_SPEED = 5
 
 SelectionBounds         = Foundation.Vector4(0, 0, 0, 0)
 SelectionWorldBounds    = Foundation.Vector4(0, 0, 0, 0)
@@ -338,7 +338,19 @@ def schedulerTasklet():
                 nBallOrgPosition = nBallTargetPosition
                 nBallPosition = nBallOrgPosition
                 SphereGraphic.setPosition(nBallPosition)
+
+                # Test ball movement in 2D
                 nBallTargetPosition = (Foundation.Vector3((random.random() * 2) - 1, 0, (random.random() * 2) - 1) * positionScale) + nBallOrgPosition
+
+                # Test ball movement in 1 direction in 1D
+                #nBallTargetPosition = (Foundation.Vector3(random.random(), 0, 0) * positionScale) + nBallOrgPosition
+
+                # Test ball movement in 2 directions in 1D
+                #nBallTargetPosition = (Foundation.Vector3((random.random() * 2) - 1, 0, 0) * positionScale) + nBallOrgPosition
+                #nBallTargetPosition = (Foundation.Vector3(0, 0, (random.random() * 2) - 1) * positionScale) + nBallOrgPosition
+
+                # Test no movement
+                #nBallTargetPosition = nBallOrgPosition
                 uBallMoveTimer.reset()
 
             if HumanSimTraining:
