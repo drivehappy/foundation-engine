@@ -6,6 +6,9 @@ import struct
 import random
 import os
 from ctypes import *
+from string import *
+if (os.name == "nt"):
+  import win32api, win32com.client, win32ui
 
 # --------------------------------------------------
 # Foundation Libs
@@ -58,7 +61,10 @@ KeyboardStateChange = Input.Manager.KeyboardState()
 Joystick0StateChange = Input.Manager.JoystickState()
 Joystick1StateChange = Input.Manager.JoystickState()
 
-CAMERA_SPEED = 5
+if (os.name == 'posix'):
+  CAMERA_SPEED = 5
+elif (os.name == 'nt'):
+  CAMERA_SPEED = 100
 
 SelectionBounds         = Foundation.Vector4(0, 0, 0, 0)
 SelectionWorldBounds    = Foundation.Vector4(0, 0, 0, 0)
@@ -295,32 +301,52 @@ def schedulerTasklet():
     uKeyTimer = Foundation.Timer()
     keyDelayTime = 0.5
     
-    # Setup keyboard inject    
-    Xtst = CDLL("libXtst.so.6")
-    Xlib = CDLL("libX11.so.6")
-    dpy = Xtst.XOpenDisplay(None)
+    if os.name == 'posix':
+      # Linux Specific
+      # Setup keyboard inject    
+      Xtst = CDLL("libXtst.so.6")
+      Xlib = CDLL("libX11.so.6")
+      dpy = Xtst.XOpenDisplay(None)
+    elif os.name == 'nt':
+      pass
+
         
     # Helpers taken from:
     #  http://wwwx.cs.unc.edu/~gb/wp/blog/2007/11/16/sending-key-events-to-pygame-programs/
     def SendInput( txt ):
-        for c in txt:
+        if os.name == 'posix':
+          for c in txt:
             sym = Xlib.XStringToKeysym(c)
             code = Xlib.XKeysymToKeycode(dpy, sym)
             Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
             Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
-        Xlib.XFlush(dpy)
+          Xlib.XFlush(dpy)
+        elif os.name == 'nt':
+          print "Error: Windows SendInput not yet implemented"
 
     def SendKeyPress(key):
-        sym = Xlib.XStringToKeysym(str(key))
-        code = Xlib.XKeysymToKeycode(dpy, sym)
-        Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
-        Xlib.XFlush(dpy)
+        if os.name == 'posix':
+          # Linux Specific
+          sym = Xlib.XStringToKeysym(str(key))
+          code = Xlib.XKeysymToKeycode(dpy, sym)
+          Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
+          Xlib.XFlush(dpy)
+        elif os.name == 'nt':
+          # Windows Specific
+          shell = win32com.client.Dispatch("WScript.Shell")
+          print "Sending Key: " + str(key)
+          #shell.SendKeys(str(key))
+          win32api.keybd_event(ord(key), 0)
 
     def SendKeyRelease(key):
-        sym = Xlib.XStringToKeysym(str(key))
-        code = Xlib.XKeysymToKeycode(dpy, sym)
-        Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
-        Xlib.XFlush(dpy)
+        if os.name == 'posix':
+          sym = Xlib.XStringToKeysym(str(key))
+          code = Xlib.XKeysymToKeycode(dpy, sym)
+          Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
+          Xlib.XFlush(dpy)
+        elif os.name == 'nt':
+          # Windows Specific
+          shell = win32com.client.Dispatch("WScript.Shell")
 
     # Tasklet loop
     while True:
@@ -354,36 +380,37 @@ def schedulerTasklet():
                 uBallMoveTimer.reset()
 
             if HumanSimTraining:
-                if ResetBall and uKeyTimer.getTime() > 0.5:
-                    SendKeyRelease('a')
-                    SendKeyRelease('d')
-                    SendKeyRelease('w')
-                    SendKeyRelease('s')
-                    ResetBall = False
-                    uKeyTimer.reset()
+              if ResetBall:
+                if (os.name == 'posix' and uKeyTimer.getTime() > 0.5) or (os.name == 'nt' and uKeyTimer.getTime() > 0.01):
+                  SendKeyRelease('a')
+                  SendKeyRelease('d')
+                  SendKeyRelease('w')
+                  SendKeyRelease('s')
+                  ResetBall = False
+                  uKeyTimer.reset()
 
-                offset = Camera0.getPosition() - nBallPosition
+              offset = Camera0.getPosition() - nBallPosition
 
-                if not ResetBall:
-                    if offset[0] < -0.4:
-                        SendKeyPress('d')
-                        ResetBall = True
-                        uKeyTimer.reset()
+              if not ResetBall:
+                if offset[0] < -0.4:
+                  SendKeyPress('d')
+                  ResetBall = True
+                  uKeyTimer.reset()
 
-                    elif offset[0] > 0.4:
-                        SendKeyPress('a')
-                        ResetBall = True
-                        uKeyTimer.reset()
+                elif offset[0] > 0.4:
+                  SendKeyPress('a')
+                  ResetBall = True
+                  uKeyTimer.reset()
 
-                    if offset[2] < -0.4:
-                        SendKeyPress('s')
-                        ResetBall = True
-                        uKeyTimer.reset()
+                if offset[2] < -0.4:
+                  SendKeyPress('s')
+                  ResetBall = True
+                  uKeyTimer.reset()
                 
-                    elif offset[2] > 0.4:
-                        SendKeyPress('w')
-                        ResetBall = True
-                        uKeyTimer.reset()
+                elif offset[2] > 0.4:
+                  SendKeyPress('w')
+                  ResetBall = True
+                  uKeyTimer.reset()
                 
 
             SphereGraphic.setPosition(nBallPosition)
