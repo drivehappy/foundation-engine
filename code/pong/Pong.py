@@ -30,13 +30,14 @@ TerrainManager  = Foundation.TerrainManager()
 EntityManager   = None
 FileManager     = Foundation.FileManager()
 Camera0         = None
+GamePaused      = False
 
 MouseEventChannel           = Foundation.Channel()
 SelectionCallbackChannel    = Foundation.Channel()
 
 # -----------------------------------------------
 # Inputs
-KEY_DELAY   = 0.015
+KEY_DELAY   = 0.15
 LARGE_KEY_DELAY = 0.10
 KEYS        = [Foundation.Keycode.A, Foundation.Keycode.B, Foundation.Keycode.C,
                Foundation.Keycode.D, Foundation.Keycode.E, Foundation.Keycode.F,
@@ -110,8 +111,8 @@ class Ball:
         self.resetVelocity()
 
     def resetVelocity(self):
-        xVel = random.randint(3000, 5000) * -1
-        zVel = random.randint(0, 5000) * (1 if random.randint(0, 1) == 1 else -1)
+        xVel = random.randint(1000, 2000) * -1
+        zVel = random.randint(0, 2000) * (1 if random.randint(0, 1) == 1 else -1)
         self.setVelocity(Foundation.Vector3(xVel, 0, zVel))
 
     def update(self, nDeltaTime):
@@ -167,8 +168,15 @@ class Wall:
         
         self.setPosition(Foundation.Vector3(0, 0, 0))
         
+    def setBounds(self):
+        if (self.Position[2] > 1500):
+            self.Position[2] = 1500
+        elif (self.Position[2] < -1500):
+            self.Position[2] = -1500
+
     def setPosition(self, position):
         self.Position = position
+        self.setBounds()
         if self.Graphic:
             self.Graphic.setPosition(position)
         
@@ -177,6 +185,7 @@ class Wall:
 
     def move(self, offset):
         self.Position += offset
+        self.setBounds()
         if self.Graphic:
             self.Graphic.setPosition(self.Position)
         
@@ -190,6 +199,7 @@ def doInput(_nDeltaTime):
     global SelectionBounds, SelectionWorldBounds, SelectedEntityList
     global RenderSphereTree, Pause, SphereTreeBucketSize, SphereTreeSpeedFactor, RenderSphereTreeLevel, SphereTreeTeamFlags
     global HumanSimTraining, nCamSpeed, Boundary
+    global GamePaused
 
     resetKey = False
     mouseState, keyboardState, joystickState = Input.Manager.consumeEvent(InputManager, None)
@@ -204,24 +214,52 @@ def doInput(_nDeltaTime):
                 if KeyIndex == Foundation.Keycode.NUMPAD_8:
                     Camera0.setLookAt(Foundation.Vector3(0, 0, 10))
                     
+                '''
+                # Old method of moving paddle to relative positions
                 nCamSpeed = _nDeltaTime * CAMERA_SPEED
                 if KeyIndex == Foundation.Keycode.W:
-                    Boundary[0].move(Foundation.Vector3(0, 0, -6000 * _nDeltaTime))
+                    Boundary[0].move(Foundation.Vector3(0, 0, -16000 * _nDeltaTime))
                 elif KeyIndex == Foundation.Keycode.S:
-                    Boundary[0].move(Foundation.Vector3(0, 0, 6000 * _nDeltaTime))
+                    Boundary[0].move(Foundation.Vector3(0, 0, 16000 * _nDeltaTime))
+                '''
+
+                # New method of moving paddle to absolute positions, not the old relative
+                if KeyIndex == Foundation.Keycode._0:
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -1500))
+                elif KeyIndex == Foundation.Keycode._9:
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -1000))
+                elif KeyIndex == Foundation.Keycode._8:
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -500))
+                elif KeyIndex == Foundation.Keycode._7:
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 0))
+                elif KeyIndex == Foundation.Keycode._6:
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 500))
+                elif KeyIndex == Foundation.Keycode._5:
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 1000))
+                elif KeyIndex == Foundation.Keycode._4:
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 1500))
+                    
                 
                 if (TimerKeyDelay.getTime() > KEY_DELAY):
-                    if KeyIndex == Foundation.Keycode.Q:
-                        HumanSimTraining = not HumanSimTraining                   
-                        print "HumanSimTraining set to: ", HumanSimTraining
+                    if not GamePaused:
+                        if KeyIndex == Foundation.Keycode.Q:
+                            HumanSimTraining = not HumanSimTraining                   
+                            print "HumanSimTraining set to: ", HumanSimTraining
+                            TimerKeyDelay.reset()
+                        elif KeyIndex == Foundation.Keycode.E:
+                            BallMoving = not BallMoving
+                            print "Ball Moving set to: ", BallMoving
+                            TimerKeyDelay.reset()
+                        elif KeyIndex == Foundation.Keycode.A:
+                            ResetBall = True
+                            #SphereGraphic.setPosition(Foundation.Vector3(0, -100, 0))
+                            TimerKeyDelay.reset()
+                    
+                    if KeyIndex == Foundation.Keycode.P:
+                        GamePaused = not GamePaused
                         TimerKeyDelay.reset()
-                    elif KeyIndex == Foundation.Keycode.E:
-                        BallMoving = not BallMoving
-                        print "Ball Moving set to: ", BallMoving
-                        TimerKeyDelay.reset()
-                    elif KeyIndex == Foundation.Keycode.A:
-                        ResetBall = True
-                        #SphereGraphic.setPosition(Foundation.Vector3(0, -100, 0))
+                    elif KeyIndex == Foundation.Keycode.O:
+                        PongBall.update(0.02)
                         TimerKeyDelay.reset()
  
                 resetKey = True           
@@ -418,19 +456,22 @@ def schedulerTasklet():
         uMainTimer.reset()
         nDeltaTime = Foundation.f_clamp(nDeltaTime, 0.0, 0.1)
 
-        PongBall.update(nDeltaTime)
+        if (not GamePaused):
+            PongBall.update(nDeltaTime)
 
-        '''
-        # AI Player
-        if (PongBall.getPosition()[2] > Boundary[1].getPosition()[2] + 150):
-            Boundary[1].move(Foundation.Vector3(0, 0, 3000 * nDeltaTime))
-        elif (PongBall.getPosition()[2] < Boundary[1].getPosition()[2] - 150):
-            Boundary[1].move(Foundation.Vector3(0, 0, -3000 * nDeltaTime))
-        '''
+            '''
+            # AI Player
+            if (PongBall.getPosition()[2] > Boundary[1].getPosition()[2] + 150):
+                Boundary[1].move(Foundation.Vector3(0, 0, 3000 * nDeltaTime))
+            elif (PongBall.getPosition()[2] < Boundary[1].getPosition()[2] - 150):
+                Boundary[1].move(Foundation.Vector3(0, 0, -3000 * nDeltaTime))
+            '''
 
         # Human Simulation Training player
         if HumanSimTraining:
-            if (PongBall.getPosition()[0] < 2500):
+            if (PongBall.getPosition()[0] < 3500):
+                '''
+                # Old method of relative paddle movement
                 if (PongBall.getPosition()[2] > Boundary[0].getPosition()[2] + 250):
                     SendKeyPress("s")
                 elif (PongBall.getPosition()[2] < Boundary[0].getPosition()[2] + 250):
@@ -440,6 +481,33 @@ def schedulerTasklet():
                     SendKeyPress("w")
                 elif (PongBall.getPosition()[2] > Boundary[0].getPosition()[2] - 250):
                     SendKeyRelease("w")
+                '''
+
+                # New method of absolute paddle movement
+                yPos = PongBall.getPosition()[2];
+
+                SendKeyRelease("4")
+                SendKeyRelease("5")
+                SendKeyRelease("6")
+                SendKeyRelease("7")
+                SendKeyRelease("8")
+                SendKeyRelease("9")
+                SendKeyRelease("0")
+
+                if (yPos >= 1500):
+                    SendKeyPress("4")
+                elif (yPos < 1500 and yPos >= 1000):
+                    SendKeyPress("5")
+                elif (yPos < 1000 and yPos >= 500):
+                    SendKeyPress("6")
+                elif (yPos < 500 and yPos >= 0):
+                    SendKeyPress("7")
+                elif (yPos < 0 and yPos >= -500):
+                    SendKeyPress("8")
+                elif (yPos < -500 and yPos >= -1500):
+                    SendKeyPress("9")
+                elif (yPos < -1500):
+                    SendKeyPress("0")
             else:
                 SendKeyRelease("s")
                 SendKeyRelease("w")
@@ -473,13 +541,13 @@ def main(argv):
         # Init
         #Boundary = [Wall(0, 1, 5), Wall(1, 1, 5), Wall(2, 40, 1), Wall(3, 40, 1)]
         #Boundary = [Wall(0, 1, 5), Wall(1, 1, 15)]
-        Boundary = [Wall(0, 1, 5)]
+        Boundary = [Wall(0, 1.6, 5)]
         Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 0))
         #Boundary[1].setPosition(Foundation.Vector3(3000, 0, 0))
         
-        PongBall = Ball(100)
-        xVel = random.randint(2000, 3000) * -1
-        zVel = random.randint(2000, 3000) * (1 if random.randint(0, 1) == 1 else -1)
+        PongBall = Ball(200)
+        xVel = random.randint(1000, 2000) * -1
+        zVel = random.randint(1000, 2000) * (1 if random.randint(0, 1) == 1 else -1)
         PongBall.setVelocity(Foundation.Vector3(xVel, 0, zVel))
         
         # Start
