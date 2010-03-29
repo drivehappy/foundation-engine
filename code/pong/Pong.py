@@ -35,6 +35,9 @@ GamePaused      = False
 MouseEventChannel           = Foundation.Channel()
 SelectionCallbackChannel    = Foundation.Channel()
 
+Successful      = 0
+Unsuccessful    = 0
+
 # -----------------------------------------------
 # Inputs
 KEY_DELAY   = 0.15
@@ -107,8 +110,12 @@ class Ball:
         self.Velocity = velocity
 
     def reset(self):
+        global Successful, Unsuccessful
+
         self.setPosition(Foundation.Vector3(2500, 0, 0))
         self.resetVelocity()
+        if ((Successful > 0 or Unsuccessful > 0) and not HumanSimTraining):
+            print "Success Rate: " + str(((Successful * 1.) / (Successful + Unsuccessful)) * 100) + "% (S:" + str(Successful) + ", U:" + str(Unsuccessful) + ")"
 
     def resetVelocity(self):
         xVel = random.randint(1000, 2000) * -1
@@ -123,22 +130,27 @@ class Ball:
 
     def __checkCollision(self):
         global Boundary
+        global Successful, Unsuccessful
 
         # Check if out of bounds and paddle contact
         #if (self.Position[0] > 1900) and (abs(Boundary[1].getPosition()[2] - self.Position[2]) < 350):
         #    self.setPosition(Foundation.Vector3(1899, 0, self.Position[2]))
         #    self.Velocity[0] = -self.Velocity[0]
         #elif (self.Position[0] < -1900) and (abs(Boundary[0].getPosition()[2] - self.Position[2]) < 350):
-        if (self.Position[0] < -1900) and (abs(Boundary[0].getPosition()[2] - self.Position[2]) < 450):
+        if (self.Position[0] < -1900 and self.Position[0] > -2200) and (abs(Boundary[0].getPosition()[2] - self.Position[2]) < 450):
             self.setPosition(Foundation.Vector3(-1899, 0, self.Position[2]))
             self.Velocity[0] = -self.Velocity[0]
+            if not HumanSimTraining:
+                Successful += 1
             self.reset()
 
         # Simply check out of bounds
         #if (self.Position[0] > 2000) or (self.Position[0] < -2000):
         if (self.Position[0] < -3000):
             print "Reset: Ball pos =", self.Position[0], self.Position[2], " + Boundary pos =", Boundary[0].getPosition()[0], Boundary[0].getPosition()[2]
-            self.reset()      
+            if not HumanSimTraining:
+                Unsuccessful += 1
+            self.reset() 
  
         # Top and Bottom are always present 
         if (self.Position[2] > 1900):
@@ -225,19 +237,19 @@ def doInput(_nDeltaTime):
 
                 # New method of moving paddle to absolute positions, not the old relative
                 if KeyIndex == Foundation.Keycode._0:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -1500))
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -1600))
                 elif KeyIndex == Foundation.Keycode._9:
                     Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -1000))
                 elif KeyIndex == Foundation.Keycode._8:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -500))
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -400))
                 elif KeyIndex == Foundation.Keycode._7:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 0))
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 200))
                 elif KeyIndex == Foundation.Keycode._6:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 500))
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 800))
                 elif KeyIndex == Foundation.Keycode._5:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 1000))
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 1300))
                 elif KeyIndex == Foundation.Keycode._4:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 1500))
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 1800))
                     
                 
                 if (TimerKeyDelay.getTime() > KEY_DELAY):
@@ -509,8 +521,13 @@ def schedulerTasklet():
                 elif (yPos < -1500):
                     SendKeyPress("0")
             else:
-                SendKeyRelease("s")
-                SendKeyRelease("w")
+                SendKeyRelease("4")
+                SendKeyRelease("5")
+                SendKeyRelease("6")
+                SendKeyRelease("7")
+                SendKeyRelease("8")
+                SendKeyRelease("9")
+                SendKeyRelease("0")
 
         # Update Input
         if not doInput(nDeltaTime):
@@ -560,6 +577,15 @@ def main(argv):
 
     except KeyboardInterrupt:
         print "\n"
+
+    # Kill keys
+    SendKeyRelease("4")
+    SendKeyRelease("5")
+    SendKeyRelease("6")
+    SendKeyRelease("7")
+    SendKeyRelease("8")
+    SendKeyRelease("9")
+    SendKeyRelease("0")
 
     shutdown()
 
