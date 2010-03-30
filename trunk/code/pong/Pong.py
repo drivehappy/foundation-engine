@@ -82,6 +82,11 @@ MoveRight = False
 PongBall = None
 Boundary = None
 
+# Track last keyboard states so we're not overfilling our input buffer
+LastKeyboardState       = []
+CurrentKeyboardState    = []
+KeyIndexMapping         = ["4", "5", "6", "7", "8", "9", "0", "s", "w"]
+
 #
 class Ball:
     BallGraphic = None
@@ -226,15 +231,14 @@ def doInput(_nDeltaTime):
                 if KeyIndex == Foundation.Keycode.NUMPAD_8:
                     Camera0.setLookAt(Foundation.Vector3(0, 0, 10))
                     
-                '''
                 # Old method of moving paddle to relative positions
                 nCamSpeed = _nDeltaTime * CAMERA_SPEED
                 if KeyIndex == Foundation.Keycode.W:
                     Boundary[0].move(Foundation.Vector3(0, 0, -16000 * _nDeltaTime))
                 elif KeyIndex == Foundation.Keycode.S:
                     Boundary[0].move(Foundation.Vector3(0, 0, 16000 * _nDeltaTime))
-                '''
 
+                '''
                 # New method of moving paddle to absolute positions, not the old relative
                 if KeyIndex == Foundation.Keycode._0:
                     Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -1600))
@@ -250,7 +254,13 @@ def doInput(_nDeltaTime):
                     Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 1300))
                 elif KeyIndex == Foundation.Keycode._4:
                     Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 1800))
-                    
+                '''
+
+                if KeyIndex == Foundation.Keycode.P:
+                    GamePaused = not GamePaused
+                    print "Game Pause: " + str(GamePaused)
+                elif KeyIndex == Foundation.Keycode.O:
+                    PongBall.update(0.02)
                 
                 if (TimerKeyDelay.getTime() > KEY_DELAY):
                     if not GamePaused:
@@ -267,12 +277,6 @@ def doInput(_nDeltaTime):
                             #SphereGraphic.setPosition(Foundation.Vector3(0, -100, 0))
                             TimerKeyDelay.reset()
                     
-                    if KeyIndex == Foundation.Keycode.P:
-                        GamePaused = not GamePaused
-                        TimerKeyDelay.reset()
-                    elif KeyIndex == Foundation.Keycode.O:
-                        PongBall.update(0.02)
-                        TimerKeyDelay.reset()
  
                 resetKey = True           
             
@@ -417,6 +421,7 @@ def onMouseEvent(channel, header, data, size):
 # Main Tasklets
 def schedulerTasklet():
     global EntityManager, Camera0, HumanSimTraining, PongBall
+    global LastKeyboardState, CurrentKeyboardState
 
     # Ball movement vars    
     uBallMoveTimer = Foundation.Timer()
@@ -439,10 +444,13 @@ def schedulerTasklet():
     Xtst = CDLL("libXtst.so.6")
     Xlib = CDLL("libX11.so.6")
     dpy = Xtst.XOpenDisplay(None)
+
+    
+    LastKeyboardState = [False, False, False, False, False, False, False, False, False]
         
     # Helpers taken from:
     #  http://wwwx.cs.unc.edu/~gb/wp/blog/2007/11/16/sending-key-events-to-pygame-programs/
-    def SendInput( txt ):
+    def SendInput(txt):
         for c in txt:
             sym = Xlib.XStringToKeysym(c)
             code = Xlib.XKeysymToKeycode(dpy, sym)
@@ -461,6 +469,23 @@ def schedulerTasklet():
         code = Xlib.XKeysymToKeycode(dpy, sym)
         Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
         Xlib.XFlush(dpy)
+
+    # Testing new and improved keyboard handling to keep the input buffer sane
+    def UpdateKeyboardStates():
+        global CurrentKeyboardState, LastKeyboardState
+        for x in xrange(0, len(KeyIndexMapping)):
+            keyState = CurrentKeyboardState[x]
+            if (keyState != LastKeyboardState[x]):
+                key = KeyIndexMapping[x]
+
+                if (keyState == True):
+                    SendKeyPress(key)
+                else:
+                    SendKeyRelease(key)
+
+        LastKeyboardState = CurrentKeyboardState
+        CurrentKeyboardState = []
+        
 
     # Tasklet loop
     while True:
@@ -481,53 +506,37 @@ def schedulerTasklet():
 
         # Human Simulation Training player
         if HumanSimTraining:
+            CurrentKeyboardState = [False, False, False, False, False, False, False, False, False]
+
             if (PongBall.getPosition()[0] < 3500):
-                '''
                 # Old method of relative paddle movement
                 if (PongBall.getPosition()[2] > Boundary[0].getPosition()[2] + 250):
-                    SendKeyPress("s")
-                elif (PongBall.getPosition()[2] < Boundary[0].getPosition()[2] + 250):
-                    SendKeyRelease("s")
+                    CurrentKeyboardState[7] = True
+                elif (PongBall.getPosition()[2] < Boundary[0].getPosition()[2] - 250):
+                    CurrentKeyboardState[8] = True
 
-                if (PongBall.getPosition()[2] < Boundary[0].getPosition()[2] - 250):
-                    SendKeyPress("w")
-                elif (PongBall.getPosition()[2] > Boundary[0].getPosition()[2] - 250):
-                    SendKeyRelease("w")
                 '''
-
                 # New method of absolute paddle movement
                 yPos = PongBall.getPosition()[2];
 
-                SendKeyRelease("4")
-                SendKeyRelease("5")
-                SendKeyRelease("6")
-                SendKeyRelease("7")
-                SendKeyRelease("8")
-                SendKeyRelease("9")
-                SendKeyRelease("0")
 
                 if (yPos >= 1500):
-                    SendKeyPress("4")
+                    CurrentKeyboardState[0] = True
                 elif (yPos < 1500 and yPos >= 1000):
-                    SendKeyPress("5")
+                    CurrentKeyboardState[1] = True
                 elif (yPos < 1000 and yPos >= 500):
-                    SendKeyPress("6")
+                    CurrentKeyboardState[2] = True
                 elif (yPos < 500 and yPos >= 0):
-                    SendKeyPress("7")
+                    CurrentKeyboardState[3] = True
                 elif (yPos < 0 and yPos >= -500):
-                    SendKeyPress("8")
+                    CurrentKeyboardState[4] = True
                 elif (yPos < -500 and yPos >= -1500):
-                    SendKeyPress("9")
+                    CurrentKeyboardState[5] = True
                 elif (yPos < -1500):
-                    SendKeyPress("0")
-            else:
-                SendKeyRelease("4")
-                SendKeyRelease("5")
-                SendKeyRelease("6")
-                SendKeyRelease("7")
-                SendKeyRelease("8")
-                SendKeyRelease("9")
-                SendKeyRelease("0")
+                    CurrentKeyboardState[6] = True
+                '''
+
+            UpdateKeyboardStates()
 
         # Update Input
         if not doInput(nDeltaTime):
