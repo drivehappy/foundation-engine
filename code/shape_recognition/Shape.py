@@ -68,28 +68,32 @@ SelectionBounds         = Foundation.Vector4(0, 0, 0, 0)
 SelectionWorldBounds    = Foundation.Vector4(0, 0, 0, 0)
 SelectedEntityList      = []
 
-BallGraphic = None
-Paddle0Graphic = None
-Paddle1Graphic = None
+SphereGraphic           = None
+CubeGraphic             = None
+TriangleGraphic         = None
 
-HumanSimTraining = True
-BallMoving = True
-ResetBall = False
-MoveLeft = False
-MoveRight = False
+HumanSimTraining        = False
 
 #
-PongBall = None
-Boundary = None
+SphereEntity = None
+CubeEntity = None
+TriangleEntity = None
 
 # Track last keyboard states so we're not overfilling our input buffer
 LastKeyboardState       = []
 CurrentKeyboardState    = []
-KeyIndexMapping         = ["4", "5", "6", "7", "8", "9", "0", "s", "w"]
+KeyIndexMapping         = ["4", "5", "6"]
+    
+
+nShapeChangeState       = 0
+MovingShapes            = True
+Xtst                    = None
+Xlib                    = None
+dpy                     = None
 
 #
-class Ball:
-    BallGraphic = None
+class Sphere:
+    SphereGraphic = None
     Position = None
     Radius = 0
     Velocity = Foundation.Vector3(0, 0, 0)
@@ -97,117 +101,127 @@ class Ball:
     def __init__(self, radius):
         self.Radius = radius
 
-        self.BallGraphic = Foundation.EntityGraphic("SceneManager0", "Ball_Graphic");
-        self.BallGraphic.setMesh("sphere.mesh");
-        self.BallGraphic.setMaterial("splatting0");
-        self.BallGraphic.setScale(Foundation.Vector3(radius, radius, radius))
+        self.SphereGraphic = Foundation.EntityGraphic("SceneManager0", "Sphere_Graphic");
+        self.SphereGraphic.setMesh("sphere.mesh");
+        self.SphereGraphic.setMaterial("splatting0");
+        self.SphereGraphic.setScale(Foundation.Vector3(radius, radius, radius))
         
-        self.setPosition(Foundation.Vector3(0, 0, 0))
+        self.setPosition(Foundation.Vector3(-10000, 0, 0))
+
+        print "Sphere Created"
         
     def setPosition(self, position):
         self.Position = position
-        self.BallGraphic.setPosition(position)
+        self.SphereGraphic.setPosition(position)
         
     def getPosition(self):
         return self.Position
 
-    def setVelocity(self, velocity):
-        self.Velocity = velocity
-
-    def reset(self):
-        global Successful, Unsuccessful
-
-        self.setPosition(Foundation.Vector3(2500, 0, 0))
-        self.resetVelocity()
-        if ((Successful > 0 or Unsuccessful > 0) and not HumanSimTraining):
-            print "Success Rate: " + str(((Successful * 1.) / (Successful + Unsuccessful)) * 100) + "% (S:" + str(Successful) + ", U:" + str(Unsuccessful) + ")"
-
-    def resetVelocity(self):
-        xVel = random.randint(1000, 2000) * -1
-        zVel = random.randint(0, 2000) * (1 if random.randint(0, 1) == 1 else -1)
-        self.setVelocity(Foundation.Vector3(xVel, 0, zVel))
-
-    def update(self, nDeltaTime):
-        self.Position += self.Velocity * nDeltaTime
-        self.BallGraphic.setPosition(self.Position)
-
-        self.__checkCollision()
-
-    def __checkCollision(self):
-        global Boundary
-        global Successful, Unsuccessful
-
-        # Check if out of bounds and paddle contact
-        #if (self.Position[0] > 1900) and (abs(Boundary[1].getPosition()[2] - self.Position[2]) < 350):
-        #    self.setPosition(Foundation.Vector3(1899, 0, self.Position[2]))
-        #    self.Velocity[0] = -self.Velocity[0]
-        #elif (self.Position[0] < -1900) and (abs(Boundary[0].getPosition()[2] - self.Position[2]) < 350):
-        if (self.Position[0] < -1900 and self.Position[0] > -2200) and (abs(Boundary[0].getPosition()[2] - self.Position[2]) < 450):
-            self.setPosition(Foundation.Vector3(-1899, 0, self.Position[2]))
-            self.Velocity[0] = -self.Velocity[0]
-            if not HumanSimTraining:
-                Successful += 1
-            self.reset()
-
-        # Simply check out of bounds
-        #if (self.Position[0] > 2000) or (self.Position[0] < -2000):
-        if (self.Position[0] < -3000):
-            print "Reset: Ball pos =", self.Position[0], self.Position[2], " + Boundary pos =", Boundary[0].getPosition()[0], Boundary[0].getPosition()[2]
-            if not HumanSimTraining:
-                Unsuccessful += 1
-            self.reset() 
- 
-        # Top and Bottom are always present 
-        if (self.Position[2] > 1900):
-            self.setPosition(Foundation.Vector3(self.Position[0], 0, 1899))
-            self.Velocity[2] = -self.Velocity[2]
-        elif (self.Position[2] < -1900):
-            self.setPosition(Foundation.Vector3(self.Position[0], 0, -1899))
-            self.Velocity[2] = -self.Velocity[2]
-
+    def setVisible(self, visible):
+        if visible:
+            if MovingShapes:
+                xPos = random.randint(-1000, 1000)
+                yPos = random.randint(-1000, 1000)
+                self.setPosition(Foundation.Vector3(xPos, 0, yPos))
+            else:
+                self.setPosition(Foundation.Vector3(0, 0, 0))
+        else:
+            self.setPosition(Foundation.Vector3(-10000, 0, 0))
     
-class Wall:
+
+class Cube:
     Graphic = None
     Position = None
     Length = 0
     Width = 0
 
-    def __init__(self, id, length, width):
-        self.Length = length
-        self.Width = width
+    def __init__(self, size):
+        self.Length = size
+        self.Width = size
         self.Graphic = None
         
-        if id == 0:
-            self.Graphic = Foundation.EntityGraphic("SceneManager0", "Wall_Graphic" + str(id));
-            self.Graphic.setMesh("cube.mesh");
-            self.Graphic.setMaterial("splatting0");
-            self.Graphic.setScale(Foundation.Vector3(length, 0, width))
+        self.Graphic = Foundation.EntityGraphic("SceneManager0", "Cube_Graphic" + str(id));
+        self.Graphic.setMesh("cube.mesh");
+        self.Graphic.setMaterial("splatting0");
+        self.Graphic.setScale(Foundation.Vector3(size, 0, size))
         
-        self.setPosition(Foundation.Vector3(0, 0, 0))
+        self.setPosition(Foundation.Vector3(-10000, 0, 0))
         
-    def setBounds(self):
-        if (self.Position[2] > 1500):
-            self.Position[2] = 1500
-        elif (self.Position[2] < -1500):
-            self.Position[2] = -1500
-
+        print "Cube Created"
+        
     def setPosition(self, position):
         self.Position = position
-        self.setBounds()
         if self.Graphic:
             self.Graphic.setPosition(position)
         
     def getPosition(self):
         return self.Position
 
-    def move(self, offset):
-        self.Position += offset
-        self.setBounds()
-        if self.Graphic:
-            self.Graphic.setPosition(self.Position)
-        
-
+    def setVisible(self, visible):
+        if visible:
+            if MovingShapes:
+                xPos = random.randint(-1000, 1000)
+                yPos = random.randint(-1000, 1000)
+                self.setPosition(Foundation.Vector3(xPos, 0, yPos))
+            else:
+                self.setPosition(Foundation.Vector3(0, 0, 0))
+        else:
+            self.setPosition(Foundation.Vector3(-10000, 0, 0))
     
+
+class Triangle:
+    Graphic = None
+    Position = None
+    Length = 0
+    Width = 0
+
+    def __init__(self, size):
+        self.Length = size
+        self.Width = size
+        self.Graphic = None
+        
+        self.Graphic = Foundation.EntityGraphic("SceneManager0", "Triangle_Graphic" + str(id));
+        self.Graphic.setMesh("triangle.mesh");
+        self.Graphic.setMaterial("splatting0");
+        self.Graphic.setScale(Foundation.Vector3(size, 0, size))
+        
+        self.setPosition(Foundation.Vector3(-10000, 0, 0))
+        
+        print "Triangle Created"
+        
+    def setPosition(self, position):
+        self.Position = position
+        if self.Graphic:
+            self.Graphic.setPosition(position)
+        
+    def getPosition(self):
+        return self.Position
+       
+    def setVisible(self, visible):
+        if visible:
+            if MovingShapes:
+                xPos = random.randint(-1000, 1000)
+                yPos = random.randint(-1000, 1000)
+                self.setPosition(Foundation.Vector3(xPos, 0, yPos))
+            else:
+                self.setPosition(Foundation.Vector3(0, 0, 0))
+        else:
+            self.setPosition(Foundation.Vector3(-10000, 0, 0))
+    
+
+# -----------------------------------------------
+# User pressed a key, check if it matches the shape on the screen
+def doShapeCheck(shape):
+    
+    if shape == "triangle" and nShapeChangeState == 0:
+        pass
+    elif shape == "cube" and nShapeChangeState == 1:
+        pass
+    elif shape == "sphere" and nShapeChangeState == 2:
+        pass
+    else:
+        print "Incorrect shape selected: " + shape
+
 # ------------------------------------------------
 # InputWork
 def doInput(_nDeltaTime):
@@ -217,6 +231,7 @@ def doInput(_nDeltaTime):
     global RenderSphereTree, Pause, SphereTreeBucketSize, SphereTreeSpeedFactor, RenderSphereTreeLevel, SphereTreeTeamFlags
     global HumanSimTraining, nCamSpeed, Boundary
     global GamePaused
+    global CurrentKeyboardState
 
     resetKey = False
     mouseState, keyboardState, joystickState = Input.Manager.consumeEvent(InputManager, None)
@@ -231,84 +246,34 @@ def doInput(_nDeltaTime):
                 if KeyIndex == Foundation.Keycode.NUMPAD_8:
                     Camera0.setLookAt(Foundation.Vector3(0, 0, 10))
                     
-                # Old method of moving paddle to relative positions
-                nCamSpeed = _nDeltaTime * CAMERA_SPEED
-                if KeyIndex == Foundation.Keycode.W:
-                    Boundary[0].move(Foundation.Vector3(0, 0, -16000 * _nDeltaTime))
-                elif KeyIndex == Foundation.Keycode.S:
-                    Boundary[0].move(Foundation.Vector3(0, 0, 16000 * _nDeltaTime))
-
-                '''
-                # New method of moving paddle to absolute positions, not the old relative
-                if KeyIndex == Foundation.Keycode._0:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -1600))
-                elif KeyIndex == Foundation.Keycode._9:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -1000))
-                elif KeyIndex == Foundation.Keycode._8:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -400))
-                elif KeyIndex == Foundation.Keycode._7:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 200))
-                elif KeyIndex == Foundation.Keycode._6:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 800))
+                # Keys that specify which shape is currently on the screen
+                if KeyIndex == Foundation.Keycode._4:
+                    doShapeCheck("triangle")
                 elif KeyIndex == Foundation.Keycode._5:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 1300))
-                elif KeyIndex == Foundation.Keycode._4:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 1800))
-                '''
+                    doShapeCheck("cube")
+                elif KeyIndex == Foundation.Keycode._6:
+                    doShapeCheck("sphere")
 
+                # --
                 if KeyIndex == Foundation.Keycode.P:
                     GamePaused = not GamePaused
                     print "Game Pause: " + str(GamePaused)
-                elif KeyIndex == Foundation.Keycode.O:
-                    PongBall.update(0.02)
                 
                 if (TimerKeyDelay.getTime() > KEY_DELAY):
-                    if not GamePaused:
-                        if KeyIndex == Foundation.Keycode.Q:
-                            HumanSimTraining = not HumanSimTraining                   
-                            print "HumanSimTraining set to: ", HumanSimTraining
-                            TimerKeyDelay.reset()
-                        elif KeyIndex == Foundation.Keycode.E:
-                            BallMoving = not BallMoving
-                            print "Ball Moving set to: ", BallMoving
-                            TimerKeyDelay.reset()
-                        elif KeyIndex == Foundation.Keycode.A:
-                            ResetBall = True
-                            #SphereGraphic.setPosition(Foundation.Vector3(0, -100, 0))
-                            TimerKeyDelay.reset()
+                    if KeyIndex == Foundation.Keycode.Q:
+                        HumanSimTraining = not HumanSimTraining                   
+                        print "HumanSimTraining set to: ", HumanSimTraining
+                        TimerKeyDelay.reset()
+
+                        if not HumanSimTraining:
+                            CurrentKeyboardState = [False, False, False]
+                            UpdateKeyboardStates()
                     
- 
                 resetKey = True           
             
         if resetKey:
             KeyboardStateChange.assign(keyboardState)
             TimerKeyDelay.reset()
-
-    # Mouse
-    if mouseState:
-        # Our left mouse button just went down, create an intersection point
-        if mouseState.Button0 and not MouseStateChange.Button0:
-            pass
-
-        # Out left mouse button is still down, update our selection line
-        elif mouseState.Button0 and MouseStateChange.Button0:
-            pass
-
-        # Our left mouse button just went up, do picking across our selection area
-        elif not mouseState.Button0 and MouseStateChange.Button0:
-            pass
-
-#        MouseStateChange.assign(mouseState)
-
-    # Joystick
-    if joystickState:
-        if (joystickState.Index == 0):
-            Joystick0StateChange.assign(joystickState)
-        elif (joystickState.Index == 1):
-            Joystick1StateChange.assign(joystickState)
-
-    if joystickState:
-        pass
 
     return True
 
@@ -320,7 +285,7 @@ def initManagers():
 
     # Init Graphics
     HTTPLogger().writeContent(LoggerError.NONE, "[GraphicManager] Initializing...")
-    bResult = GraphicManager.initialize("Pong - Playground for NeuroVisual Control - Test3")
+    bResult = GraphicManager.initialize("ShapeRecognition - Playground for nvc - Test4")
     if bResult:
         GraphicManager.showCursor(False)
         GraphicManager.addSceneManager("SceneManager0")
@@ -339,16 +304,6 @@ def initManagers():
     nWindowHandle = GraphicManager.getWindowHandle()
     InputManager.initialize(nWindowHandle)
     Scheduler.AddTask(InputManager.getTaskCapture(), 1, 0)
-
-    # Init our mouse button event callback function
-    #MouseEventChannel.Channel_Join("MOUSE_EVENTS", onMouseEvent)
-    #print " - [InputManager] Success."
-
-    # Init EntityManager
-    #print " - [EntityManager] Initializing..."
-    #EntityManager = Entity.Manager.Manager("../../data/scarabEntityTypes.yaml", "../../data/scarabWeaponTypes.yaml")
-    #Scheduler.AddTask(EntityManager.Task, 1, 0)
-    #print " - [EntityManager] Success."
 
     return True
 
@@ -397,36 +352,56 @@ def cleanupManagers():
         HTTPLogger().writeContent(LoggerError.ERROR, "[Scheduler] Scheduler is already destroyed.")
 
 
-# --------------------------------------------------
-# MouseEventCallback
-def onMouseEvent(channel, header, data, size):
 
-    # Mouse move
-    sButton = data
-    if header == 2:
-        for i in range(0, 9):
-            if sButton == "Btn_Entity_Create" + str(i):
-                #print sButton, "pressed", "ENTITY =", SelectedEntityList[0].getCreationAbilities()[i]
-                if (len(SelectedEntityList) > 0) :
-                    sType = SelectedEntityList[0].creationAbilities[i]
-                    SelectedEntityList[0].createUnit(EntityManager.getEntityTypeFromName(sType))
-                    print "+ GUI Selected Unit of Type %s From Unit %s" % (sType, SelectedEntityList[0])
-                else:
-                    print "No Entity Selected"
+# Testing new and improved keyboard handling to keep the input buffer sane
+def UpdateKeyboardStates():
+    global CurrentKeyboardState, LastKeyboardState
+    for x in xrange(0, len(KeyIndexMapping)):
+        keyState = CurrentKeyboardState[x]
+        if (keyState != LastKeyboardState[x]):
+            key = KeyIndexMapping[x]
 
-    elif header == 3:
-        pass
+            if (keyState == True):
+                SendKeyPress(key)
+            else:
+                SendKeyRelease(key)
+
+    LastKeyboardState = CurrentKeyboardState
+    CurrentKeyboardState = []
+        
+# Helpers taken from:
+#  http://wwwx.cs.unc.edu/~gb/wp/blog/2007/11/16/sending-key-events-to-pygame-programs/
+def SendInput(txt):
+    for c in txt:
+        sym = Xlib.XStringToKeysym(c)
+        code = Xlib.XKeysymToKeycode(dpy, sym)
+        Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
+        Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
+    Xlib.XFlush(dpy)
+
+def SendKeyPress(key):
+    sym = Xlib.XStringToKeysym(str(key))
+    code = Xlib.XKeysymToKeycode(dpy, sym)
+    Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
+    Xlib.XFlush(dpy)
+
+def SendKeyRelease(key):
+    sym = Xlib.XStringToKeysym(str(key))
+    code = Xlib.XKeysymToKeycode(dpy, sym)
+    Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
+    Xlib.XFlush(dpy)
 
 # ------------------------------------------------
 # Main Tasklets
 def schedulerTasklet():
-    global EntityManager, Camera0, HumanSimTraining, PongBall
+    global EntityManager, Camera0, HumanSimTraining
+    global SphereEntity, CubeEntity, TriangleEntity
     global LastKeyboardState, CurrentKeyboardState
+    global nShapeChangeState 
 
-    # Ball movement vars    
-    uBallMoveTimer = Foundation.Timer()
-    nBallTargetPosition = Foundation.Vector3(0,0,0)
-    nBallOrgPosition = Foundation.Vector3(0,0,0)    
+    # Shape change vars
+    nShapeChangeLastState = 0
+    nShapeChangeTimer = Foundation.Timer()
     nBallPosition = Foundation.Vector3(0,0,0)
     positionScale = 1
     movementTime = 1
@@ -440,51 +415,7 @@ def schedulerTasklet():
     uKeyTimer = Foundation.Timer()
     keyDelayTime = 0.015
     
-    # Setup keyboard inject    
-    Xtst = CDLL("libXtst.so.6")
-    Xlib = CDLL("libX11.so.6")
-    dpy = Xtst.XOpenDisplay(None)
-
-    
-    LastKeyboardState = [False, False, False, False, False, False, False, False, False]
-        
-    # Helpers taken from:
-    #  http://wwwx.cs.unc.edu/~gb/wp/blog/2007/11/16/sending-key-events-to-pygame-programs/
-    def SendInput(txt):
-        for c in txt:
-            sym = Xlib.XStringToKeysym(c)
-            code = Xlib.XKeysymToKeycode(dpy, sym)
-            Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
-            Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
-        Xlib.XFlush(dpy)
-
-    def SendKeyPress(key):
-        sym = Xlib.XStringToKeysym(str(key))
-        code = Xlib.XKeysymToKeycode(dpy, sym)
-        Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
-        Xlib.XFlush(dpy)
-
-    def SendKeyRelease(key):
-        sym = Xlib.XStringToKeysym(str(key))
-        code = Xlib.XKeysymToKeycode(dpy, sym)
-        Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
-        Xlib.XFlush(dpy)
-
-    # Testing new and improved keyboard handling to keep the input buffer sane
-    def UpdateKeyboardStates():
-        global CurrentKeyboardState, LastKeyboardState
-        for x in xrange(0, len(KeyIndexMapping)):
-            keyState = CurrentKeyboardState[x]
-            if (keyState != LastKeyboardState[x]):
-                key = KeyIndexMapping[x]
-
-                if (keyState == True):
-                    SendKeyPress(key)
-                else:
-                    SendKeyRelease(key)
-
-        LastKeyboardState = CurrentKeyboardState
-        CurrentKeyboardState = []
+    LastKeyboardState = [False, False, False]
         
 
     # Tasklet loop
@@ -494,47 +425,38 @@ def schedulerTasklet():
         nDeltaTime = Foundation.f_clamp(nDeltaTime, 0.0, 0.1)
 
         if (not GamePaused):
-            PongBall.update(nDeltaTime)
+            # Update the shape on the screen
+            if (nShapeChangeTimer.getTime() > 2):
+                nShapeChangeState += 1
+                nShapeChangeTimer.reset()
 
-            '''
-            # AI Player
-            if (PongBall.getPosition()[2] > Boundary[1].getPosition()[2] + 150):
-                Boundary[1].move(Foundation.Vector3(0, 0, 3000 * nDeltaTime))
-            elif (PongBall.getPosition()[2] < Boundary[1].getPosition()[2] - 150):
-                Boundary[1].move(Foundation.Vector3(0, 0, -3000 * nDeltaTime))
-            '''
+            if (nShapeChangeLastState != nShapeChangeState):
+                if (nShapeChangeState > 2):
+                    nShapeChangeState = 0
+                nShapeChangeLastState = nShapeChangeState
+
+                print "New Shape State: " + str(nShapeChangeState)
+    
+                if (nShapeChangeState == 0):
+                    SphereEntity.setVisible(False)
+                    CubeEntity.setVisible(False)
+                    TriangleEntity.setVisible(True)
+                elif (nShapeChangeState == 1):
+                    SphereEntity.setVisible(True)
+                    CubeEntity.setVisible(False)
+                    TriangleEntity.setVisible(False)
+                elif (nShapeChangeState == 2):
+                    TriangleEntity.setVisible(False)
+                    SphereEntity.setVisible(False)
+                    CubeEntity.setVisible(True)
+        else:
+            print "Game Paused" 
 
         # Human Simulation Training player
         if HumanSimTraining:
-            CurrentKeyboardState = [False, False, False, False, False, False, False, False, False]
+            CurrentKeyboardState = [False, False, False]
 
-            if (PongBall.getPosition()[0] < 3500):
-                # Old method of relative paddle movement
-                if (PongBall.getPosition()[2] > Boundary[0].getPosition()[2] + 250):
-                    CurrentKeyboardState[7] = True
-                elif (PongBall.getPosition()[2] < Boundary[0].getPosition()[2] - 250):
-                    CurrentKeyboardState[8] = True
-
-                '''
-                # New method of absolute paddle movement
-                yPos = PongBall.getPosition()[2];
-
-
-                if (yPos >= 1500):
-                    CurrentKeyboardState[0] = True
-                elif (yPos < 1500 and yPos >= 1000):
-                    CurrentKeyboardState[1] = True
-                elif (yPos < 1000 and yPos >= 500):
-                    CurrentKeyboardState[2] = True
-                elif (yPos < 500 and yPos >= 0):
-                    CurrentKeyboardState[3] = True
-                elif (yPos < 0 and yPos >= -500):
-                    CurrentKeyboardState[4] = True
-                elif (yPos < -500 and yPos >= -1500):
-                    CurrentKeyboardState[5] = True
-                elif (yPos < -1500):
-                    CurrentKeyboardState[6] = True
-                '''
+            CurrentKeyboardState[nShapeChangeState] = True
 
             UpdateKeyboardStates()
 
@@ -553,7 +475,13 @@ def schedulerTasklet():
 # ------------------------------------------------
 # Entry Point
 def main(argv):
-    global EntityManager, PongBall, Boundary
+    global EntityManager, SphereEntity, CubeEntity, TriangleEntity
+    global Xtst, Xlib, dpy
+    
+    # Setup keyboard inject    
+    Xtst = CDLL("libXtst.so.6")
+    Xlib = CDLL("libX11.so.6")
+    dpy = Xtst.XOpenDisplay(None)
 
     random.seed()
 
@@ -565,16 +493,9 @@ def main(argv):
         initManagers()
 
         # Init
-        #Boundary = [Wall(0, 1, 5), Wall(1, 1, 5), Wall(2, 40, 1), Wall(3, 40, 1)]
-        #Boundary = [Wall(0, 1, 5), Wall(1, 1, 15)]
-        Boundary = [Wall(0, 1.6, 5)]
-        Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 0))
-        #Boundary[1].setPosition(Foundation.Vector3(3000, 0, 0))
-        
-        PongBall = Ball(200)
-        xVel = random.randint(1000, 2000) * -1
-        zVel = random.randint(1000, 2000) * (1 if random.randint(0, 1) == 1 else -1)
-        PongBall.setVelocity(Foundation.Vector3(xVel, 0, zVel))
+        CubeEntity = Cube(10)
+        SphereEntity = Sphere(400)
+        TriangleEntity = Triangle(400)
         
         # Start
         stackless.tasklet(schedulerTasklet)()
@@ -587,20 +508,16 @@ def main(argv):
     except KeyboardInterrupt:
         print "\n"
 
-    # Kill keys
-    SendKeyRelease("4")
-    SendKeyRelease("5")
-    SendKeyRelease("6")
-    SendKeyRelease("7")
-    SendKeyRelease("8")
-    SendKeyRelease("9")
-    SendKeyRelease("0")
+    print "Shutting down X display..."
+    Xtst.XCloseDisplay(dpy)
 
     shutdown()
 
 # ------------------------------------------------
 # Shutdown
 def shutdown():
+    global CurrentKeyboardState
+
     print "Shutting down..."
 
     # Cleanup
@@ -610,4 +527,9 @@ def shutdown():
     HTTPLogger().writeContent(LoggerError.SUCCESS, "Shutdown Complete")
     HTTPLogger().endTable()
     HTTPLogger().closeLog()
+
+    CurrentKeyboardState = [False, False, False]
+    UpdateKeyboardStates()
+
+    print "Shutdown game complete"
 

@@ -46,3 +46,8 @@ program:
         script: Pong
         profiling: False
 
+    shape_recognition:
+        folder: shape_recognition
+        script: Shape
+        profiling: False
+
