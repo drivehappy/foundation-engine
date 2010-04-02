@@ -19,10 +19,10 @@ ENABLE_PHYSIC   = true
 ENABLE_AUDIO    = true
 
 if (linux) then
-    GRAPHIC_LIB_INCDIR  = "/usr/local/include/OGRE"
+    GRAPHIC_LIB_INCDIR  = "/usr/include/OGRE"
     GUI_LIB_INCDIR      = "/usr/local/include/MYGUI"
     NETWORK_LIB_INCDIR  = "/usr/local/include/raknet"
-    INPUT_LIB_INCDIR    = "/usr/local/include/OIS"
+    INPUT_LIB_INCDIR    = "/usr//include/OIS"
     PHYSIC_LIB_INCDIR   = { "/usr/local/include/bullet" }
     AUDIO_LIB_INCDIR    = "/usr/local/include/fmodex"
 elseif (windows) then
@@ -36,7 +36,7 @@ end
 
 --- 32bit Library paths
 if (linux) then
-    GRAPHIC_LIB_BINDIR_32BIT    = "/usr/local/lib"
+    GRAPHIC_LIB_BINDIR_32BIT    = "/usr/lib/OGRE"
     INPUT_LIB_BINDIR_32BIT      = "/usr/local/lib"
     PHYSIC_LIB_BINDIR_32BIT     = "/usr/local/lib"
     AUDIO_LIB_BINDIR_32BIT      = "/usr/local/lib"
@@ -58,9 +58,9 @@ if (linux) then
     GRAPHIC_LIB_NAME_DEBUG      = "OgreMain"
     INPUT_LIB_NAME_DEBUG        = "OIS"
     GUI_LIB_NAME_DEBUG          = "mygui"
-    NETWORK_LIB_NAME_DEBUG      = "raknet"
-    PHYSIC_LIB_NAME_DEBUG       = { "bulletcollision", "bulletmath" }
-    AUDIO_LIB_NAME_DEBUG        = "fmodex-4.26.08"
+    NETWORK_LIB_NAME_DEBUG      = "RakNet"
+    PHYSIC_LIB_NAME_DEBUG       = { "BulletCollision", "LinearMath" }
+    AUDIO_LIB_NAME_DEBUG        = "fmodex-4.30.00"
 
     GRAPHIC_LIB_NAME            = "OgreMain"
     INPUT_LIB_NAME              = "OIS"
@@ -95,7 +95,7 @@ end
 
 -- Foundation: Generate proper include paths depending upon what is enabled from above
 if (linux) then
-    incpathExternalLibs = { "/usr/include/python2.5",
+    incpathExternalLibs = { "/usr/include/python2.6",
                             "../../libs/boost/inc",
                             "../../libs/etm/inc",
                             "/usr/local/include/ET",
@@ -122,13 +122,13 @@ if (linux) then
                             
     LIBDIR_FOUNDATIONPYTHON_DEBUG = { 
                             "../../bin/debug",
-                            "/usr/local/lib/python2.5",
+                            "/usr/local/lib/python2.6",
                             GRAPHIC_LIB_BINDIR_32BIT,
                             PHYSIC_LIB_BINDIR_32BIT,
                             AUDIO_LIB_BINDIR_32BIT }
     LIBDIR_FOUNDATIONPYTHON_RELEASE = { 
                             "../../bin/release",
-                            "/usr/local/lib/python2.5",
+                            "/usr/local/lib/python2.6",
                             GRAPHIC_LIB_BINDIR_32BIT,
                             PHYSIC_LIB_BINDIR_32BIT,
                             AUDIO_LIB_BINDIR_32BIT }
@@ -215,7 +215,7 @@ if (windows) then
     libfileAllRelease = { libfilePython, libfileBtOgre, libfilePython }
 elseif (linux) then
     project.path = "./gnuc"
-    libfilePython = "python2.5"
+    libfilePython = "python2.6"
     libfileUUID = "uuid"
     -- libfileTerrain = "EditableTerrain";
 
