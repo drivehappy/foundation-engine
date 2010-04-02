@@ -72,7 +72,7 @@ SphereGraphic           = None
 CubeGraphic             = None
 TriangleGraphic         = None
 
-HumanSimTraining        = False
+HumanSimTraining        = True
 
 #
 SphereEntity = None
@@ -248,10 +248,13 @@ def doInput(_nDeltaTime):
                     
                 # Keys that specify which shape is currently on the screen
                 if KeyIndex == Foundation.Keycode._4:
+                    print "Tri"
                     doShapeCheck("triangle")
                 elif KeyIndex == Foundation.Keycode._5:
+                    print "Cub"
                     doShapeCheck("cube")
                 elif KeyIndex == Foundation.Keycode._6:
+                    print "Sphere"
                     doShapeCheck("sphere")
 
                 # --
@@ -356,9 +359,11 @@ def cleanupManagers():
 # Testing new and improved keyboard handling to keep the input buffer sane
 def UpdateKeyboardStates():
     global CurrentKeyboardState, LastKeyboardState
+
     for x in xrange(0, len(KeyIndexMapping)):
         keyState = CurrentKeyboardState[x]
         if (keyState != LastKeyboardState[x]):
+            print "KeyChangeState: " + KeyIndexMapping[x] + ", " + str(keyState)
             key = KeyIndexMapping[x]
 
             if (keyState == True):
@@ -371,21 +376,17 @@ def UpdateKeyboardStates():
         
 # Helpers taken from:
 #  http://wwwx.cs.unc.edu/~gb/wp/blog/2007/11/16/sending-key-events-to-pygame-programs/
-def SendInput(txt):
-    for c in txt:
-        sym = Xlib.XStringToKeysym(c)
-        code = Xlib.XKeysymToKeycode(dpy, sym)
-        Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
-        Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
-    Xlib.XFlush(dpy)
-
 def SendKeyPress(key):
+    print "Keydown: " + str(key)
+
     sym = Xlib.XStringToKeysym(str(key))
     code = Xlib.XKeysymToKeycode(dpy, sym)
     Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
     Xlib.XFlush(dpy)
 
 def SendKeyRelease(key):
+    print "Keyup: " + str(key)
+
     sym = Xlib.XStringToKeysym(str(key))
     code = Xlib.XKeysymToKeycode(dpy, sym)
     Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
