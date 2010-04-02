@@ -59,14 +59,14 @@ if (linux) then
     INPUT_LIB_NAME_DEBUG        = "OIS"
     GUI_LIB_NAME_DEBUG          = "mygui"
     NETWORK_LIB_NAME_DEBUG      = "RakNet"
-    PHYSIC_LIB_NAME_DEBUG       = { "BulletCollision", "LinearMath" }
+    PHYSIC_LIB_NAME_DEBUG       = { "BulletCollision", "BulletDynamics", "LinearMath" }
     AUDIO_LIB_NAME_DEBUG        = "fmodex-4.30.00"
 
     GRAPHIC_LIB_NAME            = "OgreMain"
     INPUT_LIB_NAME              = "OIS"
     GUI_LIB_NAME                = "mygui"
     NETWORK_LIB_NAME            = "RakNet"
-    PHYSIC_LIB_NAME             = { "BulletCollision", "LinearMath" }
+    PHYSIC_LIB_NAME             = { "BulletCollision", "BulletDynamics", "LinearMath" }
     AUDIO_LIB_NAME              = "fmodex-4.30.00"
 elseif (windows) then
     GRAPHIC_LIB_NAME_DEBUG      = "OgreMain_d"
