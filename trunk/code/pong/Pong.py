@@ -565,11 +565,8 @@ def main(argv):
         initManagers()
 
         # Init
-        #Boundary = [Wall(0, 1, 5), Wall(1, 1, 5), Wall(2, 40, 1), Wall(3, 40, 1)]
-        #Boundary = [Wall(0, 1, 5), Wall(1, 1, 15)]
         Boundary = [Wall(0, 1.6, 5)]
         Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 0))
-        #Boundary[1].setPosition(Foundation.Vector3(3000, 0, 0))
         
         PongBall = Ball(200)
         xVel = random.randint(1000, 2000) * -1
@@ -587,15 +584,6 @@ def main(argv):
     except KeyboardInterrupt:
         print "\n"
 
-    # Kill keys
-    SendKeyRelease("4")
-    SendKeyRelease("5")
-    SendKeyRelease("6")
-    SendKeyRelease("7")
-    SendKeyRelease("8")
-    SendKeyRelease("9")
-    SendKeyRelease("0")
-
     shutdown()
 
 # ------------------------------------------------
@@ -610,4 +598,6 @@ def shutdown():
     HTTPLogger().writeContent(LoggerError.SUCCESS, "Shutdown Complete")
     HTTPLogger().endTable()
     HTTPLogger().closeLog()
+
+    print "Pong done"
 
