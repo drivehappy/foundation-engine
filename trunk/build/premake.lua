@@ -23,7 +23,7 @@ if (linux) then
     GUI_LIB_INCDIR      = "/usr/local/include/MYGUI"
     NETWORK_LIB_INCDIR  = "/usr/local/include/raknet"
     INPUT_LIB_INCDIR    = "/usr//include/OIS"
-    PHYSIC_LIB_INCDIR   = { "/usr/local/include/bullet" }
+    PHYSIC_LIB_INCDIR   = { "/usr/local/include/Bullet" }
     AUDIO_LIB_INCDIR    = "/usr/local/include/fmodex"
 elseif (windows) then
     GRAPHIC_LIB_INCDIR  = "../../libs/ogre/inc"
@@ -65,9 +65,9 @@ if (linux) then
     GRAPHIC_LIB_NAME            = "OgreMain"
     INPUT_LIB_NAME              = "OIS"
     GUI_LIB_NAME                = "mygui"
-    NETWORK_LIB_NAME            = "raknet"
-    PHYSIC_LIB_NAME             = { "bulletcollision", "bulletmath" }
-    AUDIO_LIB_NAME              = "fmodex-4.26.08"
+    NETWORK_LIB_NAME            = "RakNet"
+    PHYSIC_LIB_NAME             = { "BulletCollision", "LinearMath" }
+    AUDIO_LIB_NAME              = "fmodex-4.30.00"
 elseif (windows) then
     GRAPHIC_LIB_NAME_DEBUG      = "OgreMain_d"
     GUI_LIB_NAME_DEBUG          = "MyGUI_d"
