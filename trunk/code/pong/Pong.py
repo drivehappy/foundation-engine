@@ -230,31 +230,38 @@ def doInput(_nDeltaTime):
 
                 if KeyIndex == Foundation.Keycode.NUMPAD_8:
                     Camera0.setLookAt(Foundation.Vector3(0, 0, 10))
-                    
+                   
+                ''' 
                 # Old method of moving paddle to relative positions
                 nCamSpeed = _nDeltaTime * CAMERA_SPEED
                 if KeyIndex == Foundation.Keycode.W:
                     Boundary[0].move(Foundation.Vector3(0, 0, -16000 * _nDeltaTime))
                 elif KeyIndex == Foundation.Keycode.S:
                     Boundary[0].move(Foundation.Vector3(0, 0, 16000 * _nDeltaTime))
-
                 '''
+
                 # New method of moving paddle to absolute positions, not the old relative
                 if KeyIndex == Foundation.Keycode._0:
                     Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -1600))
+                    print "Received: 0"
                 elif KeyIndex == Foundation.Keycode._9:
                     Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -1000))
+                    print "Received: 9"
                 elif KeyIndex == Foundation.Keycode._8:
                     Boundary[0].setPosition(Foundation.Vector3(-2000, 0, -400))
+                    print "Received: 8"
                 elif KeyIndex == Foundation.Keycode._7:
                     Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 200))
+                    print "Received: 7"
                 elif KeyIndex == Foundation.Keycode._6:
                     Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 800))
+                    print "Received: 6"
                 elif KeyIndex == Foundation.Keycode._5:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 1300))
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 1400))
+                    print "Received: 5"
                 elif KeyIndex == Foundation.Keycode._4:
-                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 1800))
-                '''
+                    Boundary[0].setPosition(Foundation.Vector3(-2000, 0, 2000))
+                    print "Received: 4"
 
                 if KeyIndex == Foundation.Keycode.P:
                     GamePaused = not GamePaused
@@ -297,8 +304,6 @@ def doInput(_nDeltaTime):
         # Our left mouse button just went up, do picking across our selection area
         elif not mouseState.Button0 and MouseStateChange.Button0:
             pass
-
-#        MouseStateChange.assign(mouseState)
 
     # Joystick
     if joystickState:
@@ -397,26 +402,6 @@ def cleanupManagers():
         HTTPLogger().writeContent(LoggerError.ERROR, "[Scheduler] Scheduler is already destroyed.")
 
 
-# --------------------------------------------------
-# MouseEventCallback
-def onMouseEvent(channel, header, data, size):
-
-    # Mouse move
-    sButton = data
-    if header == 2:
-        for i in range(0, 9):
-            if sButton == "Btn_Entity_Create" + str(i):
-                #print sButton, "pressed", "ENTITY =", SelectedEntityList[0].getCreationAbilities()[i]
-                if (len(SelectedEntityList) > 0) :
-                    sType = SelectedEntityList[0].creationAbilities[i]
-                    SelectedEntityList[0].createUnit(EntityManager.getEntityTypeFromName(sType))
-                    print "+ GUI Selected Unit of Type %s From Unit %s" % (sType, SelectedEntityList[0])
-                else:
-                    print "No Entity Selected"
-
-    elif header == 3:
-        pass
-
 # ------------------------------------------------
 # Main Tasklets
 def schedulerTasklet():
@@ -444,9 +429,7 @@ def schedulerTasklet():
     Xtst = CDLL("libXtst.so.6")
     Xlib = CDLL("libX11.so.6")
     dpy = Xtst.XOpenDisplay(None)
-
     
-    LastKeyboardState = [False, False, False, False, False, False, False, False, False]
         
     # Helpers taken from:
     #  http://wwwx.cs.unc.edu/~gb/wp/blog/2007/11/16/sending-key-events-to-pygame-programs/
@@ -459,12 +442,16 @@ def schedulerTasklet():
         Xlib.XFlush(dpy)
 
     def SendKeyPress(key):
+        print "KeyPress: " + str(key)
+
         sym = Xlib.XStringToKeysym(str(key))
         code = Xlib.XKeysymToKeycode(dpy, sym)
         Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
         Xlib.XFlush(dpy)
 
     def SendKeyRelease(key):
+        print "KeyRelease: " + str(key)
+
         sym = Xlib.XStringToKeysym(str(key))
         code = Xlib.XKeysymToKeycode(dpy, sym)
         Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
@@ -496,26 +483,19 @@ def schedulerTasklet():
         if (not GamePaused):
             PongBall.update(nDeltaTime)
 
-            '''
-            # AI Player
-            if (PongBall.getPosition()[2] > Boundary[1].getPosition()[2] + 150):
-                Boundary[1].move(Foundation.Vector3(0, 0, 3000 * nDeltaTime))
-            elif (PongBall.getPosition()[2] < Boundary[1].getPosition()[2] - 150):
-                Boundary[1].move(Foundation.Vector3(0, 0, -3000 * nDeltaTime))
-            '''
-
         # Human Simulation Training player
         if HumanSimTraining:
             CurrentKeyboardState = [False, False, False, False, False, False, False, False, False]
 
             if (PongBall.getPosition()[0] < 3500):
+                '''
                 # Old method of relative paddle movement
                 if (PongBall.getPosition()[2] > Boundary[0].getPosition()[2] + 250):
                     CurrentKeyboardState[7] = True
                 elif (PongBall.getPosition()[2] < Boundary[0].getPosition()[2] - 250):
                     CurrentKeyboardState[8] = True
-
                 '''
+
                 # New method of absolute paddle movement
                 yPos = PongBall.getPosition()[2];
 
@@ -534,7 +514,6 @@ def schedulerTasklet():
                     CurrentKeyboardState[5] = True
                 elif (yPos < -1500):
                     CurrentKeyboardState[6] = True
-                '''
 
             UpdateKeyboardStates()
 
@@ -554,6 +533,10 @@ def schedulerTasklet():
 # Entry Point
 def main(argv):
     global EntityManager, PongBall, Boundary
+    global LastKeyboardState
+
+
+    LastKeyboardState = [False, False, False, False, False, False, False, False, False]
 
     random.seed()
 

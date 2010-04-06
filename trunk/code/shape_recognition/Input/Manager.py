@@ -38,7 +38,7 @@ class KeyboardState:
         self.setDefault()
         
     def setDefault(self):
-        self.Keys    = {}
+        self.Keys = {}
 
     def assign(self, other):
         for KeyVal in other.Keys:
@@ -47,7 +47,8 @@ class KeyboardState:
     def isKeyDown(self):
         for KeyVal in self.Keys:
             if self.Keys[KeyVal]:
-                return True
+                return 
+
         return False
 
 # --------------------------------------------------
@@ -139,14 +140,11 @@ def consumeEvent(InputManager, GUIManager):
 
     KeyboardEvent = InputManager.getKeyboardEvent()
     while (KeyboardEvent):
-        bGUIConsumeEvent = False
-        if GUIManager:
-            bGUIConsumeEvent = GUIManager.injectKeyboardEvent(KeyboardEvent)
-
         keyboardState.Keys[KeyboardEvent.KeyboardValue] = (KeyboardEvent.KeyboardEventID == Foundation.Events.KEYBOARD_KEY_PRESSED)
         keyboardStatePrev.assign(keyboardState)
 
         KeyboardEvent = InputManager.getKeyboardEvent()
+
 
     # Work on Joystick Events
     JoystickEvent = InputManager.getJoystickEvent()
