@@ -86,7 +86,7 @@ KeyIndexMapping         = ["4", "5", "6"]
     
 
 nShapeChangeState       = 0
-MovingShapes            = True
+MovingShapes            = False
 Xtst                    = None
 Xlib                    = None
 dpy                     = None
@@ -245,16 +245,14 @@ def doInput(_nDeltaTime):
 
                 if KeyIndex == Foundation.Keycode.NUMPAD_8:
                     Camera0.setLookAt(Foundation.Vector3(0, 0, 10))
-                    
+                   
+
                 # Keys that specify which shape is currently on the screen
                 if KeyIndex == Foundation.Keycode._4:
-                    print "Tri"
                     doShapeCheck("triangle")
                 elif KeyIndex == Foundation.Keycode._5:
-                    print "Cub"
                     doShapeCheck("cube")
                 elif KeyIndex == Foundation.Keycode._6:
-                    print "Sphere"
                     doShapeCheck("sphere")
 
                 # --
@@ -269,6 +267,7 @@ def doInput(_nDeltaTime):
                         TimerKeyDelay.reset()
 
                         if not HumanSimTraining:
+
                             CurrentKeyboardState = [False, False, False]
                             UpdateKeyboardStates()
                     
@@ -360,16 +359,20 @@ def cleanupManagers():
 def UpdateKeyboardStates():
     global CurrentKeyboardState, LastKeyboardState
 
+    SendKeyPress("-")
     for x in xrange(0, len(KeyIndexMapping)):
         keyState = CurrentKeyboardState[x]
         if (keyState != LastKeyboardState[x]):
-            print "KeyChangeState: " + KeyIndexMapping[x] + ", " + str(keyState)
+        
             key = KeyIndexMapping[x]
+            #print "KeyChangeState: " + str(key) + ", " + str(keyState)
 
             if (keyState == True):
                 SendKeyPress(key)
             else:
                 SendKeyRelease(key)
+
+    SendKeyComplete()
 
     LastKeyboardState = CurrentKeyboardState
     CurrentKeyboardState = []
@@ -377,25 +380,24 @@ def UpdateKeyboardStates():
 # Helpers taken from:
 #  http://wwwx.cs.unc.edu/~gb/wp/blog/2007/11/16/sending-key-events-to-pygame-programs/
 def SendKeyPress(key):
-    print "Keydown: " + str(key)
-
     sym = Xlib.XStringToKeysym(str(key))
     code = Xlib.XKeysymToKeycode(dpy, sym)
     Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
-    Xlib.XFlush(dpy)
+    #Xlib.XFlush(dpy)
 
 def SendKeyRelease(key):
-    print "Keyup: " + str(key)
-
     sym = Xlib.XStringToKeysym(str(key))
     code = Xlib.XKeysymToKeycode(dpy, sym)
     Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
+    #Xlib.XFlush(dpy)
+
+def SendKeyComplete():
     Xlib.XFlush(dpy)
 
 # ------------------------------------------------
 # Main Tasklets
 def schedulerTasklet():
-    global EntityManager, Camera0, HumanSimTraining
+    global EntityManager, Camera0
     global SphereEntity, CubeEntity, TriangleEntity
     global LastKeyboardState, CurrentKeyboardState
     global nShapeChangeState 
