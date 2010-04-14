@@ -383,13 +383,11 @@ def SendKeyPress(key):
     sym = Xlib.XStringToKeysym(str(key))
     code = Xlib.XKeysymToKeycode(dpy, sym)
     Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
-    #Xlib.XFlush(dpy)
 
 def SendKeyRelease(key):
     sym = Xlib.XStringToKeysym(str(key))
     code = Xlib.XKeysymToKeycode(dpy, sym)
     Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
-    #Xlib.XFlush(dpy)
 
 def SendKeyComplete():
     Xlib.XFlush(dpy)

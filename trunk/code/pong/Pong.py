@@ -402,11 +402,47 @@ def cleanupManagers():
         HTTPLogger().writeContent(LoggerError.ERROR, "[Scheduler] Scheduler is already destroyed.")
 
 
+# Helpers taken from:
+#  http://wwwx.cs.unc.edu/~gb/wp/blog/2007/11/16/sending-key-events-to-pygame-programs/
+def SendKeyPress(key):
+    print "KeyPress: " + str(key)
+
+    sym = Xlib.XStringToKeysym(str(key))
+    code = Xlib.XKeysymToKeycode(dpy, sym)
+    Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
+
+def SendKeyRelease(key):
+    print "KeyRelease: " + str(key)
+
+    sym = Xlib.XStringToKeysym(str(key))
+    code = Xlib.XKeysymToKeycode(dpy, sym)
+    Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
+
+# Testing new and improved keyboard handling to keep the input buffer sane
+def UpdateKeyboardStates():
+    global CurrentKeyboardState, LastKeyboardState
+    global Xtst, Xlib, dpy
+
+    for x in xrange(0, len(KeyIndexMapping)):
+        keyState = CurrentKeyboardState[x]
+        if (keyState != LastKeyboardState[x]):
+            key = KeyIndexMapping[x]
+
+            if (keyState == True):
+                SendKeyPress(key)
+            else:
+                SendKeyRelease(key)
+
+    LastKeyboardState = CurrentKeyboardState
+    CurrentKeyboardState = []
+
 # ------------------------------------------------
 # Main Tasklets
 def schedulerTasklet():
     global EntityManager, Camera0, HumanSimTraining, PongBall
     global LastKeyboardState, CurrentKeyboardState
+    global Xtst, Xlib, dpy
+
 
     # Ball movement vars    
     uBallMoveTimer = Foundation.Timer()
@@ -430,48 +466,6 @@ def schedulerTasklet():
     Xlib = CDLL("libX11.so.6")
     dpy = Xtst.XOpenDisplay(None)
     
-        
-    # Helpers taken from:
-    #  http://wwwx.cs.unc.edu/~gb/wp/blog/2007/11/16/sending-key-events-to-pygame-programs/
-    def SendInput(txt):
-        for c in txt:
-            sym = Xlib.XStringToKeysym(c)
-            code = Xlib.XKeysymToKeycode(dpy, sym)
-            Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
-            Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
-        Xlib.XFlush(dpy)
-
-    def SendKeyPress(key):
-        print "KeyPress: " + str(key)
-
-        sym = Xlib.XStringToKeysym(str(key))
-        code = Xlib.XKeysymToKeycode(dpy, sym)
-        Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
-        Xlib.XFlush(dpy)
-
-    def SendKeyRelease(key):
-        print "KeyRelease: " + str(key)
-
-        sym = Xlib.XStringToKeysym(str(key))
-        code = Xlib.XKeysymToKeycode(dpy, sym)
-        Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
-        Xlib.XFlush(dpy)
-
-    # Testing new and improved keyboard handling to keep the input buffer sane
-    def UpdateKeyboardStates():
-        global CurrentKeyboardState, LastKeyboardState
-        for x in xrange(0, len(KeyIndexMapping)):
-            keyState = CurrentKeyboardState[x]
-            if (keyState != LastKeyboardState[x]):
-                key = KeyIndexMapping[x]
-
-                if (keyState == True):
-                    SendKeyPress(key)
-                else:
-                    SendKeyRelease(key)
-
-        LastKeyboardState = CurrentKeyboardState
-        CurrentKeyboardState = []
         
 
     # Tasklet loop
