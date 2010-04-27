@@ -87,6 +87,8 @@ KeyIndexMapping         = ["4", "5", "6"]
 
 nShapeChangeState       = 0
 MovingShapes            = False
+RotatingShapes          = True
+ScalingShapes           = True
 Xtst                    = None
 Xlib                    = None
 dpy                     = None
@@ -113,6 +115,11 @@ class Sphere:
     def setPosition(self, position):
         self.Position = position
         self.SphereGraphic.setPosition(position)
+
+    def setRotation(self, rotation):
+        # Rotate about the Y-axis
+        if self.SphereGraphic:
+            self.SphereGraphic.setRotation(Foundation.Quaternion(0, rotation, 0, 1))
         
     def getPosition(self):
         return self.Position
@@ -125,6 +132,17 @@ class Sphere:
                 self.setPosition(Foundation.Vector3(xPos, 0, yPos))
             else:
                 self.setPosition(Foundation.Vector3(0, 0, 0))
+            
+            if RotatingShapes:
+                rotate = random.randrange(-1000, 1000) / 500.0
+                self.setRotation(rotate)
+                self.setPosition(Foundation.Vector3(0, 0, 0))
+            
+            if ScalingShapes:
+                scale = random.randrange(100, 400) / 200.0;
+                scale *= self.Radius
+                self.SphereGraphic.setScale(Foundation.Vector3(scale, scale, scale))
+        
         else:
             self.setPosition(Foundation.Vector3(-10000, 0, 0))
     
@@ -153,6 +171,11 @@ class Cube:
         self.Position = position
         if self.Graphic:
             self.Graphic.setPosition(position)
+
+    def setRotation(self, rotation):
+        # Rotate about the Y-axis
+        if self.Graphic:
+            self.Graphic.setRotation(Foundation.Quaternion(0, rotation, 0, 1))
         
     def getPosition(self):
         return self.Position
@@ -165,6 +188,16 @@ class Cube:
                 self.setPosition(Foundation.Vector3(xPos, 0, yPos))
             else:
                 self.setPosition(Foundation.Vector3(0, 0, 0))
+            
+            if RotatingShapes:
+                rotate = random.randrange(-1000, 1000) / 500.0
+                self.setRotation(rotate)
+                self.setPosition(Foundation.Vector3(0, 0, 0))
+
+            if ScalingShapes:
+                scale = random.randrange(100, 400) / 200.0;
+                scale *= self.Width
+                self.Graphic.setScale(Foundation.Vector3(scale, scale, scale))
         else:
             self.setPosition(Foundation.Vector3(-10000, 0, 0))
     
@@ -193,6 +226,11 @@ class Triangle:
         self.Position = position
         if self.Graphic:
             self.Graphic.setPosition(position)
+
+    def setRotation(self, rotation):
+        # Rotate about the Y-axis
+        if self.Graphic:
+            self.Graphic.setRotation(Foundation.Quaternion(0, rotation, 0, 1))
         
     def getPosition(self):
         return self.Position
@@ -205,6 +243,16 @@ class Triangle:
                 self.setPosition(Foundation.Vector3(xPos, 0, yPos))
             else:
                 self.setPosition(Foundation.Vector3(0, 0, 0))
+            
+            if RotatingShapes:
+                rotate = random.randrange(-1000, 1000) / 500.0
+                self.setRotation(rotate)
+                self.setPosition(Foundation.Vector3(0, 0, 0))
+
+            if ScalingShapes:
+                scale = random.randrange(100, 400) / 200.0;
+                scale *= self.Width
+                self.Graphic.setScale(Foundation.Vector3(scale, scale, scale))
         else:
             self.setPosition(Foundation.Vector3(-10000, 0, 0))
     
