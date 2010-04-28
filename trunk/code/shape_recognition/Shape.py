@@ -86,7 +86,7 @@ KeyIndexMapping         = ["4", "5", "6"]
     
 
 nShapeChangeState       = 0
-MovingShapes            = False
+MovingShapes            = True
 RotatingShapes          = True
 ScalingShapes           = True
 Xtst                    = None
@@ -263,9 +263,9 @@ def doShapeCheck(shape):
     
     if shape == "triangle" and nShapeChangeState == 0:
         pass
-    elif shape == "cube" and nShapeChangeState == 1:
+    elif shape == "sphere" and nShapeChangeState == 1:
         pass
-    elif shape == "sphere" and nShapeChangeState == 2:
+    elif shape == "cube" and nShapeChangeState == 2:
         pass
     else:
         print "Incorrect shape selected: " + shape
@@ -299,9 +299,9 @@ def doInput(_nDeltaTime):
                 if KeyIndex == Foundation.Keycode._4:
                     doShapeCheck("triangle")
                 elif KeyIndex == Foundation.Keycode._5:
-                    doShapeCheck("cube")
-                elif KeyIndex == Foundation.Keycode._6:
                     doShapeCheck("sphere")
+                elif KeyIndex == Foundation.Keycode._6:
+                    doShapeCheck("cube")
 
                 # --
                 if KeyIndex == Foundation.Keycode.P:
