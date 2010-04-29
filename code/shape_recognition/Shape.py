@@ -87,8 +87,8 @@ KeyIndexMapping         = ["4", "5", "6"]
 
 nShapeChangeState       = 0
 MovingShapes            = True
-RotatingShapes          = True
-ScalingShapes           = True
+RotatingShapes          = False
+ScalingShapes           = False
 Xtst                    = None
 Xlib                    = None
 dpy                     = None
@@ -535,8 +535,8 @@ def main(argv):
     random.seed()
 
     try:
-        HTTPLogger("../pong_log.html")
-        HTTPLogger().newTable("Foundation Engine (Project: Pong)", "Description")
+        HTTPLogger("../shape_log.html")
+        HTTPLogger().newTable("Foundation Engine (Project: Shape Recognition)", "Description")
         HTTPLogger().writeContent(LoggerError.SUCCESS, "Initialized (%s/%s)" % (sys.path[0], sys.argv[0]))
 
         initManagers()
