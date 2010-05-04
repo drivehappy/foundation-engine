@@ -465,6 +465,9 @@ def schedulerTasklet():
     keyDelayTime = 0.015
     
     LastKeyboardState = [False, False, False]
+
+    Velocity = Foundation.Vector3(random.randint(-1000, 1000), 0, random.randint(-1000, 1000))
+    TriangleEntity.setPosition(Foundation.Vector3(0, 0, 0))
         
 
     # Tasklet loop
@@ -475,7 +478,9 @@ def schedulerTasklet():
 
         if (not GamePaused):
             # Update the shape on the screen
-            if (nShapeChangeTimer.getTime() > 2):
+            '''
+            # Old movement system
+            if (nShapeChangeTimer.getTime() > 5):
                 nShapeChangeState += 1
                 nShapeChangeTimer.reset()
 
@@ -498,6 +503,34 @@ def schedulerTasklet():
                     TriangleEntity.setVisible(False)
                     SphereEntity.setVisible(False)
                     CubeEntity.setVisible(True)
+            '''
+            
+            # New movement system, use velocities to have cleaner transitions
+            # Try to follow the triangle for now
+            SphereEntity.setPosition(Foundation.Vector3(-10000, 0, 0))
+            CubeEntity.setPosition(Foundation.Vector3(-10000, 0, 0))
+            TriangleEntity.setPosition(TriangleEntity.Position + (Velocity * nDeltaTime))
+
+            if (TriangleEntity.Position[0] < -1500):
+                TriangleEntity.Position[0] = -1500
+                Velocity = Foundation.Vector3(random.randint(0, 500), 0, random.randint(-500, 500))
+            elif (TriangleEntity.Position[0] > 1500):
+                TriangleEntity.Position[0] = 1500
+                Velocity = Foundation.Vector3(random.randint(-500, 0), 0, random.randint(-500, 500))
+            
+            if (TriangleEntity.Position[2] < -1000):
+                TriangleEntity.Position[2] = -1000
+                Velocity = Foundation.Vector3(random.randint(-500, 500), 0, random.randint(0, 500))
+            elif (TriangleEntity.Position[2] > 1000):
+                TriangleEntity.Position[2] = 1000
+                Velocity = Foundation.Vector3(random.randint(-500, 500), 0, random.randint(-500, 0))
+
+            # Change the velocity every X seconds
+            if (nShapeChangeTimer.getTime() > 5):
+                nShapeChangeTimer.reset()
+                Velocity = Foundation.Vector3(random.randint(-500, 500), 0, random.randint(-500, 500))
+            # --
+            
         else:
             print "Game Paused" 
 
