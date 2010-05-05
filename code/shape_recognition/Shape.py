@@ -467,7 +467,8 @@ def schedulerTasklet():
     LastKeyboardState = [False, False, False]
 
     Velocity = Foundation.Vector3(random.randint(-1000, 1000), 0, random.randint(-1000, 1000))
-    TriangleEntity.setPosition(Foundation.Vector3(0, 0, 0))
+    #Velocity = Foundation.Vector3(random.randint(-1000, 1000), 0, 0)
+    CubeEntity.setPosition(Foundation.Vector3(0, 0, 0))
         
 
     # Tasklet loop
@@ -507,28 +508,32 @@ def schedulerTasklet():
             
             # New movement system, use velocities to have cleaner transitions
             # Try to follow the triangle for now
+            nShapeChangeState = 2
             SphereEntity.setPosition(Foundation.Vector3(-10000, 0, 0))
-            CubeEntity.setPosition(Foundation.Vector3(-10000, 0, 0))
-            TriangleEntity.setPosition(TriangleEntity.Position + (Velocity * nDeltaTime))
+            TriangleEntity.setPosition(Foundation.Vector3(-10000, 0, 0))
+            CubeEntity.setPosition(CubeEntity.Position + (Velocity * nDeltaTime))
 
-            if (TriangleEntity.Position[0] < -1500):
-                TriangleEntity.Position[0] = -1500
+            if (CubeEntity.Position[0] < -1500):
+                CubeEntity.Position[0] = -1500
                 Velocity = Foundation.Vector3(random.randint(0, 500), 0, random.randint(-500, 500))
-            elif (TriangleEntity.Position[0] > 1500):
-                TriangleEntity.Position[0] = 1500
+                #Velocity = Foundation.Vector3(random.randint(0, 500), 0, 0)
+            elif (CubeEntity.Position[0] > 1500):
+                CubeEntity.Position[0] = 1500
                 Velocity = Foundation.Vector3(random.randint(-500, 0), 0, random.randint(-500, 500))
-            
-            if (TriangleEntity.Position[2] < -1000):
-                TriangleEntity.Position[2] = -1000
+                #Velocity = Foundation.Vector3(random.randint(-500, 0), 0, 0)
+           
+            if (CubeEntity.Position[2] < -1000):
+                CubeEntity.Position[2] = -1000
                 Velocity = Foundation.Vector3(random.randint(-500, 500), 0, random.randint(0, 500))
-            elif (TriangleEntity.Position[2] > 1000):
-                TriangleEntity.Position[2] = 1000
+            elif (CubeEntity.Position[2] > 1000):
+                CubeEntity.Position[2] = 1000
                 Velocity = Foundation.Vector3(random.randint(-500, 500), 0, random.randint(-500, 0))
 
             # Change the velocity every X seconds
             if (nShapeChangeTimer.getTime() > 5):
                 nShapeChangeTimer.reset()
                 Velocity = Foundation.Vector3(random.randint(-500, 500), 0, random.randint(-500, 500))
+                #Velocity = Foundation.Vector3(random.randint(-500, 500), 0, 0)
             # --
             
         else:
@@ -590,9 +595,6 @@ def main(argv):
     except KeyboardInterrupt:
         print "\n"
 
-    print "Shutting down X display..."
-    Xtst.XCloseDisplay(dpy)
-
     shutdown()
 
 # ------------------------------------------------
@@ -612,6 +614,10 @@ def shutdown():
 
     CurrentKeyboardState = [False, False, False]
     UpdateKeyboardStates()
+    
+    print "Shutting down X display..."
+    Xtst.XCloseDisplay(dpy)
+
 
     print "Shutdown game complete"
 
