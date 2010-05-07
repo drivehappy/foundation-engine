@@ -91,6 +91,11 @@ bool GraphicManager_PythonWrapper::initialize(const char *_sWindowTitle)
     return GraphicManager::getSingleton().initialize(_sWindowTitle);
 }
 
+void GraphicManager_PythonWrapper::createScreenshot(const char *_sFilename)
+{
+    GraphicManager::getSingleton().createScreenshot(_sFilename);
+}
+
 void GraphicManager_PythonWrapper::destroy()
 {
     GraphicManager::getSingleton().destroy();

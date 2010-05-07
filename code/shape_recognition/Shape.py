@@ -105,7 +105,7 @@ class Sphere:
 
         self.SphereGraphic = Foundation.EntityGraphic("SceneManager0", "Sphere_Graphic");
         self.SphereGraphic.setMesh("sphere.mesh");
-        self.SphereGraphic.setMaterial("splatting0");
+        self.SphereGraphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
         self.SphereGraphic.setScale(Foundation.Vector3(radius, radius, radius))
         
         self.setPosition(Foundation.Vector3(-10000, 0, 0))
@@ -160,7 +160,7 @@ class Cube:
         
         self.Graphic = Foundation.EntityGraphic("SceneManager0", "Cube_Graphic" + str(id));
         self.Graphic.setMesh("cube.mesh");
-        self.Graphic.setMaterial("splatting0");
+        self.Graphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
         self.Graphic.setScale(Foundation.Vector3(size, 0, size))
         
         self.setPosition(Foundation.Vector3(-10000, 0, 0))
@@ -215,7 +215,7 @@ class Triangle:
         
         self.Graphic = Foundation.EntityGraphic("SceneManager0", "Triangle_Graphic" + str(id));
         self.Graphic.setMesh("triangle.mesh");
-        self.Graphic.setMaterial("splatting0");
+        self.Graphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
         self.Graphic.setScale(Foundation.Vector3(size, 0, size))
         
         self.setPosition(Foundation.Vector3(-10000, 0, 0))
@@ -302,6 +302,10 @@ def doInput(_nDeltaTime):
                     doShapeCheck("sphere")
                 elif KeyIndex == Foundation.Keycode._6:
                     doShapeCheck("cube")
+
+                if KeyIndex == Foundation.Keycode.T:
+                    GraphicManager.createScreenshot("screenshot.png")
+
 
                 # --
                 if KeyIndex == Foundation.Keycode.P:

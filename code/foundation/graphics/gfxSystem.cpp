@@ -200,6 +200,13 @@ void GraphicManager::createLight(const char *_sSceneManagerName, const char *_sL
     }
 }
 
+void GraphicManager::createScreenshot(const char *_sFilename)
+{
+    if (m_pWindow != NULL) {
+        m_pWindow->writeContentsToFile(_sFilename);
+    }
+}
+
 void GraphicManager::clearBloomCompositors()
 {
     for (int i = 0; i < m_pWindow->getNumViewports(); i++) {
@@ -374,7 +381,9 @@ Camera* GraphicManager::addCamera(const char *_sSceneManagerName, const char *_s
     Ogre::Camera *pCamera = pSceneManager->createCamera(_sCameraName);
 
     m_pRoot->getAutoCreatedWindow()->removeViewport(_nZOrder);
-    m_pRoot->getAutoCreatedWindow()->addViewport(pCamera, _nZOrder, _nViewportLeft, _nViewportTop, _nViewportWidth, _nViewportHeight);
+    Ogre::Viewport *pViewport = m_pRoot->getAutoCreatedWindow()->addViewport(pCamera, _nZOrder, _nViewportLeft, _nViewportTop, _nViewportWidth, _nViewportHeight);
+
+    pViewport->setBackgroundColour(Ogre::ColourValue(1, 1, 1, 1));
 
     pCamera->setFarClipDistance(10000.0f);
     pCamera->setNearClipDistance(0.01f);
