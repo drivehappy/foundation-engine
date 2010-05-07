@@ -99,7 +99,7 @@ class Ball:
 
         self.BallGraphic = Foundation.EntityGraphic("SceneManager0", "Ball_Graphic");
         self.BallGraphic.setMesh("sphere.mesh");
-        self.BallGraphic.setMaterial("splatting0");
+        self.BallGraphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
         self.BallGraphic.setScale(Foundation.Vector3(radius, radius, radius))
         
         self.setPosition(Foundation.Vector3(0, 0, 0))
@@ -180,7 +180,7 @@ class Wall:
         if id == 0:
             self.Graphic = Foundation.EntityGraphic("SceneManager0", "Wall_Graphic" + str(id));
             self.Graphic.setMesh("cube.mesh");
-            self.Graphic.setMaterial("splatting0");
+            self.Graphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
             self.Graphic.setScale(Foundation.Vector3(length, 0, width))
         
         self.setPosition(Foundation.Vector3(0, 0, 0))
@@ -268,6 +268,9 @@ def doInput(_nDeltaTime):
                     print "Game Pause: " + str(GamePaused)
                 elif KeyIndex == Foundation.Keycode.O:
                     PongBall.update(0.02)
+
+                if KeyIndex == Foundation.Keycode.T:
+                    GraphicManager.createScreenshot("screenshot.png")
                 
                 if (TimerKeyDelay.getTime() > KEY_DELAY):
                     if not GamePaused:

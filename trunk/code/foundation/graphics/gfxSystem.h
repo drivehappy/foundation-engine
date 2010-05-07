@@ -203,6 +203,10 @@ namespace Foundation
                 */
                 static void setShadowTechnique(const char *_sSceneManagerName);
 
+                /** Creates a screen shot of the current window.
+                */
+                static void createScreenshot(const char *_sFilename);
+
                 /** Clear compositors for viewports.
                 */
                 static void clearBloomCompositors();

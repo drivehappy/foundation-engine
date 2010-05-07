@@ -62,6 +62,10 @@ namespace Foundation {
             */
             bool initialize(const char *_sWindowTitle);
         
+            /**
+            */
+            void createScreenshot(const char *_sFilename);
+
             /** Show or hide the cursor.
                 @param
                     True to show the cursor, False to hide the cursor.

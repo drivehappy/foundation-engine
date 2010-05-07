@@ -380,6 +380,8 @@ BOOST_PYTHON_MODULE(FoundationPython)
 
         .def("createLight", &Graphic::GraphicManager_PythonWrapper::createLight)
 
+        .def("createScreenshot", &Graphic::GraphicManager_PythonWrapper::createScreenshot)
+
         .def("clearBloomCompositors", &Graphic::GraphicManager_PythonWrapper::clearBloomCompositors)
         .def("enableBloom", &Graphic::GraphicManager_PythonWrapper::enableBloom)
 

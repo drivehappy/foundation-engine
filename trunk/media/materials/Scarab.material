@@ -46,6 +46,38 @@ material Scarab/EntityTestMaterial_BlueTeam
     }
 }
 
+material Scarab/EntityTestMaterial_WhiteTeam
+{
+    technique
+    {
+        pass
+        {
+            ambient 1.0 1.0 1.0
+
+            texture_unit
+            {
+                texture white.png
+            }
+        }
+    }
+}
+
+material Scarab/EntityTestMaterial_BlackTeam
+{
+    technique
+    {
+        pass
+        {
+            ambient 1.0 1.0 1.0
+
+            texture_unit
+            {
+                texture black.png
+            }
+        }
+    }
+}
+
 material Scarab/EntityTestMaterial2
 {
     technique

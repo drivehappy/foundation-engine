@@ -126,6 +126,9 @@ def doInput(_nDeltaTime):
                 elif KeyIndex == Foundation.Keycode.X:
                     Camera0.moveRelative(Foundation.Vector3(0, 0, nCamSpeed))
 
+                if KeyIndex == Foundation.Keycode.T:
+                    GraphicManager.createScreenshot("screenshot.png")
+
                 if (TimerKeyDelay.getTime() > KEY_DELAY):
                     if KeyIndex == Foundation.Keycode.Q:
                         HumanSimTraining = not HumanSimTraining                   
@@ -451,7 +454,7 @@ def main(argv):
         # Init
         SphereGraphic = Foundation.EntityGraphic("SceneManager0", "Sphere_Graphics");
         SphereGraphic.setMesh("sphere.mesh");
-        SphereGraphic.setMaterial("splatting0");
+        SphereGraphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
         SphereGraphic.setPosition(Foundation.Vector3(0, 0, 0))
 
         
