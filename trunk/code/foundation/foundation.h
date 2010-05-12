@@ -28,4 +28,7 @@
 /** Audio **/
 #include "audio/audioSystem.h"
 
+/** NVC Helper Control Function **/
+#include "nvc/nvc.h"
+
 #endif  // __F_ENGINE_H_

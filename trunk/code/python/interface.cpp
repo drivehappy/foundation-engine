@@ -344,6 +344,11 @@ BOOST_PYTHON_MODULE(FoundationPython)
         .value("SPHERE", Physics::SPHERE)
     ;
 
+    // nvcControl specific helper functions
+    def("nvcControl", pyNvcControl);
+    
+
+
     // Graphics
     #if defined(S_ENABLE_GRAPHIC)
 

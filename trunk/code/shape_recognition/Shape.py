@@ -94,6 +94,10 @@ Xlib                    = None
 dpy                     = None
 
 #
+def nvcControlLoopback(controlIndex, controlValue):
+    print "nvcControlLoopback: ", controlIndex, controlValue
+
+#
 class Sphere:
     SphereGraphic = None
     Position = None
@@ -480,6 +484,8 @@ def schedulerTasklet():
         nDeltaTime = uMainTimer.getTime()
         uMainTimer.reset()
         nDeltaTime = Foundation.f_clamp(nDeltaTime, 0.0, 0.1)
+
+        Foundation.nvcControl(nvcControlLoopback, 100, 555)
 
         if (not GamePaused):
             # Update the shape on the screen
