@@ -89,9 +89,6 @@ nShapeChangeState       = 0
 MovingShapes            = True
 RotatingShapes          = False
 ScalingShapes           = False
-Xtst                    = None
-Xlib                    = None
-dpy                     = None
 
 #
 def nvcControlLoopback(controlIndex, controlValue):
@@ -415,7 +412,6 @@ def cleanupManagers():
 def UpdateKeyboardStates():
     global CurrentKeyboardState, LastKeyboardState
 
-    SendKeyPress("-")
     for x in xrange(0, len(KeyIndexMapping)):
         keyState = CurrentKeyboardState[x]
         if (keyState != LastKeyboardState[x]):
@@ -423,31 +419,19 @@ def UpdateKeyboardStates():
             key = KeyIndexMapping[x]
             #print "KeyChangeState: " + str(key) + ", " + str(keyState)
 
+            '''
             if (keyState == True):
                 SendKeyPress(key)
             else:
                 SendKeyRelease(key)
+            '''
 
-    SendKeyComplete()
+            print "keyState: ", x
+            Foundation.nvcControl(nvcControlLoopback, x, keyState)
 
     LastKeyboardState = CurrentKeyboardState
     CurrentKeyboardState = []
         
-# Helpers taken from:
-#  http://wwwx.cs.unc.edu/~gb/wp/blog/2007/11/16/sending-key-events-to-pygame-programs/
-def SendKeyPress(key):
-    sym = Xlib.XStringToKeysym(str(key))
-    code = Xlib.XKeysymToKeycode(dpy, sym)
-    Xtst.XTestFakeKeyEvent(dpy, code, True, 0)
-
-def SendKeyRelease(key):
-    sym = Xlib.XStringToKeysym(str(key))
-    code = Xlib.XKeysymToKeycode(dpy, sym)
-    Xtst.XTestFakeKeyEvent(dpy, code, False, 0)
-
-def SendKeyComplete():
-    Xlib.XFlush(dpy)
-
 # ------------------------------------------------
 # Main Tasklets
 def schedulerTasklet():
@@ -485,13 +469,13 @@ def schedulerTasklet():
         uMainTimer.reset()
         nDeltaTime = Foundation.f_clamp(nDeltaTime, 0.0, 0.1)
 
-        Foundation.nvcControl(nvcControlLoopback, 100, 555)
+        #Foundation.nvcControl(nvcControlLoopback, 100, 555)
 
         if (not GamePaused):
             # Update the shape on the screen
-            '''
+            #'''
             # Old movement system
-            if (nShapeChangeTimer.getTime() > 5):
+            if (nShapeChangeTimer.getTime() > 2):
                 nShapeChangeState += 1
                 nShapeChangeTimer.reset()
 
@@ -514,8 +498,9 @@ def schedulerTasklet():
                     TriangleEntity.setVisible(False)
                     SphereEntity.setVisible(False)
                     CubeEntity.setVisible(True)
-            '''
-            
+            #'''
+           
+            ''' 
             # New movement system, use velocities to have cleaner transitions
             # Try to follow the triangle for now
             nShapeChangeState = 2
@@ -545,6 +530,7 @@ def schedulerTasklet():
                 Velocity = Foundation.Vector3(random.randint(-500, 500), 0, random.randint(-500, 500))
                 #Velocity = Foundation.Vector3(random.randint(-500, 500), 0, 0)
             # --
+            '''
             
         else:
             print "Game Paused" 
@@ -573,12 +559,6 @@ def schedulerTasklet():
 # Entry Point
 def main(argv):
     global EntityManager, SphereEntity, CubeEntity, TriangleEntity
-    global Xtst, Xlib, dpy
-    
-    # Setup keyboard inject    
-    Xtst = CDLL("libXtst.so.6")
-    Xlib = CDLL("libX11.so.6")
-    dpy = Xtst.XOpenDisplay(None)
 
     random.seed()
 
@@ -625,9 +605,5 @@ def shutdown():
     CurrentKeyboardState = [False, False, False]
     UpdateKeyboardStates()
     
-    print "Shutting down X display..."
-    Xtst.XCloseDisplay(dpy)
-
-
     print "Shutdown game complete"
 
