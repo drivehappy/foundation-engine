@@ -93,6 +93,22 @@ ScalingShapes           = False
 #
 def nvcControlLoopback(controlIndex, controlValue):
     print "nvcControlLoopback: ", controlIndex, controlValue
+                
+    if controlIndex == 0:
+        if controlValue == 1:
+            TriangleEntity.setVisible(True)
+        else:
+            TriangleEntity.setVisible(False)
+    elif controlIndex == 1:
+        if controlValue == 1:
+            SphereEntity.setVisible(True)
+        else:
+            SphereEntity.setVisible(False)
+    elif controlIndex == 2:
+        if controlValue == 1:
+            CubeEntity.setVisible(True)
+        else:
+            CubeEntity.setVisible(False)
 
 #
 class Sphere:
@@ -109,7 +125,7 @@ class Sphere:
         self.SphereGraphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
         self.SphereGraphic.setScale(Foundation.Vector3(radius, radius, radius))
         
-        self.setPosition(Foundation.Vector3(-10000, 0, 0))
+        self.setVisible(False)
 
         print "Sphere Created"
         
@@ -164,7 +180,7 @@ class Cube:
         self.Graphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
         self.Graphic.setScale(Foundation.Vector3(size, 0, size))
         
-        self.setPosition(Foundation.Vector3(-10000, 0, 0))
+        self.setVisible(False)
         
         print "Cube Created"
         
@@ -219,7 +235,7 @@ class Triangle:
         self.Graphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
         self.Graphic.setScale(Foundation.Vector3(size, 0, size))
         
-        self.setPosition(Foundation.Vector3(-10000, 0, 0))
+        self.setVisible(False)
         
         print "Triangle Created"
         
@@ -419,15 +435,10 @@ def UpdateKeyboardStates():
             key = KeyIndexMapping[x]
             #print "KeyChangeState: " + str(key) + ", " + str(keyState)
 
-            '''
-            if (keyState == True):
-                SendKeyPress(key)
-            else:
-                SendKeyRelease(key)
-            '''
-
             print "keyState: ", x
-            Foundation.nvcControl(nvcControlLoopback, x, keyState)
+
+            normalizedState = 1 if keyState else -1
+            Foundation.nvcControl(nvcControlLoopback, x, normalizedState)
 
     LastKeyboardState = CurrentKeyboardState
     CurrentKeyboardState = []
@@ -436,7 +447,6 @@ def UpdateKeyboardStates():
 # Main Tasklets
 def schedulerTasklet():
     global EntityManager, Camera0
-    global SphereEntity, CubeEntity, TriangleEntity
     global LastKeyboardState, CurrentKeyboardState
     global nShapeChangeState 
 
@@ -460,7 +470,7 @@ def schedulerTasklet():
 
     Velocity = Foundation.Vector3(random.randint(-1000, 1000), 0, random.randint(-1000, 1000))
     #Velocity = Foundation.Vector3(random.randint(-1000, 1000), 0, 0)
-    CubeEntity.setPosition(Foundation.Vector3(0, 0, 0))
+    #CubeEntity.setVisible(True)
         
 
     # Tasklet loop
@@ -486,18 +496,6 @@ def schedulerTasklet():
 
                 print "New Shape State: " + str(nShapeChangeState)
     
-                if (nShapeChangeState == 0):
-                    SphereEntity.setVisible(False)
-                    CubeEntity.setVisible(False)
-                    TriangleEntity.setVisible(True)
-                elif (nShapeChangeState == 1):
-                    SphereEntity.setVisible(True)
-                    CubeEntity.setVisible(False)
-                    TriangleEntity.setVisible(False)
-                elif (nShapeChangeState == 2):
-                    TriangleEntity.setVisible(False)
-                    SphereEntity.setVisible(False)
-                    CubeEntity.setVisible(True)
             #'''
            
             ''' 
