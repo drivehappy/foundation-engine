@@ -68,15 +68,11 @@ SelectionBounds         = Foundation.Vector4(0, 0, 0, 0)
 SelectionWorldBounds    = Foundation.Vector4(0, 0, 0, 0)
 SelectedEntityList      = []
 
-SphereGraphic           = None
-CubeGraphic             = None
-TriangleGraphic         = None
-
 HumanSimTraining        = True
 
 #
-SphereEntity = None
-CubeEntity = None
+CircleEntity = None
+SquareEntity = None
 TriangleEntity = None
 
 # Track last keyboard states so we're not overfilling our input buffer
@@ -110,33 +106,31 @@ def nvcControlLoopback(controlIndex, controlValue):
         else:
             CubeEntity.setVisible(False)
 
-#
-class Sphere:
-    SphereGraphic = None
+class Shape:
+    Graphic = None
     Position = None
-    Radius = 0
+    Scale = 0
     Velocity = Foundation.Vector3(0, 0, 0)
 
-    def __init__(self, radius):
-        self.Radius = radius
-
-        self.SphereGraphic = Foundation.EntityGraphic("SceneManager0", "Sphere_Graphic");
-        self.SphereGraphic.setMesh("sphere.mesh");
-        self.SphereGraphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
-        self.SphereGraphic.setScale(Foundation.Vector3(radius, radius, radius))
+    def __init__(self, scale, mesh):
+        self.Scale = scale
         
+        self.Graphic = Foundation.EntityGraphic("SceneManager0", "Graphic" + str(self));
+        self.Graphic.setMesh(mesh);
+        self.Graphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
+        self.Graphic.setScale(Foundation.Vector3(scale, scale, scale))
+
+        self.setRotation(0)
         self.setVisible(False)
 
-        print "Sphere Created"
-        
     def setPosition(self, position):
         self.Position = position
-        self.SphereGraphic.setPosition(position)
+        self.Graphic.setPosition(position)
 
     def setRotation(self, rotation):
         # Rotate about the Y-axis
-        if self.SphereGraphic:
-            self.SphereGraphic.setRotation(Foundation.Quaternion(0, rotation, 0, 1))
+        if self.Graphic:
+            self.Graphic.setRotation(Foundation.Quaternion(0, rotation, 0, 1))
         
     def getPosition(self):
         return self.Position
@@ -163,116 +157,17 @@ class Sphere:
         else:
             self.setPosition(Foundation.Vector3(-10000, 0, 0))
     
+class Triangle(Shape):
+    def __init__(self, scale):
+        Shape.__init__(self, scale, "triangle.mesh")
 
-class Cube:
-    Graphic = None
-    Position = None
-    Length = 0
-    Width = 0
+class Square(Shape):
+    def __init__(self, scale):
+        Shape.__init__(self, scale, "cube.mesh")
 
-    def __init__(self, size):
-        self.Length = size
-        self.Width = size
-        self.Graphic = None
-        
-        self.Graphic = Foundation.EntityGraphic("SceneManager0", "Cube_Graphic" + str(id));
-        self.Graphic.setMesh("cube.mesh");
-        self.Graphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
-        self.Graphic.setScale(Foundation.Vector3(size, 0, size))
-        
-        self.setVisible(False)
-        
-        print "Cube Created"
-        
-    def setPosition(self, position):
-        self.Position = position
-        if self.Graphic:
-            self.Graphic.setPosition(position)
-
-    def setRotation(self, rotation):
-        # Rotate about the Y-axis
-        if self.Graphic:
-            self.Graphic.setRotation(Foundation.Quaternion(0, rotation, 0, 1))
-        
-    def getPosition(self):
-        return self.Position
-
-    def setVisible(self, visible):
-        if visible:
-            if MovingShapes:
-                xPos = random.randint(-1000, 1000)
-                yPos = random.randint(-1000, 1000)
-                self.setPosition(Foundation.Vector3(xPos, 0, yPos))
-            else:
-                self.setPosition(Foundation.Vector3(0, 0, 0))
-            
-            if RotatingShapes:
-                rotate = random.randrange(-1000, 1000) / 500.0
-                self.setRotation(rotate)
-                self.setPosition(Foundation.Vector3(0, 0, 0))
-
-            if ScalingShapes:
-                scale = random.randrange(100, 400) / 200.0;
-                scale *= self.Width
-                self.Graphic.setScale(Foundation.Vector3(scale, scale, scale))
-        else:
-            self.setPosition(Foundation.Vector3(-10000, 0, 0))
-    
-
-class Triangle:
-    Graphic = None
-    Position = None
-    Length = 0
-    Width = 0
-
-    def __init__(self, size):
-        self.Length = size
-        self.Width = size
-        self.Graphic = None
-        
-        self.Graphic = Foundation.EntityGraphic("SceneManager0", "Triangle_Graphic" + str(id));
-        self.Graphic.setMesh("triangle.mesh");
-        self.Graphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
-        self.Graphic.setScale(Foundation.Vector3(size, 0, size))
-        
-        self.setVisible(False)
-        
-        print "Triangle Created"
-        
-    def setPosition(self, position):
-        self.Position = position
-        if self.Graphic:
-            self.Graphic.setPosition(position)
-
-    def setRotation(self, rotation):
-        # Rotate about the Y-axis
-        if self.Graphic:
-            self.Graphic.setRotation(Foundation.Quaternion(0, rotation, 0, 1))
-        
-    def getPosition(self):
-        return self.Position
-       
-    def setVisible(self, visible):
-        if visible:
-            if MovingShapes:
-                xPos = random.randint(-1000, 1000)
-                yPos = random.randint(-1000, 1000)
-                self.setPosition(Foundation.Vector3(xPos, 0, yPos))
-            else:
-                self.setPosition(Foundation.Vector3(0, 0, 0))
-            
-            if RotatingShapes:
-                rotate = random.randrange(-1000, 1000) / 500.0
-                self.setRotation(rotate)
-                self.setPosition(Foundation.Vector3(0, 0, 0))
-
-            if ScalingShapes:
-                scale = random.randrange(100, 400) / 200.0;
-                scale *= self.Width
-                self.Graphic.setScale(Foundation.Vector3(scale, scale, scale))
-        else:
-            self.setPosition(Foundation.Vector3(-10000, 0, 0))
-    
+class Circle(Shape):
+    def __init__(self, scale):
+        Shape.__init__(self, scale, "sphere.mesh")
 
 # -----------------------------------------------
 # User pressed a key, check if it matches the shape on the screen
@@ -291,9 +186,6 @@ def doShapeCheck(shape):
 # InputWork
 def doInput(_nDeltaTime):
     global MouseStateChange, KeyboardStateChange, Joystick0StateChange, Joystick1StateChange
-    global TimerKeyDelay
-    global SelectionBounds, SelectionWorldBounds, SelectedEntityList
-    global RenderSphereTree, Pause, SphereTreeBucketSize, SphereTreeSpeedFactor, RenderSphereTreeLevel, SphereTreeTeamFlags
     global HumanSimTraining, nCamSpeed, Boundary
     global GamePaused
     global CurrentKeyboardState
@@ -568,9 +460,10 @@ def main(argv):
         initManagers()
 
         # Init
-        CubeEntity = Cube(10)
-        SphereEntity = Sphere(400)
+        CubeEntity = Square(10)
+        SphereEntity = Circle(400)
         TriangleEntity = Triangle(400)
+        TriangleEntity.setVisible(True)
         
         # Start
         stackless.tasklet(schedulerTasklet)()
