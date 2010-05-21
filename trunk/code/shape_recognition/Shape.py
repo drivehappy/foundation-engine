@@ -88,6 +88,8 @@ ScalingShapes           = False
 
 #
 def nvcControlLoopback(controlIndex, controlValue):
+    global nShapeChangeState
+
     print "nvcControlLoopback: ", controlIndex, controlValue
                 
     if controlIndex == 0:
@@ -97,14 +99,24 @@ def nvcControlLoopback(controlIndex, controlValue):
             TriangleEntity.setVisible(False)
     elif controlIndex == 1:
         if controlValue == 1:
-            SphereEntity.setVisible(True)
-        else:
-            SphereEntity.setVisible(False)
-    elif controlIndex == 2:
-        if controlValue == 1:
             CubeEntity.setVisible(True)
         else:
             CubeEntity.setVisible(False)
+
+    elif controlIndex == 10:
+        nShapeChangeState += 1
+
+        if (nShapeChangeState > 1):
+            nShapeChangeState = 0
+        print "New Shape State: " + str(nShapeChangeState)
+
+    '''
+    elif controlIndex == 2:
+        if controlValue == 1:
+            SphereEntity.setVisible(True)
+        else:
+            SphereEntity.setVisible(False)
+    '''
 
 class Shape:
     Graphic = None
@@ -378,15 +390,8 @@ def schedulerTasklet():
             #'''
             # Old movement system
             if (nShapeChangeTimer.getTime() > 2):
-                nShapeChangeState += 1
                 nShapeChangeTimer.reset()
-
-            if (nShapeChangeLastState != nShapeChangeState):
-                if (nShapeChangeState > 2):
-                    nShapeChangeState = 0
-                nShapeChangeLastState = nShapeChangeState
-
-                print "New Shape State: " + str(nShapeChangeState)
+                Foundation.nvcControl(nvcControlLoopback, 10, 0)
     
             #'''
            
@@ -461,7 +466,7 @@ def main(argv):
 
         # Init
         CubeEntity = Square(10)
-        SphereEntity = Circle(400)
+        #SphereEntity = Circle(400)
         TriangleEntity = Triangle(400)
         TriangleEntity.setVisible(True)
         
