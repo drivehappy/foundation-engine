@@ -389,7 +389,7 @@ def schedulerTasklet():
             # Update the shape on the screen
             #'''
             # Old movement system
-            if (nShapeChangeTimer.getTime() > 2):
+            if (nShapeChangeTimer.getTime() > 3):
                 nShapeChangeTimer.reset()
                 Foundation.nvcControl(nvcControlLoopback, 10, 0)
     
@@ -465,9 +465,9 @@ def main(argv):
         initManagers()
 
         # Init
-        CubeEntity = Square(10)
+        CubeEntity = Square(20)
         #SphereEntity = Circle(400)
-        TriangleEntity = Triangle(400)
+        TriangleEntity = Triangle(800)
         TriangleEntity.setVisible(True)
         
         # Start
