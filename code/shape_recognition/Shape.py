@@ -90,7 +90,7 @@ ScalingShapes           = False
 def nvcControlLoopback(controlIndex, controlValue):
     global nShapeChangeState
 
-    print "nvcControlLoopback: ", controlIndex, controlValue
+    #print "nvcControlLoopback: ", controlIndex, controlValue
                 
     if controlIndex == 0:
         if controlValue == 1:
@@ -108,7 +108,7 @@ def nvcControlLoopback(controlIndex, controlValue):
 
         if (nShapeChangeState > 1):
             nShapeChangeState = 0
-        print "New Shape State: " + str(nShapeChangeState)
+        #print "New Shape State: " + str(nShapeChangeState)
 
     '''
     elif controlIndex == 2:
@@ -132,7 +132,7 @@ class Shape:
         self.Graphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
         self.Graphic.setScale(Foundation.Vector3(scale, scale, scale))
 
-        self.setRotation(0)
+        #self.setRotation(0)
         self.setVisible(False)
 
     def setPosition(self, position):
@@ -150,8 +150,8 @@ class Shape:
     def setVisible(self, visible):
         if visible:
             if MovingShapes:
-                xPos = random.randint(-1000, 1000)
-                yPos = random.randint(-1000, 1000)
+                xPos = random.randint(-2000, 2000)
+                yPos = random.randint(-1500, 1500)
                 self.setPosition(Foundation.Vector3(xPos, 0, yPos))
             else:
                 self.setPosition(Foundation.Vector3(0, 0, 0))
@@ -337,9 +337,6 @@ def UpdateKeyboardStates():
         if (keyState != LastKeyboardState[x]):
         
             key = KeyIndexMapping[x]
-            #print "KeyChangeState: " + str(key) + ", " + str(keyState)
-
-            print "keyState: ", x
 
             normalizedState = 1 if keyState else -1
             Foundation.nvcControl(nvcControlLoopback, x, normalizedState)
@@ -465,9 +462,9 @@ def main(argv):
         initManagers()
 
         # Init
-        CubeEntity = Square(20)
+        CubeEntity = Square(10)
         #SphereEntity = Circle(400)
-        TriangleEntity = Triangle(800)
+        TriangleEntity = Triangle(400)
         TriangleEntity.setVisible(True)
         
         # Start
