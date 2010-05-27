@@ -124,13 +124,13 @@ class Shape:
     Scale = 0
     Velocity = Foundation.Vector3(0, 0, 0)
 
-    def __init__(self, scale, mesh):
+    def __init__(self, scale, mesh, name):
         self.Scale = scale
-        
-        self.Graphic = Foundation.EntityGraphic("SceneManager0", "Graphic" + str(self));
+       
+        self.Graphic = Foundation.EntityGraphic("SceneManager0", "Graphic_" + name);
         self.Graphic.setMesh(mesh);
         self.Graphic.setMaterial("Scarab/EntityTestMaterial_BlackTeam");
-        self.Graphic.setScale(Foundation.Vector3(scale, scale, scale))
+        self.Graphic.setScale(Foundation.Vector3(scale, 0, scale))
 
         #self.setRotation(0)
         self.setVisible(False)
@@ -171,15 +171,15 @@ class Shape:
     
 class Triangle(Shape):
     def __init__(self, scale):
-        Shape.__init__(self, scale, "triangle.mesh")
+        Shape.__init__(self, scale, "triangle.mesh", "Tri")
 
 class Square(Shape):
     def __init__(self, scale):
-        Shape.__init__(self, scale, "cube.mesh")
+        Shape.__init__(self, scale, "cube.mesh", "Square")
 
 class Circle(Shape):
     def __init__(self, scale):
-        Shape.__init__(self, scale, "sphere.mesh")
+        Shape.__init__(self, scale, "sphere.mesh", "Circle")
 
 # -----------------------------------------------
 # User pressed a key, check if it matches the shape on the screen
