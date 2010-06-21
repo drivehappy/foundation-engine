@@ -51,3 +51,8 @@ program:
         script: Shape
         profiling: False
 
+    dot_position:
+        folder: dot_position
+        script: dot
+        profiling: False
+
