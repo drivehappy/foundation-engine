@@ -99,10 +99,12 @@ def nvcControlLoopback(controlIndex, controlValue):
 
     # Control index 1 is the X position
     elif controlIndex == 1:
-        print "X Position:", controlValue
+        #print "X Position:", controlValue
+        pass
     # Control index 2 is the Y position
     elif controlIndex == 2:
-        print "Y Position:", controlValue
+        #print "Y Position:", controlValue
+        pass
 
 # Base class for all of our shapes
 class Shape:
