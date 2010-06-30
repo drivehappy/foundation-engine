@@ -85,10 +85,11 @@ nShapeChangeState       = 0
 MovingShapes            = True
 RotatingShapes          = False
 ScalingShapes           = False
+Position                = Foundation.Vector3(0, 0, 0)
 
 # Control function that the NVC system can hook into and retrieve these values
 def nvcControlLoopback(controlIndex, controlValue):
-    global nShapeChangeState
+    global nShapeChangeState, Position
 
     # For the Dot Position we're just going to show the triangle
     if controlIndex == 0:
@@ -99,12 +100,14 @@ def nvcControlLoopback(controlIndex, controlValue):
 
     # Control index 1 is the X position
     elif controlIndex == 1:
-        #print "X Position:", controlValue
-        pass
+        Position[0] = controlValue * 2200
     # Control index 2 is the Y position
     elif controlIndex == 2:
-        #print "Y Position:", controlValue
-        pass
+        Position[2] = controlValue * 1600
+
+    TriangleEntity.setPosition(Position)
+
+    #print "Position: ", Position[0], Position[1]
 
 # Base class for all of our shapes
 class Shape:
@@ -293,12 +296,14 @@ def cleanupManagers():
         HTTPLogger().writeContent(LoggerError.ERROR, "[Scheduler] Scheduler is already destroyed.")
 
 
+# ------------------------------------------------
+# Move the shape to a random position
+def MoveShapeRandom():
+    x = random.randint(-1, 1)
+    y = random.randint(-1, 1)
 
-# Testing new and improved keyboard handling to keep the input buffer sane
-def UpdateKeyboardStates():
-    # Test shape positioning (x = 1, y = -1)
-    Foundation.nvcControl(nvcControlLoopback, 1, 1)
-    Foundation.nvcControl(nvcControlLoopback, 2, -1)
+    Foundation.nvcControl(nvcControlLoopback, 1, x)
+    Foundation.nvcControl(nvcControlLoopback, 2, y)
 
 # ------------------------------------------------
 # Main Tasklets
@@ -317,6 +322,7 @@ def schedulerTasklet():
 
     # Other stuff
     uMainTimer = Foundation.Timer()
+    uShapeTimer = Foundation.Timer()
     nDeltaTime = 0
     
     # Hold key down for 0.5 seconds
@@ -349,7 +355,9 @@ def schedulerTasklet():
 
             CurrentKeyboardState[nShapeChangeState] = True
 
-            UpdateKeyboardStates()
+            if uShapeTimer.getTime() > 2:
+                uShapeTimer.reset()
+                MoveShapeRandom()
 
         # Update Input
         if not doInput(nDeltaTime):
