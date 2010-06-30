@@ -94,9 +94,9 @@ def nvcControlLoopback(controlIndex, controlValue):
     # For the Dot Position we're just going to show the triangle
     if controlIndex == 0:
         if controlValue == 1:
-            TriangleEntity.setVisible(True)
+            CubeEntity.setVisible(True)
         else:
-            TriangleEntity.setVisible(False)
+            CubeEntity.setVisible(False)
 
     # Control index 1 is the X position
     elif controlIndex == 1:
@@ -105,7 +105,7 @@ def nvcControlLoopback(controlIndex, controlValue):
     elif controlIndex == 2:
         Position[2] = controlValue * 1600
 
-    TriangleEntity.setPosition(Position)
+    CubeEntity.setPosition(Position)
 
     #print "Position: ", Position[0], Position[1]
 
@@ -299,8 +299,8 @@ def cleanupManagers():
 # ------------------------------------------------
 # Move the shape to a random position
 def MoveShapeRandom():
-    x = random.randint(-1, 1)
-    y = random.randint(-1, 1)
+    x = random.randint(-10000, 10000) / 10000.0
+    y = random.randint(-10000, 10000) / 10000.0
 
     Foundation.nvcControl(nvcControlLoopback, 1, x)
     Foundation.nvcControl(nvcControlLoopback, 2, y)
@@ -355,7 +355,7 @@ def schedulerTasklet():
 
             CurrentKeyboardState[nShapeChangeState] = True
 
-            if uShapeTimer.getTime() > 2:
+            if uShapeTimer.getTime() > 5:
                 uShapeTimer.reset()
                 MoveShapeRandom()
 
@@ -386,10 +386,11 @@ def main(argv):
         initManagers()
 
         # Init
-        #CubeEntity = Square(10)
+        CubeEntity = Square(2)
+        CubeEntity.setVisible(True)
         #SphereEntity = Circle(400)
-        TriangleEntity = Triangle(400)
-        TriangleEntity.setVisible(True)
+        #TriangleEntity = Triangle(400)
+        #TriangleEntity.setVisible(True)
         
         # Start
         stackless.tasklet(schedulerTasklet)()
